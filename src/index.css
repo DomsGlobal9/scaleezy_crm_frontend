@@ -1,0 +1,212 @@
+/*
+ * ScaleEzy CRM -- the same skin as Inventory (frontend/src/index.css there), so a person moving
+ * between the two apps sees one product. The colour tokens are copied as they are; the layout
+ * classes below are CRM's own (crm-*), the way the shelves screens have sh-*.
+ */
+
+:root[data-theme='dark'] {
+  --bg-dark: #000000;
+  --bg-card: #0a0a0a;
+  --bg-input: #111111;
+  --bg-hover: #1a1a1a;
+  --border-light: rgba(255, 255, 255, 0.08);
+  --border-focus: rgba(255, 255, 255, 0.2);
+  --shadow-panel: 0 4px 24px -1px rgba(0, 0, 0, 0.5);
+  --text-primary: #ffffff;
+  --text-secondary: #a1a1aa;
+  --text-muted: #7b7b86;
+  --accent-gold: #e2c171;
+
+  /* The logo's own two greens: the lime is a FILL colour on dark, the deep green the ink on light. */
+  --brand: #A6D92B;
+  --brand-deep: #164B1E;
+  --brand-ink: #A6D92B;
+  --brand-solid: #A6D92B;
+  --brand-on-solid: #0B2410;
+  --accent-primary: var(--brand-solid);
+  --accent-primary-on: var(--brand-on-solid);
+  --accent-danger: #ef4444;
+  --accent-success: #10b981;
+  --accent-warning: #f59e0b;
+
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+
+:root[data-theme='light'] {
+  --bg-dark: #fafafa;
+  --bg-card: #ffffff;
+  --bg-input: #f4f4f5;
+  --bg-hover: #f4f4f5;
+  --border-light: rgba(0, 0, 0, 0.06);
+  --border-focus: rgba(0, 0, 0, 0.15);
+  --shadow-panel: 0 4px 24px -4px rgba(0, 0, 0, 0.06);
+  --text-primary: #18181b;
+  --text-secondary: #71717a;
+  --text-muted: #757580;
+  --accent-gold: #b48600;
+
+  --brand: #A6D92B;
+  --brand-deep: #164B1E;
+  --brand-ink: #164B1E;
+  --brand-solid: #164B1E;
+  --brand-on-solid: #FFFFFF;
+  --accent-primary: var(--brand-solid);
+  --accent-primary-on: var(--brand-on-solid);
+  --accent-danger: #b91c1c;
+  --accent-success: #047857;
+  --accent-warning: #b45309;
+
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body, #root {
+  min-height: 100vh;
+  background-color: var(--bg-dark);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+html[data-theme='light'] { color-scheme: light; }
+html[data-theme='dark'] { color-scheme: dark; }
+
+a { color: inherit; text-decoration: none; }
+button { cursor: pointer; border: none; background: none; font-family: inherit; color: inherit; }
+
+/* No scrollbars drawn anywhere (the owner's call in Inventory, 16 Oct); everything still scrolls. */
+* { scrollbar-width: none; -ms-overflow-style: none; }
+::-webkit-scrollbar { display: none; width: 0; height: 0; }
+
+/* Which copy of the wordmark to show. */
+.logo-on-dark { display: none; }
+[data-theme='dark'] .logo-on-light { display: none; }
+[data-theme='dark'] .logo-on-dark { display: block; }
+
+/* ── Buttons and fields, as Inventory draws them ── */
+.btn-primary {
+  background-color: var(--text-primary);
+  color: var(--bg-card);
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-weight: 500;
+  font-size: 13px;
+  border: 1px solid transparent;
+  box-shadow: 0 2px 8px -2px rgba(0,0,0,0.15);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.btn-primary:hover:not(:disabled) { opacity: 0.9; transform: translateY(-1px); }
+.btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+.btn-secondary {
+  background-color: var(--bg-card);
+  color: var(--text-primary);
+  border: 1px solid var(--border-light);
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-weight: 500;
+  font-size: 13px;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.btn-secondary:hover:not(:disabled) { background-color: var(--bg-hover); border-color: var(--border-focus); }
+.btn-secondary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.input-field {
+  width: 100%;
+  background-color: var(--bg-input);
+  border: 1px solid var(--border-light);
+  color: var(--text-primary);
+  padding: 10px 14px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-family: inherit;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  outline: none;
+}
+.input-field:focus { border-color: var(--border-focus); box-shadow: 0 0 0 1px var(--border-focus); }
+.input-field::placeholder { color: var(--text-muted); }
+
+.animate-spin { animation: spin 1s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── The shell: a top bar, then the page ── */
+.crm-shell { min-height: 100vh; display: flex; flex-direction: column; }
+.crm-topbar {
+  position: sticky; top: 0; z-index: 10;
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 10px clamp(12px, 3vw, 24px);
+  background: var(--bg-card);
+  border-bottom: 1px solid var(--border-light);
+}
+.crm-brand { display: inline-flex; align-items: center; gap: 10px; min-width: 0; }
+.crm-brand img { height: 26px; width: auto; display: block; }
+.crm-brand-app {
+  font-size: 11px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase;
+  color: var(--brand-on-solid); background: var(--brand-solid);
+  padding: 3px 8px; border-radius: 999px;
+}
+.crm-topbar-right { display: inline-flex; align-items: center; gap: 8px; min-width: 0; }
+.crm-user { font-size: 13px; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 40vw; }
+.crm-iconbtn {
+  width: 36px; height: 36px; display: inline-flex; align-items: center; justify-content: center;
+  border-radius: 10px; color: var(--text-secondary); border: 1px solid transparent;
+}
+.crm-iconbtn:hover { background: var(--bg-hover); color: var(--text-primary); }
+
+.crm-page {
+  width: 100%; max-width: 1200px; margin: 0 auto;
+  padding: clamp(14px, 3.5vw, 28px) clamp(12px, 3vw, 24px) 64px;
+  display: grid; gap: 18px; align-content: start;
+}
+.crm-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; flex-wrap: wrap; }
+.crm-head h1 { font-size: clamp(22px, 3vw, 28px); margin: 0; display: flex; align-items: center; gap: 10px; }
+.crm-head p { margin: 4px 0 0; color: var(--text-secondary); font-size: 14px; }
+.crm-card { background: var(--bg-card); border: 1px solid var(--border-light); border-radius: 16px; padding: clamp(14px, 2.4vw, 20px); box-shadow: var(--shadow-panel); }
+.crm-row { display: flex; align-items: center; gap: 12px; }
+.crm-muted { color: var(--text-secondary); font-size: 13px; }
+
+.crm-search { position: relative; flex: 1 1 280px; min-width: 0; }
+.crm-search input { height: 48px; padding-left: 44px; padding-right: 40px; border-radius: 12px; font-size: 15px; }
+.crm-search .crm-search-icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--text-muted); pointer-events: none; }
+.crm-search .crm-search-end { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); display: flex; align-items: center; color: var(--text-muted); }
+
+.crm-tag {
+  font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 999px;
+  text-transform: uppercase; letter-spacing: .04em; white-space: nowrap;
+  background: rgba(166, 217, 43, 0.14); color: var(--brand-ink);
+}
+.crm-tag.quiet { background: var(--bg-input); color: var(--text-muted); text-transform: none; letter-spacing: 0; font-weight: 500; }
+
+/* The table, on a wide screen. */
+.crm-table { width: 100%; border-collapse: collapse; }
+.crm-table th {
+  text-align: left; font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+  color: var(--text-muted); padding: 10px 12px; border-bottom: 1px solid var(--border-light); white-space: nowrap;
+}
+.crm-table td { padding: 12px; border-bottom: 1px solid var(--border-light); vertical-align: top; font-size: 14px; }
+.crm-table tr:last-child td { border-bottom: none; }
+.crm-table tbody tr:hover td { background: var(--bg-hover); }
+.crm-table .num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.crm-name { font-weight: 600; }
+.crm-sub { color: var(--text-muted); font-size: 12px; margin-top: 2px; }
+
+/* A card per customer on a phone: nothing sits off the right edge of a 390px screen. */
+.crm-cards { display: grid; gap: 10px; }
+.crm-cust { display: grid; gap: 8px; }
+.crm-cust-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+.crm-cust-spent { font-size: 17px; font-weight: 800; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.crm-cust-line { display: flex; align-items: center; gap: 8px; color: var(--text-secondary); font-size: 13px; min-width: 0; }
+.crm-cust-line span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.crm-cust-foot { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; }
+
+.crm-empty { text-align: center; padding: clamp(28px, 6vw, 56px) 16px; color: var(--text-secondary); display: grid; gap: 10px; justify-items: center; }
+.crm-empty h3 { margin: 0; color: var(--text-primary); font-size: 17px; }
+.crm-empty p { margin: 0; max-width: 440px; font-size: 14px; }
+
+.crm-pager { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; }
+
+/* Whole-screen notices: not signed in, no permission. */
+.crm-notice { min-height: 60vh; display: grid; place-items: center; padding: 24px; text-align: center; }
+.crm-notice .crm-card { max-width: 440px; display: grid; gap: 12px; justify-items: center; }
+.crm-notice h2 { font-size: 20px; margin: 0; }
+.crm-notice p { margin: 0; color: var(--text-secondary); font-size: 14px; line-height: 1.5; }

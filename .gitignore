@@ -1,0 +1,17 @@
+node_modules
+dist
+*.local
+*.log
+
+# Local environment -- never commit.
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# What the UI checks leave behind (screenshots go to scripts/screenshots, kept out of git).
+scripts/screenshots/
+
+.vscode/*
+.idea
+.DS_Store
