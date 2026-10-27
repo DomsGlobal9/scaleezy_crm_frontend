@@ -79,9 +79,9 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
 ::-webkit-scrollbar { display: none; width: 0; height: 0; }
 
 /* Which copy of the wordmark to show. */
-.logo-on-dark { display: none; }
-[data-theme='dark'] .logo-on-light { display: none; }
-[data-theme='dark'] .logo-on-dark { display: block; }
+.logo-on-dark { display: none !important; }
+[data-theme='dark'] .logo-on-light { display: none !important; }
+[data-theme='dark'] .logo-on-dark { display: block !important; }
 
 /* ── Buttons and fields, as Inventory draws them ── */
 .btn-primary {
