@@ -1,17 +1,42 @@
-node_modules
-dist
-*.local
-*.log
+# Dependencies
+node_modules/
 
-# Local environment -- never commit.
+# Production build
+dist/
+dist-ssr/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Environment files
 .env
+.env.*
 .env.local
 .env.*.local
 !.env.example
 
-# What the UI checks leave behind (screenshots go to scripts/screenshots, kept out of git).
+# Test and visual regression artifacts
 scripts/screenshots/
+coverage/
 
-.vscode/*
-.idea
+# Editor / IDE directories and files
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# OS generated files
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
