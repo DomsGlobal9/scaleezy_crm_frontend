@@ -2,7 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import {
   ArrowLeft, Loader2, IndianRupee, Undo2, Star, Wallet, DoorOpen, Eye, MessageCircle, NotebookPen,
-  CircleCheck, CircleAlert, CircleSlash, ExternalLink, UserX, ShieldOff
+  CircleCheck, CircleAlert, CircleSlash, ExternalLink, UserX, ShieldOff, CalendarClock
 } from 'lucide-react';
 import { useCustomer, useTimeline } from '../hooks/useCustomer';
 import { usePermission } from '../hooks/usePermission';
@@ -11,6 +11,7 @@ import { formatRupees } from '../utils/money';
 import { formatDay, since } from '../utils/dates';
 import { INVENTORY_URL } from '../lib/config';
 import LoadFailed from '../components/LoadFailed';
+import FollowUpsAndNotes from '../components/FollowUpsAndNotes';
 
 /**
  * One customer: who they are and the numbers at the top, everything that happened with them below.
@@ -23,7 +24,8 @@ const FILTERS = [
   { key: 'returns', label: 'Returns' },
   { key: 'points', label: 'Points & credit' },
   { key: 'visits', label: 'Visits' },
-  { key: 'messages', label: 'Messages' }
+  { key: 'messages', label: 'Messages' },
+  { key: 'notes', label: 'Notes & follow-ups' }
 ];
 
 const KIND = {
@@ -34,7 +36,8 @@ const KIND = {
   visit: { icon: DoorOpen, tone: '' },
   online: { icon: Eye, tone: '' },
   message: { icon: MessageCircle, tone: 'msg' },
-  note: { icon: NotebookPen, tone: '' }
+  note: { icon: NotebookPen, tone: '' },
+  followup: { icon: CalendarClock, tone: 'fu' }
 };
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -112,7 +115,10 @@ export default function CustomerDetail() {
             <Profile profile={customer.data.profile} />
             <Numbers numbers={customer.data.numbers} favourites={customer.data.favourites} />
           </section>
-          <Timeline id={id} />
+          <section className="cp-split">
+            <FollowUpsAndNotes customerId={customer.data.profile.id} />
+            <Timeline id={id} />
+          </section>
         </>
       )}
     </main>
@@ -285,7 +291,7 @@ function Event({ event: e }) {
       <div className="cp-ev-end">
         {amount && <div className={`cp-amt${e.flag === 'cancelled' ? ' struck' : ''}`}>{amount}</div>}
         {/* A note carries a day, not a moment, so it has no time of its own. */}
-        {e.kind !== 'note' && <div className="cp-when">{timeOf(e.at)}</div>}
+        {!e.dayOnly && <div className="cp-when">{timeOf(e.at)}</div>}
       </div>
     </div>
   );

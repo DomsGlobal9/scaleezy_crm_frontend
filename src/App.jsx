@@ -6,6 +6,8 @@ import AppShell from './components/AppShell';
 import SignIn from './pages/SignIn';
 import Customers from './pages/Customers';
 import CustomerDetail from './pages/CustomerDetail';
+import Today from './pages/Today';
+import Duplicates from './pages/Duplicates';
 
 export default function App() {
   const { status, refresh } = useAuth();
@@ -37,9 +39,11 @@ export default function App() {
     <BrowserRouter>
       <Routes>
         <Route element={<AppShell />}>
+          <Route path="/today" element={<Today />} />
           <Route path="/customers" element={<Customers />} />
+          <Route path="/duplicates" element={<Duplicates />} />
           <Route path="/customers/:id" element={<CustomerDetail />} />
-          <Route path="*" element={<Navigate to="/customers" replace />} />
+          <Route path="*" element={<Navigate to="/today" replace />} />
         </Route>
       </Routes>
     </BrowserRouter>

@@ -10,7 +10,8 @@
     "verify:ui": "node scripts/verify-customers-ui.mjs",
     "verify:customer-page-ui": "node scripts/verify-customer-page-ui.mjs",
     "verify:signin-ui": "node scripts/verify-signin-ui.mjs",
-    "verify:shops-ui": "node scripts/verify-shops-ui.mjs"
+    "verify:shops-ui": "node scripts/verify-shops-ui.mjs",
+    "verify:work-ui": "node scripts/verify-work-ui.mjs"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.101.4",

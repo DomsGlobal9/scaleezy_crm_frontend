@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 import { QueryClient, QueryClientProvider, QueryCache } from '@tanstack/react-query';
 import toast, { Toaster } from 'react-hot-toast';
 import './index.css';
+import './styles/work.css';
 import App from './App.jsx';
 import { AuthProvider } from './context/AuthContext.jsx';
 
