@@ -1,0 +1,78 @@
+/* The Counter (28 Oct 2026). The one bold thing: their colours as real swatches, so a salesperson
+   sees "blue, orange, red" before reading a word. Everything else is quiet and quick to scan. */
+
+.ct-page { display: grid; gap: 16px; }
+.ct-store { display: flex; align-items: center; gap: 8px; color: var(--text-secondary); min-width: 220px; }
+.ct-store .custom-select-container { min-width: 200px; }
+.ct-door h2, .ct-looked h3, .ct-notes h3 { display: flex; align-items: center; gap: 8px; }
+
+/* ── In the store now ── */
+.ct-arrivals { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr)); }
+.ct-arrival {
+  display: grid; gap: 8px; align-content: start; padding: 14px 16px; border-radius: 14px;
+  background: var(--bg-card); border: 1px solid var(--border-light); border-left: 3px solid var(--brand-solid);
+}
+.ct-arrival.taken { border-left-color: var(--border-light); }
+.ct-who { display: grid; gap: 2px; min-width: 0; }
+.ct-who strong { font-size: 15px; }
+.ct-when { font-size: 13px; color: var(--text-secondary); }
+.ct-take { display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+.ct-taken { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; font-size: 13px; color: var(--text-secondary); }
+.ct-quiet { color: var(--text-secondary); font-size: 14px; }
+.ct-groups { display: flex; gap: 6px; flex-wrap: wrap; }
+
+/* ── Look up ── */
+.ct-lookup { display: grid; gap: 10px; }
+.ct-lookup h2 { margin: 0; font-size: 16px; }
+.ct-lookup-row { display: flex; gap: 8px; flex-wrap: wrap; }
+.ct-phone { flex: 1 1 240px; display: flex; align-items: center; gap: 8px; padding-left: 12px; background: var(--bg-input); border: 1px solid var(--border-light); border-radius: 10px; }
+.ct-phone svg { color: var(--text-secondary); flex-shrink: 0; }
+.ct-phone .input-field { border: none; background: transparent; box-shadow: none; font-size: 17px; letter-spacing: .02em; padding-left: 0; }
+.ct-lookup-row .btn-primary { min-width: 110px; display: inline-flex; align-items: center; justify-content: center; }
+.ct-none, .ct-several p { display: flex; gap: 10px; align-items: flex-start; margin: 0; font-size: 14px; line-height: 1.45; }
+.ct-none svg { color: var(--brand-ink); flex-shrink: 0; margin-top: 2px; }
+.ct-several { display: grid; gap: 8px; }
+.ct-choose { display: flex; gap: 8px; flex-wrap: wrap; }
+
+/* ── The card ── */
+.ct-card { display: grid; gap: 14px; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; }
+.ct-card > section { display: grid; gap: 10px; }
+.ct-card h3 { margin: 0; font-size: 15px; }
+.ct-card h4 { margin: 6px 0 0; font-size: 13px; color: var(--text-secondary); font-weight: 600; }
+.ct-id-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+.ct-id h2 { margin: 0; font-size: clamp(20px, 2.6vw, 26px); }
+.ct-full { display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
+.ct-facts { margin: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 16px; }
+.ct-facts div { display: grid; gap: 2px; min-width: 0; }
+.ct-facts dt { font-size: 12px; color: var(--text-secondary); }
+.ct-facts dd { margin: 0; font-size: 14px; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; }
+.ct-wa { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; color: var(--accent-success); }
+.ct-wa.no { color: var(--accent-warning); }
+
+.ct-colours { display: flex; gap: 18px; flex-wrap: wrap; }
+.ct-swatch { display: grid; justify-items: center; gap: 6px; font-size: 13px; font-weight: 600; }
+.ct-chip { width: 46px; height: 46px; border-radius: 50%; border: 1px solid rgba(127, 127, 127, .35); box-shadow: inset 0 0 0 3px rgba(255, 255, 255, .08); }
+.ct-chip.first { width: 58px; height: 58px; }
+.ct-traits { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; font-size: 14px; }
+.ct-traits li { display: flex; gap: 8px; align-items: center; }
+.ct-traits svg { color: var(--text-secondary); flex-shrink: 0; }
+
+.ct-items { list-style: none; margin: 0; padding: 0; display: grid; }
+.ct-item { display: flex; justify-content: space-between; gap: 10px; padding: 9px 0; border-top: 1px solid var(--border-light); font-size: 14px; }
+.ct-item:first-child { border-top: none; }
+.ct-item-title { font-weight: 600; }
+.ct-item-end { display: grid; justify-items: end; gap: 3px; white-space: nowrap; }
+.ct-badge { font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 999px; background: rgba(166, 217, 43, .15); color: var(--brand-ink); }
+
+.ct-note-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.ct-note-list p { margin: 0 0 2px; font-size: 14px; line-height: 1.45; }
+.ct-note-add { display: flex; gap: 8px; }
+.ct-note-add .input-field { flex: 1; min-width: 0; }
+
+@media (max-width: 860px) {
+  .ct-card { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 420px) {
+  .ct-facts { grid-template-columns: minmax(0, 1fr); }
+  .ct-chip { width: 40px; height: 40px; } .ct-chip.first { width: 50px; height: 50px; }
+}

@@ -12,6 +12,7 @@ import Segments from './pages/Segments';
 import SegmentEditor from './pages/SegmentEditor';
 import SegmentView from './pages/SegmentView';
 import CustomerFrom from './pages/CustomerFrom';
+import Counter from './pages/Counter';
 
 export default function App() {
   const { status, refresh } = useAuth();
@@ -44,6 +45,7 @@ export default function App() {
       <Routes>
         <Route element={<AppShell />}>
           <Route path="/today" element={<Today />} />
+          <Route path="/counter" element={<Counter />} />
           <Route path="/customers" element={<Customers />} />
           <Route path="/duplicates" element={<Duplicates />} />
           <Route path="/customers/from/:source/:externalId" element={<CustomerFrom />} />
