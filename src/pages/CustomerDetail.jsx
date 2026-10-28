@@ -70,6 +70,9 @@ export default function CustomerDetail() {
   const navigate = useNavigate();
   const { can } = usePermission();
   const customer = useCustomer(id);
+  // An old link to someone since merged into another customer: open the one they are now.
+  const movedTo = customer.data?.mergedInto;
+  React.useEffect(() => { if (movedTo) navigate(`/customers/${movedTo}`, { replace: true }); }, [movedTo, navigate]);
 
   // "← Customers" goes back to the list as it was left (search and page are in its address).
   const back = () => (window.history.state?.idx > 0 ? navigate(-1) : navigate('/customers'));
@@ -90,7 +93,7 @@ export default function CustomerDetail() {
     <main className="crm-page">
       <button type="button" className="cp-back" onClick={back}><ArrowLeft size={14} /> Customers</button>
 
-      {customer.isLoading ? (
+      {customer.isLoading || movedTo ? (
         <div className="crm-card crm-row crm-muted" aria-busy="true"><Loader2 size={16} className="animate-spin" /> Loading the customer…</div>
       ) : customer.isError && customer.error?.statusCode === 404 ? (
         <div className="crm-card">
@@ -130,6 +133,7 @@ function Profile({ profile: p }) {
     ? `${p.addresses[0].line}${p.addresses[0].pincode ? ` ${p.addresses[0].pincode}` : ''}`
     : (p.shippingAddress || p.billingAddress || null);
   const moreAddresses = Math.max(0, p.addresses.length - 1);
+  const inventoryLink = (p.links ?? []).find(l => l.source === 'inventory');
 
   return (
     <div className="crm-card cp-who" data-testid="profile">
@@ -147,11 +151,14 @@ function Profile({ profile: p }) {
         <Fact label="GSTIN">{p.gstNumber}</Fact>
       </div>
       <Consent consent={p.consent} />
-      <div className="cp-actions">
-        <a className="btn-secondary cp-btn" href={`${INVENTORY_URL}/customers/${p.id}`} target="_blank" rel="noreferrer">
-          <ExternalLink size={14} /> Open in Inventory
-        </a>
-      </div>
+      {/* Only for a person Inventory knows: CRM's own id is not Inventory's (plan §14). */}
+      {inventoryLink && (
+        <div className="cp-actions">
+          <a className="btn-secondary cp-btn" href={`${INVENTORY_URL}/customers/${encodeURIComponent(inventoryLink.externalId)}`} target="_blank" rel="noreferrer">
+            <ExternalLink size={14} /> Open in Inventory
+          </a>
+        </div>
+      )}
     </div>
   );
 }
