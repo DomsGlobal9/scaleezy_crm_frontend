@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Users, Search, X, Loader2, Phone, Mail, ShieldOff, UserX } from 'lucide-react';
+import { Users, Search, X, Loader2, Phone, Mail, ShieldOff, UserX, DownloadCloud } from 'lucide-react';
+import { useShop } from '../hooks/useShop';
 import { rowLink } from '../components/common/rowLink';
 import { useCustomers } from '../hooks/useCustomers';
 import { usePermission } from '../hooks/usePermission';
@@ -48,7 +49,11 @@ export default function Customers() {
 
   const open = (c) => navigate(`/customers/${c.id}`);
 
-  const result = useCustomers({ search, page });
+  // The shop's first copy from Inventory: until it is done, an empty list is "on its way", not "none".
+  const shop = useShop();
+  const copying = !!shop.data && shop.data.on && !shop.data.firstCopyDone;
+  const notOn = !!shop.data && !shop.data.on;
+  const result = useCustomers({ search, page, refetchInterval: copying ? 5000 : false });
   const data = result.data;
   const rows = data?.customers ?? [];
 
@@ -105,16 +110,32 @@ export default function Customers() {
         </div>
       </div>
 
+      {copying && rows.length > 0 && (
+        <div className="cu-copying" role="status" data-testid="copying-banner">
+          <DownloadCloud size={16} /> Still bringing customers over from Inventory: {shop.data.customersSoFar.toLocaleString('en-IN')} so far. The list fills in by itself.
+        </div>
+      )}
+
       {result.isLoading ? (
         <div className="crm-card crm-row crm-muted" aria-busy="true"><Loader2 size={16} className="animate-spin" /> Loading customers…</div>
       ) : result.isError ? (
         <div className="crm-card"><LoadFailed what="the customers" error={result.error} onRetry={() => result.refetch()} /></div>
+      ) : rows.length === 0 && copying && !search ? (
+        <div className="crm-card" data-testid="copying">
+          <div className="crm-empty">
+            <Loader2 size={26} className="animate-spin" style={{ color: 'var(--brand-ink)' }} />
+            <h3>Bringing your customers over from Inventory…</h3>
+            <p>This happens once, the first time your shop opens CRM. They will appear here by themselves; you can leave this page open.</p>
+          </div>
+        </div>
       ) : rows.length === 0 ? (
         <div className="crm-card">
           <div className="crm-empty">
             <UserX size={26} />
-            <h3>{search ? 'Nobody matches that' : 'No customers yet'}</h3>
-            <p>{search ? 'Try fewer letters, or the phone number written differently.' : 'Customers appear here as soon as a sale is made, an order arrives, or one is added in Inventory.'}</p>
+            <h3>{search ? 'Nobody matches that' : notOn ? (shop.data.paused ? 'Copying is paused for your shop' : 'CRM is not switched on for your shop yet') : 'No customers yet'}</h3>
+            <p>{search ? 'Try fewer letters, or the phone number written differently.'
+              : notOn ? 'Your customers stay safe in Inventory. Ask ScaleEzy to switch CRM on for your shop.'
+              : 'Customers appear here as soon as a sale is made, an order arrives, or one is added in Inventory.'}</p>
           </div>
         </div>
       ) : narrow ? (

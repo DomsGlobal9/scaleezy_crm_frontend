@@ -23,6 +23,7 @@ Screens so far:
 npm run verify:ui                 # Customers, in Edge, against the local service
 npm run verify:customer-page-ui   # the customer page and timeline
 npm run verify:signin-ui          # signing in and out, one email in two shops, Inventory unreachable
+npm run verify:shops-ui           # a new shop's first visit: "bringing your customers over", then the list
 ```
 
 Screenshots land in `scripts/screenshots/`.

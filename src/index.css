@@ -289,3 +289,7 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
 .si-shop span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .si-link { display: inline-flex; align-items: center; gap: 6px; color: var(--text-secondary); font-size: 13px; justify-self: center; }
 .si-link:hover { color: var(--text-primary); }
+
+/* While a shop's first copy from Inventory is on its way. */
+.cu-copying { display: flex; align-items: center; gap: 8px; padding: 10px 14px; border-radius: 12px; font-size: 13px; background: rgba(166, 217, 43, 0.12); color: var(--brand-ink); }
+.cu-copying svg { flex-shrink: 0; }
