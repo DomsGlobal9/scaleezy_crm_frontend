@@ -134,7 +134,7 @@ async function main() {
 
     await promise.getByRole('button', { name: 'Done' }).click();
     await promise.waitFor({ state: 'detached', timeout: 20000 });
-    await page.waitForFunction((n) => { const b = [...document.querySelectorAll('.crm-tab')].find(t => /Today/.test(t.textContent))?.querySelector('.crm-badge'); return !b || Number(b.textContent) < n; }, before, { timeout: 20000 });
+    await page.waitForFunction((n) => { const b = [...document.querySelectorAll('.crm-tab')].find(t => /To do today/.test(t.textContent))?.querySelector('.crm-badge'); return !b || Number(b.textContent) < n; }, before, { timeout: 20000 });
     check('Done on the promise: off the list, and the badge goes down', true);
     await gayathri.getByRole('button', { name: 'Done' }).click();
     await gayathri.waitFor({ state: 'detached', timeout: 20000 });
@@ -144,7 +144,9 @@ async function main() {
     await doneToday.locator('li', { hasText: 'Gayathri Iyer' }).getByRole('button', { name: 'Undo' }).click();
     await rows.filter({ hasText: 'Gayathri Iyer' }).waitFor({ timeout: 20000 });
     check('Undo: she is back on the list', true);
-    check('Sales has no Duplicates tab', (await page.locator('.crm-tab', { hasText: 'Duplicates' }).count()) === 0);
+    await page.goto(`${APP}/customers`);
+    await page.getByRole('heading', { name: 'All customers' }).waitFor({ timeout: 20000 });
+    check('Sales has no "Check duplicates" (on All customers, nor in the sidebar)', (await page.getByTestId('check-duplicates').count()) === 0 && (await page.locator('.crm-tab', { hasText: /duplicates/i }).count()) === 0);
     await page.goto(`${APP}/duplicates`);
     await page.getByRole('heading', { name: 'Only an owner or admin can merge customers' }).waitFor({ timeout: 20000 });
     check('...and the Duplicates page says plainly that it is for owners and admins', true);
@@ -155,13 +157,20 @@ async function main() {
   {
     shopTool('pair', SHOP);
     const { ctx, page } = await as(browser, 'owner');
-    await page.goto(`${APP}/duplicates`);
+    await page.goto(`${APP}/customers`);
+    const dupes = page.getByTestId('check-duplicates');
+    await dupes.waitFor({ timeout: 20000 });
+    await page.waitForFunction(() => /Check duplicates\s*1/.test(document.querySelector('[data-testid="check-duplicates"]')?.textContent ?? ''), null, { timeout: 20000 }).catch(() => {});
+    check('All customers: "Check duplicates" with the count waiting (1)', /Check duplicates\s*1/.test(await dupes.innerText()), await dupes.innerText());
+    check('...and duplicates are no longer in the sidebar', (await page.locator('.crm-tab', { hasText: /duplicates/i }).count()) === 0);
+    await dupes.click();
+    await page.waitForURL(/\/duplicates$/);
     const pair = page.getByTestId('pair').filter({ hasText: 'Sowmya Reddy' });
     await pair.waitFor({ timeout: 20000 });
     check('the pair to review: Sowmya Reddy and Anitha Reddy side by side', /Anitha Reddy/.test(await pair.innerText()));
     check('...the reason in plain words (family phone)', /family often shares one phone/.test(await pair.innerText()));
     check('...the phone matches (quiet), the names differ (marked)', (await pair.locator('.dp-field.same', { hasText: 'Phone' }).count()) === 1);
-    check('the Duplicates tab carries the count', /Duplicates\s*1/.test(await page.locator('.crm-tab', { hasText: 'Duplicates' }).innerText()));
+    check('Check duplicates has a way back to All customers', (await page.getByRole('link', { name: 'All customers' }).filter({ hasText: 'All customers' }).count()) >= 1);
     await page.screenshot({ path: path.join(shots, 'work-duplicates-desktop.png'), fullPage: false });
     check('Merge stays off until one is chosen to keep', await pair.getByRole('button', { name: /Merge into/ }).isDisabled());
     await pair.getByRole('radio', { name: 'Anitha Reddy' }).click();
@@ -199,7 +208,7 @@ async function main() {
     check('phone, customer page with the working card: no sideways scroll', await noOverflow(page));
     await page.screenshot({ path: path.join(shots, 'work-customer-phone.png'), fullPage: false });
     await page.goto(`${APP}/duplicates`);
-    await page.getByRole('heading', { name: 'Duplicates to review' }).waitFor({ timeout: 20000 });
+    await page.getByRole('heading', { name: 'Check duplicates' }).waitFor({ timeout: 20000 });
     await page.getByRole('tab', { name: 'Kept apart' }).click();
     await page.getByTestId('pair').first().waitFor({ timeout: 20000 });
     check('phone, duplicates: no sideways scroll', await noOverflow(page));

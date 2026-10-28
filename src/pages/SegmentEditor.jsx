@@ -65,7 +65,7 @@ export default function SegmentEditor() {
       const saved = editing ? await update.mutateAsync(body) : await create.mutateAsync(body);
       navigate(`/segments/${saved.id}`);
     } catch (err) {
-      setError(err?.message || 'The segment could not be saved. Try again.');
+      setError(err?.message || 'The list could not be saved. Try again.');
     }
   };
 
@@ -79,7 +79,7 @@ export default function SegmentEditor() {
     );
   }
   if (editing && !loaded) {
-    return <main className="crm-page"><div className="crm-card crm-row crm-muted" aria-busy="true"><Loader2 size={16} className="animate-spin" /> Loading the segment…</div></main>;
+    return <main className="crm-page"><div className="crm-card crm-row crm-muted" aria-busy="true"><Loader2 size={16} className="animate-spin" /> Loading the list…</div></main>;
   }
 
   const look = preview.data;
@@ -88,11 +88,11 @@ export default function SegmentEditor() {
 
   return (
     <main className="crm-page sg-page">
-      <Link to={editing ? `/segments/${id}` : '/segments'} className="sg-back"><ArrowLeft size={16} /> {editing ? 'Back to the segment' : 'Segments'}</Link>
+      <Link to={editing ? `/segments/${id}` : '/segments'} className="sg-back"><ArrowLeft size={16} /> {editing ? 'Back to the list' : 'Saved lists'}</Link>
       <div className="crm-head">
         <div style={{ minWidth: 0 }}>
-          <h1>{editing ? 'Change segment' : 'New segment'}</h1>
-          <p>{mayManage ? 'Choose who belongs in it. The count beside it is who meets it right now.' : 'Try out who meets these rules. Saving a segment is for the owner or an admin.'}</p>
+          <h1>{editing ? 'Change list' : 'New list'}</h1>
+          <p>{mayManage ? 'Choose who belongs in it. The count beside it is who meets it right now.' : 'Try out who meets these rules. Saving a list is for the owner or an admin.'}</p>
         </div>
       </div>
 
@@ -132,7 +132,7 @@ export default function SegmentEditor() {
               <input id="sg-name" className="input-field" value={name} maxLength={80} onChange={(e) => setName(e.target.value)} placeholder="e.g. Big spenders not seen lately" />
               {error && <p className="si-error" role="alert">{error}</p>}
               <button type="submit" className="btn-primary" disabled={saving || preview.isError}>
-                {saving ? <><Loader2 size={14} className="animate-spin" /> Saving…</> : editing ? 'Save changes' : 'Save segment'}
+                {saving ? <><Loader2 size={14} className="animate-spin" /> Saving…</> : editing ? 'Save changes' : 'Save list'}
               </button>
             </form>
           )}

@@ -36,22 +36,22 @@ export default function Segments() {
     <main className="crm-page sg-page">
       <div className="crm-head">
         <div style={{ minWidth: 0 }}>
-          <h1><ListFilter size={24} aria-hidden="true" /> Segments</h1>
+          <h1><ListFilter size={24} aria-hidden="true" /> Saved lists</h1>
           <p>Groups of customers by what they do: who to call, who to wish, who to message.</p>
         </div>
-        <Link to="/segments/new" className="btn-primary sg-new"><Plus size={16} /> {mayManage ? 'New segment' : 'Try a segment'}</Link>
+        <Link to="/segments/new" className="btn-primary sg-new"><Plus size={16} /> {mayManage ? 'New list' : 'Try a list'}</Link>
       </div>
 
       {segments.isLoading ? (
-        <div className="crm-card crm-row crm-muted" aria-busy="true"><Loader2 size={16} className="animate-spin" /> Loading segments…</div>
+        <div className="crm-card crm-row crm-muted" aria-busy="true"><Loader2 size={16} className="animate-spin" /> Loading saved lists…</div>
       ) : segments.isError ? (
-        <div className="crm-card"><LoadFailed what="the segments" error={segments.error} onRetry={() => segments.refetch()} /></div>
+        <div className="crm-card"><LoadFailed what="the saved lists" error={segments.error} onRetry={() => segments.refetch()} /></div>
       ) : list.length === 0 ? (
         <section className="sg-empty" aria-labelledby="sg-start">
           <div className="sg-empty-head">
             <Sparkles size={20} aria-hidden="true" />
             <div>
-              <h2 id="sg-start">No segments yet</h2>
+              <h2 id="sg-start">No saved lists yet</h2>
               <p>Start from one of these, change it to suit your shop{mayManage ? ', and save it' : ''}.</p>
             </div>
           </div>

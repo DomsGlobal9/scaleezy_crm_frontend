@@ -55,7 +55,7 @@ export default function Counter() {
     <main className="crm-page ct-page">
       <div className="crm-head">
         <div style={{ minWidth: 0 }}>
-          <h1><DoorOpen size={24} aria-hidden="true" /> In the store</h1>
+          <h1><DoorOpen size={24} aria-hidden="true" /> At the door</h1>
           <p>Who walked in through the door QR, and who is looking after them. Staff take customers at Inventory's counter.</p>
         </div>
         {storeList.length > 0 && (

@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Users, Search, X, Loader2, ShieldOff, UserX, DownloadCloud } from 'lucide-react';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { Users, Search, X, Loader2, ShieldOff, UserX, DownloadCloud, GitMerge } from 'lucide-react';
 import { useShop } from '../hooks/useShop';
 import { useCustomers } from '../hooks/useCustomers';
+import { useMerges } from '../hooks/useWork';
 import { usePermission } from '../hooks/usePermission';
 import LoadFailed from '../components/LoadFailed';
 import CustomerList from '../components/CustomerList';
@@ -13,6 +14,9 @@ import CustomerList from '../components/CustomerList';
  */
 export default function Customers() {
   const { can } = usePermission();
+  const mayMerge = can('crm:customer:merge');
+  const merges = useMerges('open', mayMerge);
+  const openPairs = merges.data?.open ?? 0;
   const navigate = useNavigate();
   // The search and the page live in the address (?q=…&page=…), so coming back from a customer
   // lands on the same list, and a list can be shared or bookmarked.
@@ -71,15 +75,22 @@ export default function Customers() {
     <main className="crm-page">
       <div className="crm-head">
         <div style={{ minWidth: 0 }}>
-          <h1><Users size={26} /> Customers</h1>
+          <h1><Users size={26} /> All customers</h1>
           <p>Everyone who has bought from you, from the till, the online shop and Shopify, in one list.</p>
         </div>
-        {data && (
-          <span className="crm-muted" data-testid="count">
-            {total === 0 ? 'No customers' : total === 1 ? '1 customer' : `${total.toLocaleString('en-IN')} customers`}
-            {search ? ' match' : ''}
-          </span>
-        )}
+        <div className="cu-head-end">
+          {data && (
+            <span className="crm-muted" data-testid="count">
+              {total === 0 ? 'No customers' : total === 1 ? '1 customer' : `${total.toLocaleString('en-IN')} customers`}
+              {search ? ' match' : ''}
+            </span>
+          )}
+          {mayMerge && (
+            <Link to="/duplicates" className="btn-secondary cu-dupes" data-testid="check-duplicates">
+              <GitMerge size={14} aria-hidden="true" /> Check duplicates{openPairs > 0 && <span className="crm-badge quiet" aria-label={`${openPairs} to review`}>{openPairs}</span>}
+            </Link>
+          )}
+        </div>
       </div>
 
       <div className="crm-search">

@@ -47,7 +47,7 @@ export default function Today() {
     <main className="crm-page tk-page">
       <div className="crm-head">
         <div style={{ minWidth: 0 }}>
-          <h1>Today</h1>
+          <h1>To do today</h1>
           <p data-testid="today-line">{heading ? `${heading} · ` : ''}{d ? (left ? <><strong>{left} {left === 1 ? 'person' : 'people'} to talk to.</strong> Start at the top.</> : 'Nobody left to talk to today.') : 'Who to talk to, why, and what to say.'}</p>
         </div>
         <div className="cp-chips" role="tablist" aria-label="Whose list">

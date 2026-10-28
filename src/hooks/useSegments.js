@@ -42,14 +42,14 @@ function useSaved(message) {
   };
 }
 export function useCreateSegment() {
-  const saved = useSaved('Segment saved');
+  const saved = useSaved('List saved');
   return useMutation({ mutationFn: async (body) => (await api.post('/segments', body)).data, onSuccess: saved });
 }
 export function useUpdateSegment(id) {
-  const saved = useSaved('Segment saved');
+  const saved = useSaved('List saved');
   return useMutation({ mutationFn: async (body) => (await api.patch(`/segments/${id}`, body)).data, onSuccess: saved });
 }
 export function useRemoveSegment() {
-  const saved = useSaved('Segment removed');
+  const saved = useSaved('List removed');
   return useMutation({ mutationFn: async (id) => (await api.delete(`/segments/${id}`)).data, onSuccess: saved });
 }

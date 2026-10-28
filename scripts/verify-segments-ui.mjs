@@ -93,7 +93,7 @@ async function main() {
     await page.getByRole('option', { name: 'Spent at most…' }).click();
     await page.getByLabel('Spent at most (₹)').fill('10');
     await page.getByTestId('rules-problem').waitFor({ timeout: 15000 });
-    check('at most below at least: "nobody can be in it", in plain words, and Save waits', /nobody can be in it/.test(await page.getByTestId('rules-problem').innerText()) && await page.getByRole('button', { name: 'Save segment' }).isDisabled());
+    check('at most below at least: "nobody can be in it", in plain words, and Save waits', /nobody can be in it/.test(await page.getByTestId('rules-problem').innerText()) && await page.getByRole('button', { name: 'Save list' }).isDisabled());
     await page.getByRole('button', { name: /Remove: Spent at most/ }).click();
     await shownPeople(page, want);
     check('the rule taken away: the problem goes, by itself, and no error is left on screen', (await page.getByTestId('rules-problem').count()) === 0 && (await page.locator('[role="status"], .go3958317564').filter({ hasText: 'nobody can be in it' }).count()) === 0);
@@ -101,14 +101,14 @@ async function main() {
 
     // Save it.
     await page.getByLabel('Name').fill(NAME);
-    await page.getByRole('button', { name: 'Save segment' }).click();
+    await page.getByRole('button', { name: 'Save list' }).click();
     await page.waitForURL(/\/segments\/[0-9a-f-]{36}$/);
     await page.getByTestId('segment-name').waitFor();
     check('saved: its own page, with its name and its sentence', (await page.getByTestId('segment-name').innerText()) === NAME && /spent at least ₹1,000 and agreed to WhatsApp offers/.test(await page.locator('.sg-sentence').innerText()));
     check('...and who is in it now', Number((await page.locator('[data-testid="numbers"] dd').first().innerText()).replace(/,/g, '')) === want);
     await page.screenshot({ path: path.join(shots, 'segments-view.png'), fullPage: true });
 
-    await page.locator('#crm-sidebar .crm-tab', { hasText: 'Segments' }).click();
+    await page.locator('#crm-sidebar .crm-tab', { hasText: 'Saved lists' }).click();
     await page.getByTestId('segment').first().waitFor();
     check('the Segments list: the new one, with its numbers', (await page.getByTestId('segment').filter({ hasText: NAME }).count()) === 1 && /\b(person|people)\b/.test(await page.getByTestId('segment').filter({ hasText: NAME }).innerText()));
     await page.screenshot({ path: path.join(shots, 'segments-list.png') });
@@ -138,7 +138,7 @@ async function main() {
     {
       const { ctx: c2, page: p2 } = await as(browser, 'sales');
       await p2.goto(`${APP}/segments`);
-      await p2.getByRole('link', { name: /Try a segment/ }).click();
+      await p2.getByRole('link', { name: /Try a list/ }).click();
       await p2.getByTestId('rule').first().waitFor();
       const w = await people({ spentAtLeast: 10000 });
       check('sales: tries rules out and sees who meets them', await shownPeople(p2, w) === w);

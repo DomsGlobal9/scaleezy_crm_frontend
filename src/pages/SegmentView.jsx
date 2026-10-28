@@ -25,10 +25,10 @@ export default function SegmentView() {
   const d = result.data;
 
   if (result.isLoading) {
-    return <main className="crm-page"><div className="crm-card crm-row crm-muted" aria-busy="true"><Loader2 size={16} className="animate-spin" /> Loading the segment…</div></main>;
+    return <main className="crm-page"><div className="crm-card crm-row crm-muted" aria-busy="true"><Loader2 size={16} className="animate-spin" /> Loading the list…</div></main>;
   }
   if (result.isError) {
-    return <main className="crm-page"><Link to="/segments" className="sg-back"><ArrowLeft size={16} /> Segments</Link><div className="crm-card"><LoadFailed what="this segment" error={result.error} onRetry={() => result.refetch()} /></div></main>;
+    return <main className="crm-page"><Link to="/segments" className="sg-back"><ArrowLeft size={16} /> Saved lists</Link><div className="crm-card"><LoadFailed what="this list" error={result.error} onRetry={() => result.refetch()} /></div></main>;
   }
 
   const doRemove = async () => {
@@ -37,7 +37,7 @@ export default function SegmentView() {
 
   return (
     <main className="crm-page sg-page">
-      <Link to="/segments" className="sg-back"><ArrowLeft size={16} /> Segments</Link>
+      <Link to="/segments" className="sg-back"><ArrowLeft size={16} /> Saved lists</Link>
       <div className="crm-head">
         <div style={{ minWidth: 0 }}>
           <h1 data-testid="segment-name">{d.segment.name}</h1>
@@ -47,7 +47,7 @@ export default function SegmentView() {
           <div className="crm-row sg-actions">
             <Link to={`/segments/${id}/edit`} className="btn-secondary"><Pencil size={14} /> Change</Link>
             {confirming ? (
-              <span className="sg-confirm" role="group" aria-label="Remove this segment?">
+              <span className="sg-confirm" role="group" aria-label="Remove this list?">
                 <span>Remove it? Nobody's record changes.</span>
                 <button type="button" className="btn-danger" onClick={doRemove} disabled={remove.isPending}>{remove.isPending ? 'Removing…' : 'Remove'}</button>
                 <button type="button" className="btn-secondary" onClick={() => setConfirming(false)}>Keep</button>

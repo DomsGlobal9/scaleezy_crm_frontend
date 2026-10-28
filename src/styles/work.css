@@ -114,3 +114,7 @@ button.fu-hole:hover, button.fu-hole:focus-visible { border-style: solid; border
   .dp-field { grid-template-columns: 76px minmax(0, 1fr) minmax(0, 1fr); gap: 8px; font-size: 13px; }
 }
 .dp-field.info > span:not(.dp-label) { color: var(--text-secondary); }
+
+/* All customers: the count, and Check duplicates for the owner and admins. */
+.cu-head-end { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.cu-dupes { display: inline-flex; align-items: center; gap: 6px; }

@@ -26,14 +26,14 @@ export default function GroupView() {
 
   if (group.isLoading) return <main className="crm-page"><div className="crm-card crm-row crm-muted" aria-busy="true"><Loader2 size={16} className="animate-spin" /> Loading the group…</div></main>;
   if (group.isError) {
-    return <main className="crm-page"><Link to="/groups" className="sg-back"><ArrowLeft size={16} /> Groups</Link><div className="crm-card"><LoadFailed what="this group" error={group.error} onRetry={() => group.refetch()} /></div></main>;
+    return <main className="crm-page"><Link to="/groups" className="sg-back"><ArrowLeft size={16} /> Customer groups</Link><div className="crm-card"><LoadFailed what="this group" error={group.error} onRetry={() => group.refetch()} /></div></main>;
   }
   const g = group.data;
   const others = (all.data ?? []).filter(x => x.key !== key);
 
   return (
     <main className="crm-page gr-page">
-      <Link to="/groups" className="sg-back"><ArrowLeft size={16} /> Groups</Link>
+      <Link to="/groups" className="sg-back"><ArrowLeft size={16} /> Customer groups</Link>
       <div className="crm-head">
         <div style={{ minWidth: 0 }}>
           <h1 data-testid="group-name"><span className="crm-tag gr-title">{g.name}</span></h1>

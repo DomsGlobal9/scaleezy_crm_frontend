@@ -1,9 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom';
-import { CalendarCheck2, DoorOpen, Users, Tags, ListFilter, GitMerge, Moon, Sun, LogOut, Menu, X } from 'lucide-react';
+import { CalendarCheck2, DoorOpen, Users, Tags, ListFilter, Moon, Sun, LogOut, Menu, X } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { usePermission } from '../hooks/usePermission';
-import { useMerges, useTodayCount } from '../hooks/useWork';
+import { useTodayCount } from '../hooks/useWork';
 
 const THEME_KEY = 'scale_easy_theme'; // Inventory's key, so the two apps share one setting
 
@@ -32,11 +32,8 @@ export default function AppShell() {
   const firstLink = useRef(null);
   const menuButton = useRef(null);
   const seesCustomers = can('customer:view');
-  const mayMerge = can('crm:customer:merge');
   const due = useTodayCount(seesCustomers);
-  const merges = useMerges('open', mayMerge);
   const dueCount = due.data?.mine ?? 0;
-  const openPairs = merges.data?.open ?? 0;
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
@@ -54,12 +51,11 @@ export default function AppShell() {
   }, [open]);
 
   const places = seesCustomers ? [
-    { to: '/today', label: 'Today', icon: CalendarCheck2, count: dueCount, countLabel: `${dueCount} due` },
-    { to: '/counter', label: 'In the store', icon: DoorOpen },
-    { to: '/customers', label: 'Customers', icon: Users },
-    { to: '/groups', label: 'Groups', icon: Tags },
-    { to: '/segments', label: 'Segments', icon: ListFilter },
-    ...(mayMerge ? [{ to: '/duplicates', label: 'Duplicates', icon: GitMerge, count: openPairs, countLabel: `${openPairs} to review`, quiet: true }] : [])
+    { to: '/today', label: 'To do today', icon: CalendarCheck2, count: dueCount, countLabel: `${dueCount} due` },
+    { to: '/counter', label: 'At the door', icon: DoorOpen },
+    { to: '/customers', label: 'All customers', icon: Users },
+    { to: '/groups', label: 'Customer groups', icon: Tags },
+    { to: '/segments', label: 'Saved lists', icon: ListFilter },
   ] : [];
 
   const initials = (user?.name || user?.email || '?').split(/\s+/).map(w => w[0]).slice(0, 2).join('').toUpperCase();

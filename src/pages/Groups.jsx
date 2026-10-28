@@ -46,7 +46,7 @@ export default function Groups() {
     <main className="crm-page gr-page">
       <div className="crm-head">
         <div style={{ minWidth: 0 }}>
-          <h1><Tags size={24} aria-hidden="true" /> Groups</h1>
+          <h1><Tags size={24} aria-hidden="true" /> Customer groups</h1>
           <p>Your own groups of customers, like VIP or Wholesale. Offers can be just for a group; the till shows it.</p>
         </div>
       </div>

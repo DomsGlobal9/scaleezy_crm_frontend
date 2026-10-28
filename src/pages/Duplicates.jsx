@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Loader2, GitMerge, Users, ShieldOff, Undo2, CheckCircle2 } from 'lucide-react';
+import { Loader2, GitMerge, Users, ShieldOff, Undo2, CheckCircle2, ArrowLeft } from 'lucide-react';
 import { usePermission } from '../hooks/usePermission';
 import { useMergeAction, useMerges } from '../hooks/useWork';
 import { formatPhone } from '../utils/phone';
@@ -39,9 +39,10 @@ export default function Duplicates() {
 
   return (
     <main className="crm-page">
+      <Link to="/customers" className="sg-back"><ArrowLeft size={16} /> All customers</Link>
       <div className="crm-head">
         <div style={{ minWidth: 0 }}>
-          <h1><Users size={26} /> Duplicates to review</h1>
+          <h1><Users size={26} /> Check duplicates</h1>
           <p>CRM found records that may be one person. Nothing is merged until you say so.</p>
         </div>
         <div className="cp-chips" role="tablist" aria-label="Show">
