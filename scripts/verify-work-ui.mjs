@@ -102,7 +102,8 @@ async function main() {
     check('Sales sees the follow-up the owner gave them, with the customer to call', /Lakshmi Devi/.test(await tag.innerText()));
     check('the Today tab carries a badge with what is due', before >= 1, before);
     const wishes = await page.getByTestId('wish').allInnerTexts();
-    check('birthdays this week: Chandrika Nair today, with "Agreed to WhatsApp"', wishes.some(t => /Chandrika Nair/.test(t) && /today/.test(t) && /Agreed to WhatsApp/.test(t)), wishes);
+    // The test shop has no automatic wishes on in Inventory, so the line says to wish her in person.
+    check('birthdays this week: Chandrika Nair today, "Shop\'s WhatsApp wishes are off: wish in person"', wishes.some(t => /Chandrika Nair/.test(t) && /today/.test(t) && /WhatsApp wishes are off: wish in person/.test(t)), wishes);
     check('...Esther Thomas\'s anniversary, "No WhatsApp consent: wish in person"', wishes.some(t => /Esther Thomas/.test(t) && /Anniversary/.test(t) && /wish in person/.test(t)));
     const notSeen = await page.getByTestId('notseen').allInnerTexts();
     check('not seen lately: Gayathri Iyer first, 75 days, three bills', /Gayathri Iyer/.test(notSeen[0] ?? '') && /75 days ago/.test(notSeen[0]) && /3 bills/.test(notSeen[0]), notSeen);

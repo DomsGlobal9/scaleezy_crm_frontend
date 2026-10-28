@@ -101,7 +101,7 @@ button.fu-hole:hover, button.fu-hole:focus-visible { border-style: solid; border
   .td-jump-item strong { font-size: 22px; }
   .td-jump-item span { font-size: 12px; }
   .td-row { grid-template-columns: minmax(0, 1fr); gap: 6px; }
-  .td-pill { width: fit-content; }
+  .td-pill { width: fit-content; max-width: 100%; white-space: normal; border-radius: 10px; }
 }
 
 /* ── Duplicates: two records side by side, differences marked ── */

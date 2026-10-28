@@ -106,8 +106,13 @@ export default function Today() {
                   {w.what === 'birthday' ? <Cake size={16} aria-hidden="true" /> : <Heart size={16} aria-hidden="true" />}
                   <span>{w.what === 'birthday' ? 'Birthday' : 'Anniversary'} {w.inDays === 0 ? <strong>today</strong> : w.inDays === 1 ? 'tomorrow' : `on ${dayWords(w.day, d.today)}`}</span>
                 </div>
-                <span className={`td-pill${w.whatsappOffers ? '' : ' no'}`}>
-                  {w.stopped ? 'Replied STOP: wish in person' : w.whatsappOffers ? 'Agreed to WhatsApp' : 'No WhatsApp consent: wish in person'}
+                {/* CRM never sends a wish: Inventory does, when the shop has wishes on. This says which. */}
+                <span className={`td-pill${w.wishGoesByItself ? '' : ' no'}`}>
+                  {w.stopped ? 'Replied STOP: wish in person'
+                    : !w.whatsappOffers ? 'No WhatsApp consent: wish in person'
+                    : w.wishGoesByItself ? 'WhatsApp wish goes by itself'
+                    : w.wishGoesByItself === false ? 'Shop\'s WhatsApp wishes are off: wish in person'
+                    : 'Agreed to WhatsApp'}
                 </span>
               </div>
             ))}
