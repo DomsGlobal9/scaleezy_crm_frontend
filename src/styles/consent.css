@@ -1,0 +1,43 @@
+/* Consent (plan M6, 28 Oct 2026): the chip on the customer page opens the record, laid out like a
+   register -- a mark for each entry, what was said, how and by whom, the date in the margin. */
+
+button.cp-consent { border: 1px solid transparent; cursor: pointer; text-align: left; font-family: inherit; line-height: 1.35; flex-wrap: wrap; }
+button.cp-consent:hover { border-color: currentColor; }
+button.cp-consent:focus-visible { outline: 2px solid var(--accent-primary); outline-offset: 2px; }
+.cp-consent-more { display: inline-flex; align-items: center; gap: 2px; font-weight: 500; opacity: .8; }
+
+.cp-ico.consent { background: rgba(166, 217, 43, .14); color: var(--brand-ink); }
+.cp-ev.withdrawn .cp-ico.consent { background: rgba(245, 158, 11, .14); color: var(--accent-warning); }
+
+.cr-backdrop {
+  position: fixed; inset: 0; z-index: 2000; display: grid; place-items: center; padding: 16px;
+  background: rgba(0, 0, 0, .55); backdrop-filter: blur(3px);
+}
+.cr-dialog {
+  width: min(620px, 100%); max-height: min(86vh, 760px); overflow-y: auto;
+  background: var(--bg-card); border: 1px solid var(--border-light); border-radius: 16px; box-shadow: var(--shadow-panel);
+  padding: clamp(16px, 3vw, 24px); display: grid; gap: 14px; align-content: start;
+}
+.cr-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+.cr-head h2 { margin: 0; font-size: 18px; }
+.cr-head p { margin: 2px 0 0; color: var(--text-secondary); font-size: 14px; }
+.cr-now {
+  margin: 0; padding: 12px 14px; border-radius: 12px; font-size: 15px; line-height: 1.45; font-weight: 600;
+  background: rgba(16, 185, 129, .1); color: var(--text-primary); border-left: 3px solid var(--accent-success);
+}
+.cr-now.no { background: rgba(245, 158, 11, .1); border-left-color: var(--accent-warning); }
+
+.cr-list { list-style: none; margin: 0; padding: 0; display: grid; }
+.cr-entry {
+  display: grid; grid-template-columns: 30px minmax(0, 1fr) auto; gap: 10px; align-items: start;
+  padding: 12px 0; border-top: 1px dashed var(--border-light);
+}
+.cr-entry:first-child { border-top: none; }
+.cr-mark { width: 30px; height: 30px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; background: rgba(16, 185, 129, .12); color: var(--accent-success); }
+.cr-entry.no .cr-mark { background: rgba(245, 158, 11, .14); color: var(--accent-warning); }
+.cr-what { font-size: 14px; font-weight: 600; }
+.cr-how { font-size: 13px; color: var(--text-secondary); margin-top: 2px; }
+.cr-when { font-size: 13px; text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; display: grid; }
+.cr-when span { font-size: 12px; color: var(--text-secondary); }
+.cr-foot { margin: 0; padding-top: 12px; border-top: 1px solid var(--border-light); font-size: 13px; line-height: 1.5; color: var(--text-secondary); }
+.cr-foot a { color: var(--brand-ink); display: inline-flex; align-items: center; gap: 3px; font-weight: 600; }

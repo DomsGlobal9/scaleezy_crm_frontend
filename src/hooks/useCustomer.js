@@ -26,3 +26,12 @@ export function useTimeline(id, kind = 'all') {
     enabled: !!id
   });
 }
+
+/** Every consent record for this customer, newest first, and where it stands now (plan M6). */
+export function useConsent(id, enabled = true) {
+  return useQuery({
+    queryKey: ['customer', id, 'consent'],
+    queryFn: async () => (await api.get(`/customers/${id}/consent`)).data,
+    enabled: !!id && enabled
+  });
+}

@@ -2,7 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import {
   ArrowLeft, Loader2, IndianRupee, Undo2, Star, Wallet, DoorOpen, Eye, MessageCircle, NotebookPen,
-  CircleCheck, CircleAlert, CircleSlash, ExternalLink, UserX, ShieldOff, CalendarClock
+  CircleCheck, CircleAlert, CircleSlash, ExternalLink, UserX, ShieldOff, CalendarClock, ShieldCheck, ChevronRight
 } from 'lucide-react';
 import { useCustomer, useTimeline } from '../hooks/useCustomer';
 import { usePermission } from '../hooks/usePermission';
@@ -12,6 +12,7 @@ import { formatDay, since } from '../utils/dates';
 import { INVENTORY_URL } from '../lib/config';
 import LoadFailed from '../components/LoadFailed';
 import FollowUpsAndNotes from '../components/FollowUpsAndNotes';
+import ConsentRecord from '../components/ConsentRecord';
 
 /**
  * One customer: who they are and the numbers at the top, everything that happened with them below.
@@ -36,6 +37,7 @@ const KIND = {
   visit: { icon: DoorOpen, tone: '' },
   online: { icon: Eye, tone: '' },
   message: { icon: MessageCircle, tone: 'msg' },
+  consent: { icon: ShieldCheck, tone: 'consent' },
   note: { icon: NotebookPen, tone: '' },
   followup: { icon: CalendarClock, tone: 'fu' }
 };
@@ -156,7 +158,7 @@ function Profile({ profile: p }) {
         <Fact label="Address">{address ? `${address}${moreAddresses ? ` (+${moreAddresses} more)` : ''}` : null}</Fact>
         <Fact label="GSTIN">{p.gstNumber}</Fact>
       </div>
-      <Consent consent={p.consent} />
+      <Consent consent={p.consent} customerId={p.id} name={p.name} inventoryHref={inventoryLink ? `${INVENTORY_URL}/customers/${encodeURIComponent(inventoryLink.externalId)}` : null} />
       {/* Only for a person Inventory knows: CRM's own id is not Inventory's (plan §14). */}
       {inventoryLink && (
         <div className="cp-actions">
@@ -169,16 +171,32 @@ function Profile({ profile: p }) {
   );
 }
 
-/** WhatsApp consent, with the proof the DPDP Act asks for: who recorded it, and when. */
-function Consent({ consent: c }) {
+/**
+ * WhatsApp consent, with the proof the DPDP Act asks for: who recorded it, and when. A button: it
+ * opens the whole record (every yes, no and STOP, and where each came from).
+ */
+function Consent({ consent: c, customerId, name, inventoryHref }) {
+  const [open, setOpen] = useState(false);
+  let tone = 'no';
+  let icon = <CircleAlert size={15} />;
+  let words = 'WhatsApp offers: not agreed yet';
   if (c.stoppedAt) {
-    return <span className="cp-consent no" data-testid="consent"><CircleSlash size={15} /> Replied STOP on {formatDay(c.stoppedAt)}: no offers on WhatsApp</span>;
-  }
-  if (c.whatsappOffers) {
+    icon = <CircleSlash size={15} />;
+    words = `Replied STOP on ${formatDay(c.stoppedAt)}: no offers on WhatsApp`;
+  } else if (c.whatsappOffers) {
     const proof = [c.by ? `taken by ${c.by}` : null, c.at ? `on ${formatDay(c.at)}` : null].filter(Boolean).join(' ');
-    return <span className="cp-consent" data-testid="consent"><CircleCheck size={15} /> WhatsApp offers: yes{proof ? ` · ${proof}` : ''}</span>;
+    tone = '';
+    icon = <CircleCheck size={15} />;
+    words = `WhatsApp offers: yes${proof ? ` · ${proof}` : ''}`;
   }
-  return <span className="cp-consent no" data-testid="consent"><CircleAlert size={15} /> WhatsApp offers: not agreed yet</span>;
+  return (
+    <>
+      <button type="button" className={`cp-consent${tone ? ` ${tone}` : ''}`} data-testid="consent" onClick={() => setOpen(true)} aria-haspopup="dialog">
+        {icon} <span>{words}</span> <span className="cp-consent-more">Record <ChevronRight size={14} /></span>
+      </button>
+      {open && <ConsentRecord customerId={customerId} name={name} inventoryHref={inventoryHref} onClose={() => setOpen(false)} />}
+    </>
+  );
 }
 
 function Num({ label, value, note, testid }) {

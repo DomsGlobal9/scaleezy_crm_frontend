@@ -6,6 +6,7 @@ import './index.css';
 import './styles/work.css';
 import './styles/shell.css';
 import './styles/segments.css';
+import './styles/consent.css';
 import App from './App.jsx';
 import { AuthProvider } from './context/AuthContext.jsx';
 
