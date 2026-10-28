@@ -13,6 +13,7 @@ import SegmentEditor from './pages/SegmentEditor';
 import SegmentView from './pages/SegmentView';
 import CustomerFrom from './pages/CustomerFrom';
 import Counter from './pages/Counter';
+import Week from './pages/Week';
 import Groups from './pages/Groups';
 import GroupView from './pages/GroupView';
 
@@ -47,6 +48,7 @@ export default function App() {
       <Routes>
         <Route element={<AppShell />}>
           <Route path="/today" element={<Today />} />
+          <Route path="/week" element={<Week />} />
           <Route path="/counter" element={<Counter />} />
           <Route path="/customers" element={<Customers />} />
           <Route path="/duplicates" element={<Duplicates />} />

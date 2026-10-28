@@ -10,6 +10,7 @@ import './styles/consent.css';
 import './styles/counter.css';
 import './styles/groups.css';
 import './styles/today.css';
+import './styles/week.css';
 import App from './App.jsx';
 import { AuthProvider } from './context/AuthContext.jsx';
 

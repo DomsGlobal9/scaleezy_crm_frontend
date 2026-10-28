@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom';
-import { CalendarCheck2, DoorOpen, Users, Tags, ListFilter, Moon, Sun, LogOut, Menu, X } from 'lucide-react';
+import { CalendarCheck2, TrendingUp, DoorOpen, Users, Tags, ListFilter, Moon, Sun, LogOut, Menu, X } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { usePermission } from '../hooks/usePermission';
 import { useTodayCount } from '../hooks/useWork';
@@ -52,6 +52,7 @@ export default function AppShell() {
 
   const places = seesCustomers ? [
     { to: '/today', label: 'To do today', icon: CalendarCheck2, count: dueCount, countLabel: `${dueCount} due` },
+    ...(can('crm:team:view') ? [{ to: '/week', label: 'This week', icon: TrendingUp }] : []),
     { to: '/counter', label: 'At the door', icon: DoorOpen },
     { to: '/customers', label: 'All customers', icon: Users },
     { to: '/groups', label: 'Customer groups', icon: Tags },
