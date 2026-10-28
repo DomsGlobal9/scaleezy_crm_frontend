@@ -1,0 +1,48 @@
+/* Customer groups (28 Oct 2026): a group is its tag -- the same chip the customer list and the till
+   show -- so the screen leads with the chip itself. */
+.gr-page { display: grid; gap: 16px; }
+.gr-new { display: grid; gap: 8px; }
+.gr-new label { font-size: 13px; font-weight: 600; }
+.gr-new-row { display: flex; gap: 8px; flex-wrap: wrap; }
+.gr-new-row .input-field { flex: 1 1 220px; }
+.gr-new-row .btn-primary { display: inline-flex; align-items: center; gap: 6px; }
+
+.gr-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.gr-item { display: grid; grid-template-columns: minmax(140px, 1fr) auto minmax(0, 2fr); align-items: center; gap: 14px; }
+.gr-name .crm-tag { font-size: 14px; padding: 4px 12px; }
+.gr-count { font-size: 14px; white-space: nowrap; }
+.gr-count strong { font-size: 18px; font-variant-numeric: tabular-nums; }
+.gr-rules { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+.gr-badge { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; padding: 3px 9px; border-radius: 999px; background: var(--bg-input); border: 1px solid var(--border-light); color: var(--text-secondary); }
+.gr-title { font-size: clamp(18px, 2.4vw, 24px) !important; padding: 6px 16px !important; }
+
+.gr-split { display: grid; gap: 16px; grid-template-columns: minmax(0, 1.6fr) minmax(260px, 1fr); align-items: start; }
+.gr-members { display: grid; gap: 12px; }
+.gr-members h2 { margin: 0; font-size: 16px; }
+.gr-people { list-style: none; margin: 0; padding: 0; display: grid; }
+.gr-person { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 10px 0; border-top: 1px solid var(--border-light); }
+.gr-person:first-child { border-top: none; }
+.gr-person a.crm-name:hover { text-decoration: underline; }
+.gr-add { display: grid; gap: 8px; }
+.gr-found { list-style: none; margin: 0; padding: 0; display: grid; border: 1px solid var(--border-light); border-radius: 10px; }
+.gr-found li { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 8px 12px; border-top: 1px solid var(--border-light); font-size: 14px; }
+.gr-found li:first-child { border-top: none; }
+.gr-found .btn-secondary { display: inline-flex; align-items: center; gap: 4px; }
+
+.gr-side { display: grid; gap: 12px; }
+.gr-box { display: grid; gap: 10px; }
+.gr-box h3 { margin: 0; font-size: 15px; display: flex; align-items: center; gap: 6px; }
+.gr-box p { margin: 0; font-size: 13px; }
+.gr-check { display: flex; gap: 8px; align-items: flex-start; font-size: 14px; }
+.gr-check input { margin-top: 3px; accent-color: var(--brand-solid); }
+.gr-auto { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding-left: 22px; font-size: 14px; }
+.gr-auto .input-field { width: 110px; }
+
+@media (max-width: 860px) {
+  .gr-split { grid-template-columns: minmax(0, 1fr); }
+  .gr-item { grid-template-columns: minmax(0, 1fr) auto; }
+  .gr-rules { grid-column: 1 / -1; justify-content: flex-start; }
+}
+
+/* On a group's own page the badges sit under its name, not at the far edge. */
+.gr-page > .gr-rules { justify-content: flex-start; }

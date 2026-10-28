@@ -8,6 +8,7 @@ import './styles/shell.css';
 import './styles/segments.css';
 import './styles/consent.css';
 import './styles/counter.css';
+import './styles/groups.css';
 import App from './App.jsx';
 import { AuthProvider } from './context/AuthContext.jsx';
 
