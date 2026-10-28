@@ -80,8 +80,80 @@ async function main() {
   {
     const { ctx, page } = await context(browser, forgedToken());
     await page.goto(`${APP}/customers`);
-    await page.getByRole('heading', { name: 'Sign in to Inventory first' }).waitFor({ timeout: 20000 });
+    await page.getByRole('heading', { name: 'Sign in to CRM' }).waitFor({ timeout: 20000 });
     check('a cookie signed with the wrong secret: treated as signed out, no customers shown', (await page.getByTestId('customer-row').count()) === 0);
+    await ctx.close();
+  }
+
+  const OWNER = 'verify-suites@example.com';
+  const TWO = 'crm-two-shops@example.invalid';
+  const PASSWORD = process.env.CRM_TEST_PASSWORD || 'Local-Crm-2026';
+  const shots = path.join(here, 'screenshots');
+
+  // The sign-in page itself.
+  {
+    const { ctx, page } = await context(browser, null);
+    await page.goto(`${APP}/customers`);
+    await page.getByRole('heading', { name: 'Sign in to CRM' }).waitFor({ timeout: 20000 });
+    check('signed out: the sign-in page, saying to use the Inventory email and password', /same email and password as Scaleezy Inventory/.test(await page.locator('body').innerText()));
+    await page.screenshot({ path: path.join(shots, 'signin-desktop.png') });
+
+    await page.getByRole('button', { name: 'Sign in' }).click();
+    await page.getByRole('alert').waitFor({ timeout: 5000 });
+    check('empty form: "Enter your email and password."', (await page.getByRole('alert').innerText()).includes('Enter your email and password.'));
+
+    await page.getByLabel('Email').fill(OWNER);
+    await page.getByLabel('Password').fill('not-the-password');
+    await page.getByRole('button', { name: 'Sign in' }).click();
+    await page.getByRole('alert').filter({ hasText: 'do not match' }).waitFor({ timeout: 20000 });
+    const wrong = await page.getByRole('alert').innerText();
+    check('wrong password: one plain sentence, nothing technical', /That email and password do not match an active account\./.test(wrong) && !/401|Invalid credentials|Unauthorized/.test(wrong), wrong);
+    check('...and still no customers', (await page.getByTestId('customer-row').count()) === 0);
+
+    await page.getByLabel('Password').fill(PASSWORD);
+    await page.getByRole('button', { name: 'Sign in' }).click();
+    await page.getByTestId('customer-row').first().waitFor({ timeout: 30000 });
+    check('right password: the customers open, at the page asked for', page.url().endsWith('/customers') && (await page.getByTestId('customer-row').count()) > 0, page.url());
+    const token = (await ctx.cookies('http://localhost:4008')).find(k => k.name === 'token');
+    check('the sign-in is CRM\'s own cookie, httpOnly', !!token && token.httpOnly === true);
+    check('...which the page itself cannot read', !(await page.evaluate(() => document.cookie)).includes('token='));
+
+    await page.getByRole('button', { name: 'Sign out' }).click();
+    await page.getByRole('heading', { name: 'Sign in to CRM' }).waitFor({ timeout: 20000 });
+    check('Sign out: back to the sign-in page, no customers left on screen', (await page.getByTestId('customer-row').count()) === 0);
+    check('...and the cookie is gone', !(await ctx.cookies('http://localhost:4008')).some(k => k.name === 'token'));
+    await page.reload();
+    await page.getByRole('heading', { name: 'Sign in to CRM' }).waitFor({ timeout: 20000 });
+    check('...and stays signed out after a reload', (await page.getByTestId('customer-row').count()) === 0);
+    await ctx.close();
+  }
+
+  // One email in two shops.
+  {
+    const { ctx, page } = await context(browser, null);
+    await page.goto(`${APP}/customers`);
+    await page.getByLabel('Email').fill(TWO);
+    await page.getByLabel('Password').fill(PASSWORD);
+    await page.getByRole('button', { name: 'Sign in' }).click();
+    await page.getByRole('heading', { name: 'Which shop?' }).waitFor({ timeout: 20000 });
+    const choices = await page.locator('.si-shop').allInnerTexts();
+    check('one email in two shops: asked which, both listed', choices.length === 2 && choices.some(t => t.includes('verify-suites-tenant')) && choices.some(t => t.includes('welcome-test-silks-716252')), choices);
+    await page.screenshot({ path: path.join(shots, 'signin-which-shop.png') });
+    await page.getByRole('button', { name: 'verify-suites-tenant' }).click();
+    await page.getByTestId('customer-row').first().waitFor({ timeout: 30000 });
+    check('choosing the test shop opens its customers', (await page.getByTestId('customer-row').count()) > 0);
+    await ctx.close();
+  }
+
+  // On a phone.
+  {
+    const ctx = await browser.newContext({ viewport: { width: 390, height: 844 } });
+    const page = await ctx.newPage();
+    await page.goto(`${APP}/customers`);
+    await page.getByRole('heading', { name: 'Sign in to CRM' }).waitFor({ timeout: 20000 });
+    const w = await page.evaluate(() => ({ scroll: document.documentElement.scrollWidth, inner: window.innerWidth }));
+    check('phone: the sign-in page has no sideways scroll', w.scroll <= w.inner, w);
+    await page.screenshot({ path: path.join(shots, 'signin-phone.png') });
     await ctx.close();
   }
 
@@ -96,11 +168,22 @@ async function main() {
     await page.getByRole('heading', { name: 'We could not check your sign-in' }).waitFor({ timeout: 30000 });
     const text = await page.locator('body').innerText();
     check('Inventory unreachable: the screen says the sign-in could not be checked', /could not be checked just now/.test(text));
-    check('...it does not tell a signed-in person to sign in', !/Sign in to Inventory first/.test(text));
+    check('...it does not tell a signed-in person to sign in', !/Sign in to CRM/.test(text));
     check('...no customer is shown, and nothing technical (503, ECONNREFUSED, an address)', (await page.getByTestId('customer-row').count()) === 0 && !/503|ECONN|127\.0\.0\.1|fetch failed/.test(text), text.slice(0, 200));
     check('...and offers to try again', await page.getByRole('button', { name: 'Try again' }).isVisible());
     await page.screenshot({ path: path.join(here, 'screenshots', 'signin-unavailable.png') });
     await ctx.close();
+
+    const fresh = await context(browser, null);
+    await fresh.page.goto('http://localhost:5177/customers');
+    await fresh.page.getByRole('heading', { name: 'Sign in to CRM' }).waitFor({ timeout: 30000 });
+    await fresh.page.getByLabel('Email').fill(OWNER);
+    await fresh.page.getByLabel('Password').fill(PASSWORD);
+    await fresh.page.getByRole('button', { name: 'Sign in' }).click();
+    await fresh.page.getByRole('alert').waitFor({ timeout: 30000 });
+    const said = await fresh.page.getByRole('alert').innerText();
+    check('signing in while Inventory is unreachable: one plain sentence', /Signing in is not possible just now/.test(said) && !/503|ECONN|fetch|127\.0\.0\.1/.test(said), said);
+    await fresh.ctx.close();
   } finally {
     stop(crm, 4098);
     stop(app, 5177);

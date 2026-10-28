@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Outlet } from 'react-router-dom';
-import { Moon, Sun } from 'lucide-react';
+import { Moon, Sun, LogOut } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 const THEME_KEY = 'scale_easy_theme'; // Inventory's key, so the two apps share one setting
@@ -15,7 +15,7 @@ function readTheme() {
 
 /** The top bar every CRM screen sits under: the brand, who is signed in, light or dark. */
 export default function AppShell() {
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
   const [theme, setTheme] = useState(readTheme);
 
   useEffect(() => {
@@ -36,6 +36,9 @@ export default function AppShell() {
           <button type="button" className="crm-iconbtn" onClick={() => setTheme(t => (t === 'dark' ? 'light' : 'dark'))}
             aria-label={theme === 'dark' ? 'Switch to light' : 'Switch to dark'} title={theme === 'dark' ? 'Light' : 'Dark'}>
             {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
+          </button>
+          <button type="button" className="crm-iconbtn" onClick={signOut} aria-label="Sign out" title="Sign out">
+            <LogOut size={18} />
           </button>
         </div>
       </header>

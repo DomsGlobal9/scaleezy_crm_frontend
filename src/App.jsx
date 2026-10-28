@@ -3,7 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Loader2, CloudOff, RotateCw } from 'lucide-react';
 import { useAuth } from './context/AuthContext';
 import AppShell from './components/AppShell';
-import SignInNeeded from './components/SignInNeeded';
+import SignIn from './pages/SignIn';
 import Customers from './pages/Customers';
 import CustomerDetail from './pages/CustomerDetail';
 
@@ -17,7 +17,7 @@ export default function App() {
       </div>
     );
   }
-  if (status === 'out') return <SignInNeeded />;
+  if (status === 'out') return <SignIn />;
   if (status === 'unavailable') {
     return (
       <div className="crm-notice">

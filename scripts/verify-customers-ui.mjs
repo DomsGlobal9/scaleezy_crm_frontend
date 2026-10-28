@@ -58,10 +58,9 @@ async function main() {
   {
     const { context, page } = await signedIn(browser, null, { width: 1280, height: 800 });
     await page.goto(`${APP}/customers`);
-    await page.getByRole('heading', { name: 'Sign in to Inventory first' }).waitFor({ timeout: 15000 });
-    check('signed out: the page asks for the Inventory sign-in', true);
-    const link = await page.getByRole('link', { name: 'Go to Inventory sign-in' }).getAttribute('href');
-    check('signed out: the link goes to Inventory\'s login', /\/login$/.test(link), link);
+    await page.getByRole('heading', { name: 'Sign in to CRM' }).waitFor({ timeout: 15000 });
+    check('signed out: the sign-in page, with email and password fields', await page.getByLabel('Email').isVisible() && await page.getByLabel('Password').isVisible());
+    check('signed out: no customer is shown', (await page.getByTestId('customer-row').count()) === 0);
     await page.screenshot({ path: path.join(shots, 'signed-out.png') });
     await context.close();
   }
