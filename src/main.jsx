@@ -5,6 +5,7 @@ import toast, { Toaster } from 'react-hot-toast';
 import './index.css';
 import './styles/work.css';
 import './styles/shell.css';
+import './styles/segments.css';
 import App from './App.jsx';
 import { AuthProvider } from './context/AuthContext.jsx';
 
@@ -14,7 +15,10 @@ import { AuthProvider } from './context/AuthContext.jsx';
  * sign-in notice, a 403 as the no-access notice and a 404 as a not-found card, so none needs a toast.
  */
 const queryCache = new QueryCache({
-  onError: (error) => {
+  onError: (error, query) => {
+    // A screen that shows its own error in place (the segment builder's "nobody can be in it") asks
+    // for no toast as well: the same sentence twice, one of them left behind after it is fixed.
+    if (query?.meta?.quiet) return;
     const status = error?.statusCode;
     // 404 too: the screen says what was not found, in context.
     if (status === 401 || status === 403 || status === 404) return;

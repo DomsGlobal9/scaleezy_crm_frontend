@@ -8,6 +8,9 @@ import Customers from './pages/Customers';
 import CustomerDetail from './pages/CustomerDetail';
 import Today from './pages/Today';
 import Duplicates from './pages/Duplicates';
+import Segments from './pages/Segments';
+import SegmentEditor from './pages/SegmentEditor';
+import SegmentView from './pages/SegmentView';
 
 export default function App() {
   const { status, refresh } = useAuth();
@@ -43,6 +46,10 @@ export default function App() {
           <Route path="/customers" element={<Customers />} />
           <Route path="/duplicates" element={<Duplicates />} />
           <Route path="/customers/:id" element={<CustomerDetail />} />
+          <Route path="/segments" element={<Segments />} />
+          <Route path="/segments/new" element={<SegmentEditor />} />
+          <Route path="/segments/:id" element={<SegmentView />} />
+          <Route path="/segments/:id/edit" element={<SegmentEditor />} />
           <Route path="*" element={<Navigate to="/today" replace />} />
         </Route>
       </Routes>

@@ -1,0 +1,81 @@
+/* Segments (28 Oct 2026). The one bold thing is the sentence: rules read down the page with "and" in
+   the margin, so a segment says what it is before anyone reads a number. */
+
+.sg-page { display: grid; gap: 18px; }
+.sg-back { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text-secondary); width: fit-content; }
+.sg-back:hover { color: var(--text-primary); }
+.sg-new, .sg-actions a, .sg-actions button { display: inline-flex; align-items: center; gap: 6px; }
+
+/* ── The list ── */
+.sg-grid { display: grid; gap: 14px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr)); }
+.sg-card { display: grid; gap: 10px; align-content: start; }
+.sg-card h3 { margin: 0; font-size: 16px; }
+.sg-sentence { margin: 0; color: var(--text-secondary); font-size: 14px; line-height: 1.5; }
+.sg-sentence.big { font-size: 15px; max-width: 70ch; }
+.sg-starter { border-style: dashed; box-shadow: none; }
+.sg-empty { display: grid; gap: 14px; }
+.sg-empty-head { display: flex; gap: 12px; align-items: flex-start; }
+.sg-empty-head svg { color: var(--brand-ink); margin-top: 3px; flex-shrink: 0; }
+.sg-empty-head h2 { margin: 0; font-size: 18px; }
+.sg-empty-head p { margin: 4px 0 0; color: var(--text-secondary); font-size: 14px; }
+
+/* The three numbers: how many, what they spent, who a WhatsApp reaches. */
+.sg-numbers { display: flex; flex-wrap: wrap; gap: 6px 20px; margin: 0; }
+.sg-numbers div { display: flex; flex-direction: column-reverse; min-width: 0; }
+.sg-numbers dt { font-size: 12px; color: var(--text-secondary); }
+.sg-numbers dd { margin: 0; font-size: 17px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.sg-numbers.big dd { font-size: clamp(22px, 3vw, 30px); letter-spacing: -0.01em; }
+.sg-numbers.big div:first-child dd { color: var(--brand-ink); }
+.sg-fetching { opacity: .55; transition: opacity .15s; }
+.sg-now { padding-block: 16px; }
+
+/* ── The builder ── */
+.sg-build { display: grid; gap: 16px; grid-template-columns: minmax(0, 1.5fr) minmax(280px, 1fr); align-items: start; }
+.sg-rules { display: grid; gap: 4px; }
+.sg-lead { margin: 0 0 6px; font-size: 18px; font-weight: 700; }
+.sg-rule-list { list-style: none; margin: 0; padding: 0; display: grid; }
+.sg-rule {
+  display: grid; grid-template-columns: 38px minmax(0, 1fr) auto; align-items: center; gap: 8px;
+  padding: 8px 0; border-top: 1px solid var(--border-light);
+}
+.sg-rule:first-child { border-top: none; }
+.sg-and { font-size: 13px; font-weight: 700; color: var(--brand-ink); text-align: right; }
+.sg-rule-body { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; font-size: 15px; min-width: 0; }
+.sg-rule-body .custom-select-container { width: auto; min-width: 150px; }
+.sg-rule-body .input-field { width: 120px; }
+.sg-rule-body .input-field.sg-small { width: 80px; }
+.sg-money { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; }
+.sg-chip {
+  display: inline-flex; align-items: center; gap: 6px; padding: 4px 6px 4px 10px; border-radius: 999px;
+  background: var(--bg-input); border: 1px solid var(--border-light); font-size: 13px; font-weight: 600;
+}
+.sg-chip em { font-style: normal; font-weight: 500; color: var(--text-secondary); }
+.sg-chip button { display: inline-flex; padding: 2px; border-radius: 50%; color: var(--text-secondary); }
+.sg-chip button:hover { color: var(--accent-danger); background: rgba(239, 68, 68, .1); }
+.sg-drop:hover { color: var(--accent-danger); }
+.sg-add { display: flex; align-items: center; gap: 8px; padding: 10px 0 0 46px; color: var(--text-secondary); }
+.sg-add .custom-select-container { max-width: 300px; }
+
+.sg-result { position: sticky; top: 16px; display: grid; gap: 16px; }
+.sg-result-sentence { margin: 0; font-size: 14px; line-height: 1.5; color: var(--text-secondary); }
+.sg-problem { margin: 0; color: var(--accent-warning); font-size: 14px; }
+.sg-save { display: grid; gap: 8px; padding-top: 14px; border-top: 1px solid var(--border-light); }
+.sg-save label { font-size: 13px; font-weight: 600; }
+.sg-save .btn-primary { display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+.sg-people { display: grid; gap: 10px; }
+
+.sg-confirm { display: inline-flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 13px; }
+.btn-danger {
+  background: var(--accent-danger); color: #fff; border: 1px solid transparent;
+  padding: 8px 16px; border-radius: 8px; font-weight: 600; font-size: 13px;
+}
+.btn-danger:disabled { opacity: .6; cursor: not-allowed; }
+
+@media (max-width: 900px) {
+  .sg-build { grid-template-columns: minmax(0, 1fr); }
+  .sg-result { position: static; }
+}
+@media (max-width: 520px) {
+  .sg-rule { grid-template-columns: 28px minmax(0, 1fr) auto; }
+  .sg-add { padding-left: 36px; }
+}
