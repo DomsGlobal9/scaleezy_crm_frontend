@@ -3,11 +3,13 @@ import { Loader2, Eye, Ruler, Shirt, Wallet } from 'lucide-react';
 import { useCounterCard } from '../hooks/useCounter';
 import { formatRupees } from '../utils/money';
 import { since } from '../utils/dates';
+import FestivalBuying from './FestivalBuying';
 
 /**
  * A customer's reading, as Inventory's counter card reads them (backend services/counter): their
  * colours as swatches, sizes per kind of garment, what a bill usually comes to, what is on the
- * shelves for them in the store this device is at, and what they looked at online lately.
+ * shelves for them in the store this device is at, what they looked at online lately, and what they
+ * buy for festivals.
  *
  * On the customer page: the full story lives in CRM; the counter (taking customers as they walk in)
  * stays in Inventory.
@@ -71,6 +73,7 @@ export default function WhatTheyWear({ customerId }) {
           )}
         </div>
       </div>
+      <FestivalBuying data={card.data.festivals} />
     </section>
   );
 }

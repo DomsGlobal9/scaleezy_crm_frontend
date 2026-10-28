@@ -1,0 +1,38 @@
+/* Festival buying, at the foot of "What they wear": one row per festival, the years as dots. */
+.fb { display: grid; gap: 10px; border-top: 1px solid var(--border-light); padding-top: 14px; }
+.fb-head { display: flex; justify-content: space-between; align-items: baseline; gap: 4px 12px; flex-wrap: wrap; }
+.fb-head h3 { margin: 0; }
+.fb-head span { color: var(--text-secondary); font-size: 13px; }
+.fb-soon { margin: 0; padding: 10px 12px; border-radius: 12px; background: rgba(166, 217, 43, .10); border: 1px solid rgba(166, 217, 43, .3); font-size: 14px; line-height: 1.45; }
+.fb-soon b { color: var(--brand-ink); }
+.fb-list { list-style: none; margin: 0; padding: 0; }
+.fb-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 14px; padding: 10px 0; border-top: 1px solid var(--border-light); }
+.fb-row:first-child { border-top: none; }
+.fb-name { font-weight: 600; font-size: 14px; }
+.fb-name small { color: var(--text-muted); font-weight: 500; font-size: 12px; margin-left: 8px; }
+.fb-what { grid-column: 1 / -1; color: var(--text-secondary); font-size: 13px; }
+.fb-years { display: flex; gap: 8px; align-items: center; }
+.fb-y { display: grid; justify-items: center; gap: 2px; font-size: 10px; color: var(--text-muted); font-variant-numeric: tabular-nums; }
+.fb-y i { width: 12px; height: 12px; border-radius: 50%; border: 1.5px solid var(--border-light); }
+.fb-y.on i { background: var(--brand-solid); border-color: transparent; }
+.fb-foot { display: flex; justify-content: space-between; gap: 6px 14px; flex-wrap: wrap; color: var(--text-muted); font-size: 12px; }
+.fb-foot a { color: var(--brand-ink); font-weight: 600; margin-left: auto; }
+@media (max-width: 760px) { .fb-row { grid-template-columns: minmax(0, 1fr); } }
+
+/* The shop's festivals. */
+.fs-back { display: inline-flex; align-items: center; gap: 6px; color: var(--text-secondary); font-size: 13px; width: fit-content; }
+.fs-list { list-style: none; margin: 0; padding: 0; }
+.fs-row { display: flex; justify-content: space-between; align-items: center; gap: 10px 16px; flex-wrap: wrap; padding: 13px 18px; border-top: 1px solid var(--border-light); }
+.fs-row:first-child { border-top: none; }
+.fs-on { display: flex; gap: 12px; align-items: flex-start; cursor: pointer; min-width: 0; }
+.fs-on input { width: 18px; height: 18px; margin-top: 2px; accent-color: var(--brand-solid); flex-shrink: 0; }
+.fs-name { font-weight: 600; }
+.fs-on small { display: block; color: var(--text-muted); font-size: 12px; }
+.fs-date { display: grid; justify-items: end; gap: 2px; text-align: right; font-variant-numeric: tabular-nums; }
+.fs-date small { color: var(--text-muted); font-size: 12px; }
+.fs-links { display: flex; gap: 12px; }
+.fs-edit { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.fs-edit .input-field { width: auto; }
+@media (max-width: 760px) {
+  .fs-date { justify-items: start; text-align: left; padding-left: 30px; }
+}

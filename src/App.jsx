@@ -14,6 +14,7 @@ import SegmentView from './pages/SegmentView';
 import CustomerFrom from './pages/CustomerFrom';
 import Counter from './pages/Counter';
 import Week from './pages/Week';
+import Festivals from './pages/Festivals';
 import Groups from './pages/Groups';
 import GroupView from './pages/GroupView';
 
@@ -54,6 +55,7 @@ export default function App() {
           <Route path="/duplicates" element={<Duplicates />} />
           <Route path="/customers/from/:source/:externalId" element={<CustomerFrom />} />
           <Route path="/customers/:id" element={<CustomerDetail />} />
+          <Route path="/festivals" element={<Festivals />} />
           <Route path="/groups" element={<Groups />} />
           <Route path="/groups/:key" element={<GroupView />} />
           <Route path="/segments" element={<Segments />} />
