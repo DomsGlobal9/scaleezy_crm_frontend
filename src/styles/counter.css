@@ -76,3 +76,7 @@
   .ct-facts { grid-template-columns: minmax(0, 1fr); }
   .ct-chip { width: 40px; height: 40px; } .ct-chip.first { width: 50px; height: 50px; }
 }
+
+.ct-door-sub { display: inline-flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.ct-qr { display: inline-flex; align-items: center; gap: 5px; font-size: 13px; font-weight: 600; color: var(--brand-ink); }
+.ct-qr:hover { text-decoration: underline; }

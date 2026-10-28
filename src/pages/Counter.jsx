@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
-import { DoorOpen, Search, Loader2, ShieldOff, UserPlus, Users, ArrowRight, Hand, Store, MapPin, Eye, Shirt, Ruler, Wallet, Star, CircleCheck, CircleSlash, CircleAlert, NotebookPen } from 'lucide-react';
+import { DoorOpen, QrCode, ExternalLink, Search, Loader2, ShieldOff, UserPlus, Users, ArrowRight, Hand, Store, MapPin, Eye, Shirt, Ruler, Wallet, Star, CircleCheck, CircleSlash, CircleAlert, NotebookPen } from 'lucide-react';
 import { usePermission } from '../hooks/usePermission';
 import { useArrivals, useCounterCard, useLookup, useStores, useTake } from '../hooks/useCounter';
 import { useAddNote } from '../hooks/useWork';
@@ -9,6 +9,7 @@ import { formatPhone } from '../utils/phone';
 import { formatRupees } from '../utils/money';
 import { formatDay, since } from '../utils/dates';
 import Select from '../components/common/Select';
+import { INVENTORY_URL } from '../lib/config';
 import LoadFailed from '../components/LoadFailed';
 
 /**
@@ -134,7 +135,13 @@ function Arrivals({ store, onOpen }) {
     <section className="ct-door" aria-labelledby="ct-door-h">
       <div className="td-sec-head">
         <h2 id="ct-door-h"><DoorOpen size={18} aria-hidden="true" /> In the store now</h2>
-        <span className="crm-muted">From the door QR, the last two hours{store ? ` · ${store}` : ''}</span>
+        <span className="ct-door-sub">
+          <span className="crm-muted">From the door QR, the last two hours{store ? ` · ${store}` : ''}</span>
+          {/* The standee itself stays in Inventory: it depends on the shop's WhatsApp number there. */}
+          <a className="ct-qr" href={`${INVENTORY_URL}/customers/door-qr`} target="_blank" rel="noreferrer" data-testid="door-qr">
+            <QrCode size={14} aria-hidden="true" /> Door QR <ExternalLink size={12} aria-hidden="true" />
+          </a>
+        </span>
       </div>
       {problem && <p className="si-error" role="alert" data-testid="take-problem">{problem}</p>}
       {arrivals.isLoading ? (

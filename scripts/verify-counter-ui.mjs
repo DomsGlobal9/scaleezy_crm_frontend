@@ -57,6 +57,8 @@ async function main() {
     check('in the store now: Anitha Reddy, by name', texts.some(t => /Anitha Reddy/.test(t)));
     check('...and the number nobody has, "Not a customer yet"', texts.some(t => /Not a customer yet/.test(t)), texts);
     check('...each with the minutes since they came in ("Came in 3 min ago")', texts.some(t => /Anitha Reddy[\s\S]*Came in [34] min ago/.test(t)), texts);
+    const qr = await page.getByTestId('door-qr').getAttribute('href');
+    check('a link to the Door QR standee, which stays in Inventory (/customers/door-qr, new tab)', /\/customers\/door-qr$/.test(qr ?? '') && (await page.getByTestId('door-qr').getAttribute('target')) === '_blank', qr);
     await page.screenshot({ path: path.join(shots, 'counter-door.png') });
 
     await arrivals.filter({ hasText: 'Anitha Reddy' }).first().getByRole('button', { name: /I'll take them/ }).click();
