@@ -1,0 +1,69 @@
+/* Today as one ranked list (28 Oct 2026, from the approved mockup). The reason, in a sentence, is the
+   loudest thing on a row; the person's context sits small beneath it; the four actions at its side. */
+.tk-page { display: grid; gap: 16px; }
+.tk-page .crm-head p strong { color: var(--text-primary); }
+.tk-progress { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border: 1px solid var(--border-light); border-radius: 14px; background: var(--bg-card); }
+.tk-bar { flex: 1; height: 6px; border-radius: 999px; background: var(--bg-input); overflow: hidden; }
+.tk-bar i { display: block; height: 100%; background: var(--brand-solid); border-radius: 999px; transition: width .3s ease; }
+.tk-progress span { color: var(--text-secondary); font-size: 13px; white-space: nowrap; }
+
+.tk-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.tk-row { --tone: var(--brand-ink); display: grid; grid-template-columns: 30px minmax(0, 1fr) auto; gap: 14px; align-items: start; padding: 16px 18px; border-radius: 16px; background: var(--bg-card); border: 1px solid var(--border-light); }
+.tk-row.occasion { --tone: #e0569b; } .tk-row.stock { --tone: #38bdf8; } .tk-row.notseen { --tone: var(--accent-warning); }
+.tk-rank { width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; font-weight: 800; font-size: 13px; background: var(--bg-input); color: var(--text-secondary); }
+.tk-row.promise .tk-rank { background: rgba(166, 217, 43, .15); color: var(--brand-ink); }
+.tk-why { display: grid; gap: 6px; min-width: 0; }
+.tk-kind { font-size: 12px; font-weight: 700; color: var(--tone); display: inline-flex; align-items: center; gap: 6px; }
+.tk-kind i { width: 8px; height: 8px; border-radius: 50%; background: var(--tone); }
+.tk-late { font-style: normal; color: var(--accent-warning); }
+.tk-reason { font-size: 17px; font-weight: 600; line-height: 1.35; }
+.tk-reason a { color: var(--text-primary); text-decoration: underline; text-decoration-color: rgba(127, 127, 127, .45); text-underline-offset: 3px; }
+.tk-ctx { color: var(--text-secondary); font-size: 13px; display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: center; }
+.tk-sw { display: inline-flex; align-items: center; gap: 3px; }
+.tk-sw b { width: 12px; height: 12px; border-radius: 50%; display: inline-block; border: 1px solid rgba(127, 127, 127, .4); }
+
+.tk-acts { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
+.tk-btn { display: inline-flex; align-items: center; gap: 6px; padding: 9px 14px; border-radius: 10px; border: 1px solid var(--border-light); background: var(--bg-input); color: var(--text-primary); font-weight: 600; font-size: 13px; white-space: nowrap; text-decoration: none; }
+.tk-btn.wa { background: #1fa855; border-color: transparent; color: #fff; }
+.tk-btn.done { background: transparent; }
+.tk-btn.done.ready { border-color: var(--brand-solid); color: var(--brand-ink); }
+.tk-btn.ghost { background: transparent; color: var(--text-secondary); }
+.tk-btn:disabled { opacity: .5; cursor: not-allowed; }
+.tk-btn:focus-visible { outline: 2px solid var(--accent-primary); outline-offset: 2px; }
+.tk-nowa { font-size: 12px; color: var(--text-secondary); max-width: 220px; }
+.tk-later { position: relative; }
+.tk-later-menu { position: absolute; right: 0; top: calc(100% + 4px); z-index: 5; display: grid; min-width: 140px; padding: 4px; border-radius: 10px; background: var(--bg-card); border: 1px solid var(--border-light); box-shadow: var(--shadow-panel); }
+.tk-later-menu button { text-align: left; padding: 8px 10px; border-radius: 8px; font-size: 13px; }
+.tk-later-menu button:hover { background: var(--bg-hover); }
+
+.tk-compose { grid-column: 2 / -1; padding: 14px; border-radius: 12px; background: var(--bg-input); border: 1px solid var(--border-light); display: grid; gap: 10px; }
+.tk-langs { display: flex; gap: 6px; flex-wrap: wrap; }
+.tk-change-lang { justify-self: start; font-size: 13px; }
+.tk-lang { padding: 5px 11px; border-radius: 999px; border: 1px solid var(--border-light); background: var(--bg-card); font-size: 13px; }
+.tk-lang.on { border-color: var(--brand-solid); color: var(--brand-ink); font-weight: 700; }
+.tk-compose textarea { width: 100%; min-height: 96px; resize: vertical; border-radius: 10px; border: 1px solid var(--border-light); background: var(--bg-card); color: var(--text-primary); padding: 12px; font: 15px/1.5 var(--font-sans); }
+.tk-compose-foot { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
+.tk-compose-foot small { color: var(--text-secondary); }
+
+.tk-first { display: grid; gap: 10px; }
+.tk-first h2 { margin: 0; font-size: 17px; }
+.tk-first ol { margin: 0; padding-left: 20px; display: grid; gap: 8px; color: var(--text-secondary); line-height: 1.5; }
+.tk-first strong { color: var(--text-primary); }
+
+.tk-done { border: 1px dashed var(--border-light); border-radius: 14px; padding: 12px 16px; color: var(--text-secondary); display: grid; gap: 8px; }
+.tk-done-head { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; align-items: center; }
+.tk-done strong { color: var(--text-primary); }
+.tk-done-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.tk-done-list li { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+
+@media (max-width: 760px) {
+  .tk-row { grid-template-columns: 28px minmax(0, 1fr); padding: 14px; }
+  .tk-acts { grid-column: 1 / -1; justify-content: stretch; }
+  .tk-acts .tk-btn, .tk-later { flex: 1; }
+  .tk-later .tk-btn { width: 100%; }
+  .tk-btn { justify-content: center; padding: 12px 10px; }
+  .tk-nowa { width: 100%; max-width: none; }
+  .tk-compose { grid-column: 1 / -1; }
+  .tk-compose textarea { min-height: 150px; }
+  .tk-reason { font-size: 16px; }
+}

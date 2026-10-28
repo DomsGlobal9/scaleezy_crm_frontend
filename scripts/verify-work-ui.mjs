@@ -15,6 +15,7 @@ const shots = path.join(here, 'screenshots');
 const backend = path.resolve(here, '..', '..', 'backend');
 const SHOP = 'verify-suites-tenant';
 const STAMP = `CHECK-UI-${Date.now() % 100000}`;
+const API = process.env.CRM_URL || 'http://localhost:4008';
 
 let failures = 0;
 const check = (name, ok, detail) => {
@@ -89,6 +90,13 @@ async function main() {
     await ctx.close();
   }
 
+  // A promise to Anitha (a real phone), for Sales, due today: for the WhatsApp message.
+  const ownerHeaders = { Authorization: `Bearer ${tokenFor('owner')}`, 'Content-Type': 'application/json' };
+  const anithaId = (await (await fetch(`${API}/api/v1/customers?search=9848022301`, { headers: ownerHeaders })).json()).data.customers[0].id;
+  const salesId = (await (await fetch(`${API}/api/v1/staff`, { headers: ownerHeaders })).json()).data.find(x => x.name === 'Local SALES').id;
+  const shopDay = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Kolkata' }).format(new Date());
+  await fetch(`${API}/api/v1/customers/${anithaId}/followups`, { method: 'POST', headers: ownerHeaders, body: JSON.stringify({ body: `${STAMP} tell her the kurti is in`, dueOn: shopDay, assigneeId: salesId }) });
+
   // ── Today, for Sales ──
   {
     const { ctx, page } = await as(browser, 'sales');
@@ -97,21 +105,45 @@ async function main() {
     const badge = page.locator('.crm-tab', { hasText: 'Today' }).locator('.crm-badge');
     await badge.waitFor({ timeout: 20000 });
     const before = Number(await badge.innerText());
-    const tag = page.getByTestId('followup').filter({ hasText: `${STAMP} ask about the blouse fitting` });
-    await tag.waitFor({ timeout: 20000 });
-    check('Sales sees the follow-up the owner gave them, with the customer to call', /Lakshmi Devi/.test(await tag.innerText()));
+    const rows = page.getByTestId('talk-row');
+    const promise = rows.filter({ hasText: `${STAMP} ask about the blouse fitting` });
+    await promise.waitFor({ timeout: 20000 });
+    check('Sales sees the promise the owner gave them, first, with the customer to call', /You promised/.test(await promise.innerText()) && /Lakshmi Devi/.test(await promise.innerText()) && (await rows.first().getAttribute('data-kind')) === 'promise');
     check('the Today tab carries a badge with what is due', before >= 1, before);
-    const wishes = await page.getByTestId('wish').allInnerTexts();
-    // The test shop has no automatic wishes on in Inventory, so the line says to wish her in person.
-    check('birthdays this week: Chandrika Nair today, "Shop\'s WhatsApp wishes are off: wish in person"', wishes.some(t => /Chandrika Nair/.test(t) && /today/.test(t) && /WhatsApp wishes are off: wish in person/.test(t)), wishes);
-    check('...Esther Thomas\'s anniversary, "No WhatsApp consent: wish in person"', wishes.some(t => /Esther Thomas/.test(t) && /Anniversary/.test(t) && /wish in person/.test(t)));
-    const notSeen = await page.getByTestId('notseen').allInnerTexts();
-    check('not seen lately: Gayathri Iyer first, 75 days, three bills', /Gayathri Iyer/.test(notSeen[0] ?? '') && /75 days ago/.test(notSeen[0]) && /3 bills/.test(notSeen[0]), notSeen);
+    check('no birthdays on Today (Inventory wishes customers by itself)', (await rows.filter({ hasText: /happy birthday|Birthday today/i }).count()) === 0);
+    const notSeen = await rows.filter({ hasText: /Not seen in/ }).allInnerTexts();
+    check('regulars not seen: Gayathri Iyer first, 75 days, ₹48,200 over 3 bills', /Gayathri Iyer/.test(notSeen[0] ?? '') && /Not seen in 75 days/.test(notSeen[0]) && /₹48,200 over 3 bills/.test(notSeen[0]), notSeen);
+    const gayathri = rows.filter({ hasText: 'Gayathri Iyer' });
+    check('Gayathri never agreed to WhatsApp: no WhatsApp, "a call is best"', /No WhatsApp consent: a call is best/.test(await gayathri.innerText()) && (await gayathri.getByRole('button', { name: 'WhatsApp' }).count()) === 0);
+
+    // A promise to someone with a phone: the message, in her language, opened on this phone.
+    const anitha = rows.filter({ hasText: `${STAMP} tell her the kurti is in` });
+    await anitha.waitFor({ timeout: 20000 });
+    await anitha.getByRole('button', { name: 'WhatsApp' }).click();
+    const box = anitha.getByLabel('The message');
+    await box.waitFor();
+    check('WhatsApp: a short message written for her, ending with the shop\'s name', /^Hello Anitha/.test(await box.inputValue()) && /Sri Lakshmi Silks/.test(await box.inputValue()), await box.inputValue());
+    check('...the five languages stay out of the way until asked for', (await anitha.getByRole('button', { name: 'తెలుగు' }).count()) === 0);
+    await anitha.getByRole('button', { name: /change language/ }).click();
+    await anitha.getByRole('button', { name: 'తెలుగు' }).click();
+    await page.waitForFunction(() => /గారు/.test(document.querySelector('[data-testid="compose"] textarea')?.value ?? ''), null, { timeout: 10000 });
+    check('...Telugu in two taps, and it says so', /గారు/.test(await box.inputValue()) && /In తెలుగు/.test(await anitha.innerText()));
+    const href = await anitha.getByTestId('open-whatsapp').getAttribute('href');
+    check('...and "Open WhatsApp" opens her number with that message', href?.startsWith('https://wa.me/919848022301?text=') && decodeURIComponent(href.split('text=')[1]).includes('గారు'), href);
     await page.screenshot({ path: path.join(shots, 'work-today-desktop.png'), fullPage: true });
-    await tag.getByRole('button', { name: /Mark done/ }).click();
-    await tag.waitFor({ state: 'detached', timeout: 20000 });
+
+    await promise.getByRole('button', { name: 'Done' }).click();
+    await promise.waitFor({ state: 'detached', timeout: 20000 });
     await page.waitForFunction((n) => { const b = [...document.querySelectorAll('.crm-tab')].find(t => /Today/.test(t.textContent))?.querySelector('.crm-badge'); return !b || Number(b.textContent) < n; }, before, { timeout: 20000 });
-    check('done from Today: it leaves the list and the badge goes down', true);
+    check('Done on the promise: off the list, and the badge goes down', true);
+    await gayathri.getByRole('button', { name: 'Done' }).click();
+    await gayathri.waitFor({ state: 'detached', timeout: 20000 });
+    const doneToday = page.getByTestId('done-today');
+    check('Done on Gayathri: "Done today" says so', /Gayathri Iyer \(got in touch/.test(await doneToday.innerText()), await doneToday.innerText());
+    await doneToday.getByRole('button', { name: 'Show' }).click();
+    await doneToday.locator('li', { hasText: 'Gayathri Iyer' }).getByRole('button', { name: 'Undo' }).click();
+    await rows.filter({ hasText: 'Gayathri Iyer' }).waitFor({ timeout: 20000 });
+    check('Undo: she is back on the list', true);
     check('Sales has no Duplicates tab', (await page.locator('.crm-tab', { hasText: 'Duplicates' }).count()) === 0);
     await page.goto(`${APP}/duplicates`);
     await page.getByRole('heading', { name: 'Only an owner or admin can merge customers' }).waitFor({ timeout: 20000 });
@@ -158,7 +190,7 @@ async function main() {
     const { ctx, page } = await as(browser, 'owner', { width: 390, height: 844 });
     await page.goto(`${APP}/today`);
     await page.getByRole('heading', { name: 'Today' }).waitFor({ timeout: 20000 });
-    await page.getByTestId('wish').first().waitFor({ timeout: 20000 });
+    await page.getByTestId('talk-row').first().waitFor({ timeout: 20000 });
     check('phone, Today: no sideways scroll', await noOverflow(page));
     await page.screenshot({ path: path.join(shots, 'work-today-phone.png'), fullPage: true });
     await page.goto(`${APP}/customers?q=Lakshmi`);
@@ -176,6 +208,7 @@ async function main() {
   }
 
   await browser.close();
+  await fetch(`${API}/api/v1/customers/${anithaId}/language`, { method: 'PUT', headers: ownerHeaders, body: JSON.stringify({ language: 'en' }) });
   shopTool('cleanchecks', SHOP);
   shopTool('unpair', SHOP);
   console.log(failures === 0 ? '\nAll work UI checks passed.' : `\n${failures} work UI check(s) FAILED.`);
