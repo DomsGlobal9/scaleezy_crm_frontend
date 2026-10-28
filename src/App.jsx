@@ -1,6 +1,6 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { Loader2 } from 'lucide-react';
+import { Loader2, CloudOff, RotateCw } from 'lucide-react';
 import { useAuth } from './context/AuthContext';
 import AppShell from './components/AppShell';
 import SignInNeeded from './components/SignInNeeded';
@@ -8,7 +8,7 @@ import Customers from './pages/Customers';
 import CustomerDetail from './pages/CustomerDetail';
 
 export default function App() {
-  const { status } = useAuth();
+  const { status, refresh } = useAuth();
 
   if (status === 'checking') {
     return (
@@ -18,6 +18,20 @@ export default function App() {
     );
   }
   if (status === 'out') return <SignInNeeded />;
+  if (status === 'unavailable') {
+    return (
+      <div className="crm-notice">
+        <div className="crm-card">
+          <CloudOff size={28} style={{ color: 'var(--accent-warning)' }} />
+          <h2>We could not check your sign-in</h2>
+          <p>Your sign-in could not be checked just now. Please try again in a moment.</p>
+          <button type="button" className="btn-primary" onClick={refresh} style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+            <RotateCw size={14} /> Try again
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <BrowserRouter>

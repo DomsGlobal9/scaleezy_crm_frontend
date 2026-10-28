@@ -27,7 +27,8 @@ const check = (name, ok, detail) => {
 };
 
 /** A login token for a local test account, signed as Inventory signs them (backend/src/scripts/mint-test-token.ts). */
-const tokenFor = (role) => execFileSync('npm', ['run', '--silent', 'token:test', '--', role], { cwd: backend, encoding: 'utf8', shell: true }).trim();
+/** A real sign-in through the LOCAL Inventory server (backend/src/scripts/test-login.ts): CRM holds no signing secret. */
+const tokenFor = (who) => execFileSync('npm', ['run', '--silent', 'login:test', '--', who], { cwd: backend, encoding: 'utf8', shell: true }).trim();
 
 const rupees = (n) => `₹${Number(n).toLocaleString('en-IN', { maximumFractionDigits: 0 })}`;
 const phone = (p) => { const m = /^\+91(\d{5})(\d{5})$/.exec(p || ''); return m ? `+91 ${m[1]} ${m[2]}` : (p || ''); };
@@ -46,8 +47,8 @@ async function signedIn(browser, token, viewport) {
 }
 
 async function main() {
-  const owner = tokenFor('SUPER_ADMIN');
-  const warehouse = tokenFor('WAREHOUSE');
+  const owner = tokenFor('owner');
+  const warehouse = tokenFor('warehouse');
   const expected = await apiList(owner);
 
   // Edge is installed on this machine; Playwright's own Chromium build may not be.

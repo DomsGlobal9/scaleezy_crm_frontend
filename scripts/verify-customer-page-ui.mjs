@@ -24,7 +24,8 @@ const check = (name, ok, detail) => {
   console.log(`${ok ? 'PASS' : 'FAIL'}  ${name}${ok || detail === undefined ? '' : `  -- ${JSON.stringify(detail)}`}`);
   if (!ok) failures += 1;
 };
-const tokenFor = (role) => execFileSync('npm', ['run', '--silent', 'token:test', '--', role], { cwd: backend, encoding: 'utf8', shell: true }).trim();
+/** A real sign-in through the LOCAL Inventory server (backend/src/scripts/test-login.ts): CRM holds no signing secret. */
+const tokenFor = (who) => execFileSync('npm', ['run', '--silent', 'login:test', '--', who], { cwd: backend, encoding: 'utf8', shell: true }).trim();
 const rupees = (n) => `₹${Number(n).toLocaleString('en-IN', { maximumFractionDigits: 0 })}`;
 const phone = (p) => { const m = /^\+91(\d{5})(\d{5})$/.exec(p || ''); return m ? `+91 ${m[1]} ${m[2]}` : (p || ''); };
 const day = (iso) => { const d = new Date(iso); return d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', ...(d.getFullYear() === new Date().getFullYear() ? {} : { year: 'numeric' }) }); };
@@ -43,7 +44,7 @@ async function signedIn(browser, token, viewport) {
 }
 
 async function main() {
-  const owner = tokenFor('SUPER_ADMIN');
+  const owner = tokenFor('owner');
   // The customer with the most bills in the test shop: the busiest page.
   const list = await api(owner, '/customers?pageSize=100');
   const busiest = [...list.customers].sort((a, b) => b.orders - a.orders)[0];
@@ -172,7 +173,7 @@ async function main() {
     await context.close();
   }
   {
-    const { context, page } = await signedIn(browser, tokenFor('WAREHOUSE'), { width: 1280, height: 800 });
+    const { context, page } = await signedIn(browser, tokenFor('warehouse'), { width: 1280, height: 800 });
     await page.goto(`${APP}/customers/${busiest.id}`);
     await page.getByRole('heading', { name: 'You cannot see customers' }).waitFor({ timeout: 15000 });
     check('a role without customer access sees the plain refusal, not the page', (await page.getByTestId('profile').count()) === 0);

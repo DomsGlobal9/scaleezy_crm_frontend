@@ -6,7 +6,8 @@ const AuthContext = createContext(null);
 /**
  * Who is signed in, asked of the CRM service, which reads the cookie Inventory set.
  *
- * `status` is one of: 'checking' (first load), 'in' (a person), 'out' (nobody, or the sign-in
+ * `status` is one of: 'checking' (first load), 'in' (a person), 'unavailable' (the sign-in could
+ * not be checked just now -- Inventory did not answer; NOT the same as signed out), 'out' (nobody, or the sign-in
  * ended). There is no login here -- see components/SignInNeeded.
  */
 export function AuthProvider({ children }) {
@@ -23,9 +24,10 @@ export function AuthProvider({ children }) {
         setUser(null);
         setStatus('out');
       }
-    } catch {
+    } catch (error) {
       setUser(null);
-      setStatus('out');
+      // 503: CRM could not ask Inventory who this is. Saying "sign in" would be untrue and would not help.
+      setStatus(error?.statusCode === 503 || error?.statusCode === 0 ? 'unavailable' : 'out');
     }
   }, []);
 
