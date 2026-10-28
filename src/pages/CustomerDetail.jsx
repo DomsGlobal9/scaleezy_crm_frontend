@@ -13,6 +13,7 @@ import { INVENTORY_URL } from '../lib/config';
 import LoadFailed from '../components/LoadFailed';
 import FollowUpsAndNotes from '../components/FollowUpsAndNotes';
 import ConsentRecord from '../components/ConsentRecord';
+import WhatTheyWear from '../components/WhatTheyWear';
 
 /**
  * One customer: who they are and the numbers at the top, everything that happened with them below.
@@ -117,6 +118,7 @@ export default function CustomerDetail() {
             <Profile profile={customer.data.profile} />
             <Numbers numbers={customer.data.numbers} favourites={customer.data.favourites} />
           </section>
+          <WhatTheyWear customerId={customer.data.profile.id} />
           <section className="cp-split">
             <FollowUpsAndNotes customerId={customer.data.profile.id} />
             <Timeline id={id} />

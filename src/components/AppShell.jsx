@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom';
-import { CalendarCheck2, Store, Users, Tags, ListFilter, GitMerge, Moon, Sun, LogOut, Menu, X } from 'lucide-react';
+import { CalendarCheck2, DoorOpen, Users, Tags, ListFilter, GitMerge, Moon, Sun, LogOut, Menu, X } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { usePermission } from '../hooks/usePermission';
 import { useMerges, useTodayCount } from '../hooks/useWork';
@@ -20,7 +20,7 @@ function readTheme() {
  * foot who is signed in, light or dark, sign out. Same width, same links, same slide-in below 1024px
  * (a tablet in portrait gets the whole width back), so moving between the two apps feels like one.
  *
- * The places: Today (with my follow-ups due), Counter, Customers, Groups, Segments, Duplicates (only for those who may merge,
+ * The places: Today (with my follow-ups due), In the store, Customers, Groups, Segments, Duplicates (only for those who may merge,
  * with the pairs waiting). Only places that exist are listed: no "coming soon".
  */
 export default function AppShell() {
@@ -55,7 +55,7 @@ export default function AppShell() {
 
   const places = seesCustomers ? [
     { to: '/today', label: 'Today', icon: CalendarCheck2, count: dueCount, countLabel: `${dueCount} due` },
-    { to: '/counter', label: 'Counter', icon: Store },
+    { to: '/counter', label: 'In the store', icon: DoorOpen },
     { to: '/customers', label: 'Customers', icon: Users },
     { to: '/groups', label: 'Groups', icon: Tags },
     { to: '/segments', label: 'Segments', icon: ListFilter },

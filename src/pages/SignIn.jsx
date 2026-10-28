@@ -58,7 +58,7 @@ export default function SignIn() {
             <div className="si-shops">
               {shops.map(s => (
                 <button key={s.clientId} type="button" className="btn-secondary si-shop" disabled={busy} onClick={() => signIn(s.clientId)}>
-                  <Store size={16} /> <span>{s.clientId}</span>
+                  <Store size={16} /> <span className="si-shop-name">{s.name || s.clientId}{s.name && <small>{s.clientId}</small>}</span>
                 </button>
               ))}
             </div>

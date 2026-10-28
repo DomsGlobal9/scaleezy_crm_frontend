@@ -275,8 +275,10 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
 .si-submit { margin-top: 10px; height: 44px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; font-size: 14px; }
 .si-error { color: var(--accent-danger) !important; font-size: 13px !important; text-align: left !important; margin: 4px 0 0 !important; }
 .si-shops { display: grid; gap: 8px; }
-.si-shop { display: flex; align-items: center; gap: 10px; height: 44px; text-align: left; overflow: hidden; }
+.si-shop { display: flex; align-items: center; gap: 10px; min-height: 44px; text-align: left; overflow: hidden; }
 .si-shop span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.si-shop-name { display: grid; min-width: 0; }
+.si-shop-name small { font-size: 11px; color: var(--text-secondary); font-weight: 400; }
 .si-link { display: inline-flex; align-items: center; gap: 6px; color: var(--text-secondary); font-size: 13px; justify-self: center; }
 .si-link:hover { color: var(--text-primary); }
 

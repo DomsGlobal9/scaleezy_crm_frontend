@@ -80,3 +80,12 @@
 .ct-door-sub { display: inline-flex; align-items: center; gap: 12px; flex-wrap: wrap; }
 .ct-qr { display: inline-flex; align-items: center; gap: 5px; font-size: 13px; font-weight: 600; color: var(--brand-ink); }
 .ct-qr:hover { text-decoration: underline; }
+
+/* "What they wear" on the customer page: the colours as swatches, then shelves and online. */
+.ct-wear { display: grid; gap: 12px; }
+.ct-wear h2 { margin: 0; font-size: 17px; }
+.ct-wear h3 { margin: 0 0 4px; font-size: 14px; display: flex; align-items: center; gap: 6px; }
+.ct-wear-grid { display: grid; gap: 18px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.ct-wear-col { display: grid; gap: 10px; align-content: start; min-width: 0; }
+.ct-taken span { display: inline-flex; align-items: center; gap: 5px; }
+@media (max-width: 760px) { .ct-wear-grid { grid-template-columns: minmax(0, 1fr); } }

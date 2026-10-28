@@ -1,9 +1,9 @@
-import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { api } from '../lib/api';
 
 /**
- * The Counter: who is in the store now (asked again every 15 seconds, as Inventory's card did), the
- * shop's stores, a phone look-up, and the card.
+ * In the store (read only: taking customers is at Inventory's counter), the shop's stores, a phone
+ * look-up, and a customer's reading ("what they wear", on their page).
  */
 export function useArrivals(store) {
   return useQuery({
@@ -30,12 +30,5 @@ export function useCounterCard(id, locationId) {
     queryKey: ['counterCard', id, locationId || ''],
     queryFn: async () => (await api.get(`/counter/card/${id}`, { params: locationId ? { locationId } : {} })).data,
     enabled: !!id
-  });
-}
-export function useTake() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: async (id) => (await api.post(`/counter/arrivals/${id}/take`)).data,
-    onSettled: () => qc.invalidateQueries({ queryKey: ['arrivals'] })
   });
 }

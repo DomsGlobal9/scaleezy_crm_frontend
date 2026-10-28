@@ -1,13 +1,13 @@
 /**
- * The Counter, in a real browser (installed Edge), signed in for real, local database only. Door
- * scans are written into local Inventory and delivered as Inventory delivers them
- * (backend/src/scripts/support/door-scan.ts), so "in the store now" is the real path.
+ * In the store (CRM's read-only view of the door), in a real browser (installed Edge), signed in for
+ * real, local database only. Door scans and takes are written into local Inventory and delivered as
+ * Inventory delivers them (backend/src/scripts/support/door-scan.ts).
  *
- *   owner   choose the store; the two who scanned (one a customer, one a number nobody has); take the
- *           customer -> their card opens; look up a made-up number (said why), a new number, a known
- *           one; a card with colours shows them as swatches; add a note on the card
- *   sales   sees who the owner is looking after
- *   phone   the Counter with a card open, no sideways scroll
+ *   owner   choose the store; who walked in (a customer, a number nobody has); nobody can take them
+ *           here; taken at Inventory's counter -> CRM shows who; the Door QR link carries this store;
+ *           "Full story" opens their page, with what they wear; open a customer by phone (a made-up
+ *           number said why, a new number, a known one)
+ *   phone   no sideways scroll
  *
  *   node scripts/verify-counter-ui.mjs      (CRM on 4008, the app on 5176)
  */
@@ -20,7 +20,6 @@ const APP = process.env.CRM_APP_URL || 'http://localhost:5176';
 const here = path.dirname(fileURLToPath(import.meta.url));
 const shots = path.join(here, 'screenshots');
 const backend = path.resolve(here, '..', '..', 'backend');
-const NOTE = `CHECK-COUNTER ${Date.now() % 100000}: keep the blue Banarasi aside`;
 const UNKNOWN = `+91 6${String(Date.now()).slice(-9)}`;
 
 let failures = 0;
@@ -43,7 +42,8 @@ async function as(browser, who, viewport = { width: 1366, height: 900 }) {
 }
 
 async function main() {
-  const scans = [door('scan', '+919848022301', '3'), door('scan', UNKNOWN.replace(/\s/g, ''), '1')];
+  const anithaScan = door('scan', '+919848022301', '3');
+  const scans = [anithaScan, door('scan', UNKNOWN.replace(/\s/g, ''), '1')];
   const lakshmi = sql("select id from crm.customers where client_id='verify-suites-tenant' and name='Lakshmi Devi' and merged_into_id is null limit 1");
   const browser = await chromium.launch({ channel: process.env.BROWSER_CHANNEL || 'msedge', headless: true });
   try {
@@ -54,71 +54,60 @@ async function main() {
     const arrivals = page.getByTestId('arrival');
     await arrivals.filter({ hasText: 'Anitha Reddy' }).first().waitFor({ timeout: 20000 });
     const texts = await arrivals.allInnerTexts();
-    check('in the store now: Anitha Reddy, by name', texts.some(t => /Anitha Reddy/.test(t)));
-    check('...and the number nobody has, "Not a customer yet"', texts.some(t => /Not a customer yet/.test(t)), texts);
-    check('...each with the minutes since they came in ("Came in 3 min ago")', texts.some(t => /Anitha Reddy[\s\S]*Came in [34] min ago/.test(t)), texts);
+    check('who walked in: Anitha Reddy by name, "Came in 3 min ago"', texts.some(t => /Anitha Reddy[\s\S]*Came in [34] min ago/.test(t)), texts);
+    check('...and the number nobody has, "Not a customer yet"', texts.some(t => /Not a customer yet/.test(t)));
+    check('nobody can take a customer here (no "I\'ll take them")', (await page.getByRole('button', { name: /take them/i }).count()) === 0);
+    check('not taken yet: says it happens at Inventory\'s counter', /at Inventory's counter/.test(await arrivals.filter({ hasText: 'Anitha Reddy' }).first().innerText()));
+
+    door('take', anithaScan, 'Priya');
+    await page.waitForFunction(() => [...document.querySelectorAll('[data-testid="arrival"]')].some(a => /Anitha Reddy/.test(a.textContent) && /Priya is looking after them/.test(a.textContent)), null, { timeout: 25000 }).catch(() => {});
+    check('taken at Inventory\'s counter by Priya: shows here by itself, "Priya is looking after them"', /Priya is looking after them/.test(await arrivals.filter({ hasText: 'Anitha Reddy' }).first().innerText()));
+
+    const storeId = sql("select id from inventory_locations where client_id='verify-suites-tenant' and name='Main Store' limit 1");
     const qr = await page.getByTestId('door-qr').getAttribute('href');
-    check('a link to the Door QR standee, which stays in Inventory (/customers/door-qr, new tab)', /\/customers\/door-qr$/.test(qr ?? '') && (await page.getByTestId('door-qr').getAttribute('target')) === '_blank', qr);
+    check('the Door QR link carries this store (?locationId=), in a new tab', qr?.endsWith(`/customers/door-qr?locationId=${storeId}`) && (await page.getByTestId('door-qr').getAttribute('target')) === '_blank', qr);
     await page.screenshot({ path: path.join(shots, 'counter-door.png') });
 
-    await arrivals.filter({ hasText: 'Anitha Reddy' }).first().getByRole('button', { name: /I'll take them/ }).click();
-    await page.getByTestId('counter-card').waitFor({ timeout: 15000 });
-    check('"I\'ll take them" opens her card', (await page.getByTestId('card-name').innerText()) === 'Anitha Reddy' && /[?&]c=/.test(page.url()));
-    await page.waitForFunction(() => [...document.querySelectorAll('[data-testid="arrival"]')].some(a => /Anitha Reddy/.test(a.textContent) && /You are looking after them/.test(a.textContent)), null, { timeout: 15000 });
-    check('...and the arrival says you are looking after them', true);
+    await arrivals.filter({ hasText: 'Anitha Reddy' }).first().getByRole('button', { name: 'Full story' }).click();
+    await page.waitForURL(/\/customers\/[0-9a-f-]{36}$/);
+    await page.getByTestId('dna').waitFor({ timeout: 15000 });
+    check('"Full story" opens her CRM page, with "What they wear"', /What they wear/.test(await page.getByTestId('dna').innerText()));
 
-    // Look-ups.
+    await page.goto(`${APP}/customers/${lakshmi}`);
+    await page.getByTestId('colours').waitFor({ timeout: 15000 });
+    check('a customer page shows their colours as swatches: Blue, Orange, Red', /Blue[\s\S]*Orange[\s\S]*Red/.test(await page.getByTestId('colours').innerText()) && (await page.locator('.ct-chip').count()) === 3);
+    await page.screenshot({ path: path.join(shots, 'customer-wear.png') });
+
+    await page.goto(`${APP}/counter`);
     const phone = page.getByLabel('Their mobile number');
     await phone.fill('98765 43210');
-    await page.getByRole('button', { name: 'Look up' }).click();
+    await page.getByRole('button', { name: 'Open' }).click();
     await page.getByTestId('lookup-problem').waitFor({ timeout: 10000 });
-    check('a made-up number: said why, in plain words', /does not look like a real number/.test(await page.getByTestId('lookup-problem').innerText()));
+    check('open by phone, a made-up number: said why', /does not look like a real number/.test(await page.getByTestId('lookup-problem').innerText()));
     await phone.fill(UNKNOWN);
-    await page.getByRole('button', { name: 'Look up' }).click();
+    await page.getByRole('button', { name: 'Open' }).click();
     await page.getByTestId('lookup-none').waitFor({ timeout: 10000 });
     check('a new number: "New customer", add them at the till', /New customer/.test(await page.getByTestId('lookup-none').innerText()));
     await phone.fill('98480 22307');
-    await page.getByRole('button', { name: 'Look up' }).click();
-    await page.waitForFunction(() => document.querySelector('[data-testid="card-name"]')?.textContent === 'Gayathri Iyer', null, { timeout: 15000 });
-    check('a known number opens their card (Gayathri Iyer), with what she usually spends', /Usually spends ₹13,500 – ₹16,400 a bill/.test(await page.getByTestId('spend').innerText()));
-
-    // A card with colours.
-    await page.goto(`${APP}/counter?c=${lakshmi}`);
-    await page.getByTestId('colours').waitFor({ timeout: 15000 });
-    const colours = await page.getByTestId('colours').innerText();
-    check('her colours as swatches: Blue, Orange, Red', /Blue[\s\S]*Orange[\s\S]*Red/.test(colours) && (await page.locator('.ct-chip').count()) === 3, colours);
-    check('the shelves need a store chosen first (no picks guessed)', (await page.getByTestId('picks-choose').count()) === 1 || (await page.getByTestId('picks-none').count()) === 1);
-
-    await page.getByLabel('Add a note').fill(NOTE);
-    await page.getByTestId('card-notes').getByRole('button', { name: 'Save' }).click();
-    await page.waitForFunction((n) => document.querySelector('[data-testid="card-notes"]')?.textContent.includes(n), NOTE, { timeout: 15000 });
-    check('a note added on the card shows on it at once', true);
-    await page.screenshot({ path: path.join(shots, 'counter-card.png'), fullPage: true });
+    await page.getByRole('button', { name: 'Open' }).click();
+    await page.waitForURL(/\/customers\/[0-9a-f-]{36}$/, { timeout: 15000 });
+    const opened = await page.waitForFunction(() => /Gayathri Iyer/.test(document.querySelector('main')?.textContent ?? ''), null, { timeout: 15000 }).then(() => true, () => false);
+    check('a known number opens their CRM page (Gayathri Iyer)', opened);
     await ctx.close();
 
-    // Sales sees who has her.
-    {
-      const { ctx: c2, page: p2 } = await as(browser, 'sales');
-      await p2.goto(`${APP}/counter`);
-      const a = p2.getByTestId('arrival').filter({ hasText: 'Anitha Reddy' }).first();
-      await a.waitFor({ timeout: 20000 });
-      check('sales sees who is looking after Anitha, and no take button for her', /is looking after them/.test(await a.innerText()) && (await a.getByRole('button', { name: /I'll take them/ }).count()) === 0);
-      await c2.close();
-    }
-
-    // Phone.
     {
       const { ctx: c3, page: p3 } = await as(browser, 'owner', { width: 390, height: 844 });
-      await p3.goto(`${APP}/counter?c=${lakshmi}`);
+      await p3.goto(`${APP}/counter`);
+      await p3.getByTestId('arrival').first().waitFor({ timeout: 20000 });
+      check('phone: in the store, no sideways scroll', await noOverflow(p3));
+      await p3.goto(`${APP}/customers/${lakshmi}`);
       await p3.getByTestId('colours').waitFor({ timeout: 20000 });
-      check('phone: the Counter with a card, no sideways scroll', await noOverflow(p3));
-      await p3.screenshot({ path: path.join(shots, 'counter-phone.png'), fullPage: true });
+      check('phone: a customer page with what they wear, no sideways scroll', await noOverflow(p3));
       await c3.close();
     }
   } finally {
     await browser.close();
     door('clear', ...scans);
-    sql(`delete from crm.notes where body like 'CHECK-COUNTER %'`);
   }
   console.log(failures ? `\n${failures} counter UI check(s) FAILED.` : '\nAll counter UI checks passed.');
   process.exitCode = failures ? 1 : 0;
