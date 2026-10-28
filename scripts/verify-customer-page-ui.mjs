@@ -90,13 +90,39 @@ async function main() {
     check(`lifetime spend ${rupees(n.lifetimeSpend)} and ${n.bills} bills`, (await page.getByTestId('num-spend').innerText()).includes(rupees(n.lifetimeSpend)) && (await page.getByTestId('num-spend').innerText()).includes(`${n.bills} bills`));
     if (n.averageBill !== null) check(`average bill ${rupees(n.averageBill)}`, (await page.getByTestId('num-average').innerText()).includes(rupees(n.averageBill)));
     if (n.lastVisit) check(`last visit ${day(n.lastVisit)}`, (await page.getByTestId('num-last').innerText()).includes(day(n.lastVisit)));
-    check(`points ${n.loyaltyPoints.toLocaleString('en-IN')}`, (await page.getByTestId('num-points').innerText()).includes(n.loyaltyPoints.toLocaleString('en-IN')));
-    check(`store credit ${rupees(n.storeCredit)}`, (await page.getByTestId('num-credit').innerText()).includes(rupees(n.storeCredit)));
-    check(`returns ${n.returns}, ${rupees(n.refunded)} refunded`, (await page.getByTestId('num-returns').innerText()).includes(`${rupees(n.refunded)} refunded`));
+    // Points, credit and returns: shown when there are some, left out when there are none (the page was too long).
+    const shownIf = async (testid, has, want) => (has ? (await page.getByTestId(testid).innerText()).includes(want) : (await page.getByTestId(testid).count()) === 0);
+    check(`points ${n.loyaltyPoints.toLocaleString('en-IN')} (left out at 0)`, await shownIf('num-points', n.loyaltyPoints > 0, n.loyaltyPoints.toLocaleString('en-IN')));
+    check(`store credit ${rupees(n.storeCredit)} (left out at 0)`, await shownIf('num-credit', n.storeCredit > 0, rupees(n.storeCredit)));
+    check(`returns ${n.returns}, ${rupees(n.refunded)} refunded (left out at 0)`, await shownIf('num-returns', n.returns > 0, `${rupees(n.refunded)} refunded`));
+    const ptextNow = await profile.innerText();
+    check('empty fields are left out, not shown as a dash', (!!p.gstNumber || !/GSTIN/.test(ptextNow)) && !/\n—\n/.test(ptextNow), ptextNow);
+
+    // What they wear, the first tab: one line each, the reading's colours named.
+    const reading = (await (await fetch(`${API}/counter/card/${busiest.id}`, { headers: { authorization: `Bearer ${owner}` } })).json()).data.dna;
     const tastes = (await page.getByTestId('tastes').innerText()).toLowerCase();
-    if (expected.favourites.kinds.length) check('what they buy is spelled out', tastes.includes(expected.favourites.kinds[0].toLowerCase()));
-    if (expected.favourites.colours.length) check(`their colours are named (${expected.favourites.colours.join(', ')})`, expected.favourites.colours.every(c => tastes.includes(c)));
-    check('never "buys mostly other"', !/buys mostly other/.test(tastes), tastes);
+    check('What they wear is the tab open first', await page.getByRole('tab', { name: 'What they wear' }).getAttribute('aria-selected') === 'true');
+    if (reading.kinds.length) check('what they buy is spelled out', tastes.includes(reading.kinds[0].toLowerCase()), tastes);
+    if (reading.colours.length) check(`their colours are named (${reading.colours.join(', ')})`, reading.colours.every(c => tastes.includes(c.toLowerCase())), tastes);
+    check('never "other"', !/\bothers?\b/.test(tastes), tastes);
+
+    // Everything lines up (the owner, 28 Oct): one left edge inside the cards, and the header's right edge is the side column's.
+    const edges = await page.evaluate(() => {
+      const left = (sel) => { const el = document.querySelector(sel); return el ? Math.round(el.getBoundingClientRect().left) : null; };
+      const right = (sel) => { const el = document.querySelector(sel); return el ? Math.round(el.getBoundingClientRect().right) : null; };
+      return {
+        lefts: { avatar: left('.cp-av'), reach: left('.cp-reach-item'), numbers: left('.cp-num'), firstTab: left('.cp-tab'), firstLabel: left('.ct-label') },
+        cards: { header: left('.cp-head'), main: left('.cp-main') },
+        rights: { header: right('.cp-head'), rail: right('.cp-rail'), railCard: right('.cp-rail .wk-card') },
+        railText: left('.cp-rail .wk-head h2') - left('.cp-rail .wk-card'), mainText: left('.cp-tab') - left('.cp-main')
+      };
+    });
+    const ls = Object.values(edges.lefts).filter(v => v !== null);
+    check('aligned: the avatar, contact line, numbers, first tab and the labels all start at one edge', ls.length >= 4 && Math.max(...ls) - Math.min(...ls) <= 1, edges.lefts);
+    check('aligned: the header and the tabs card share their left edge; the header and the side column their right edge', Math.abs(edges.cards.header - edges.cards.main) <= 1 && Math.abs(edges.rights.header - edges.rights.rail) <= 1 && Math.abs(edges.rights.rail - edges.rights.railCard) <= 1, edges);
+    check('aligned: the side cards\' text sits as far in as the tabs\' text', Math.abs(edges.railText - edges.mainText) <= 1, edges);
+
+    await page.getByRole('tab', { name: 'Timeline' }).click();
 
     // The timeline: the first page as the service gave it, in order.
     const events = page.getByTestId('event');
@@ -109,7 +135,7 @@ async function main() {
       const t = await events.filter({ hasText: firstBill.title }).first().innerText();
       check(`a bill row shows its amount ${rupees(firstBill.amount)}`, t.includes(rupees(firstBill.amount)), t);
     }
-    const note = firstPage.events.find(e => e.kind === 'note');
+    const note = firstPage.events.find(e => e.kind === 'note' && e.dayOnly);
     if (note) check('a note shows its words, without a made-up time', (await events.filter({ hasText: note.detail }).first().locator('.cp-when').count()) === 0);
     check('days are headed', (await page.locator('.cp-day').count()) >= 1);
     await page.screenshot({ path: path.join(shots, 'customer-page-desktop.png'), fullPage: true });
@@ -126,12 +152,12 @@ async function main() {
     }
 
     // A filter chip.
-    await page.getByRole('tab', { name: 'Returns' }).click();
+    await page.getByRole('button', { name: 'Returns' }).click();
     // Wait for the returns themselves: while the filter loads, the list is briefly empty, and an
     // empty list would pass "every event is a return" trivially.
     await page.waitForFunction(() => { const els = [...document.querySelectorAll('[data-testid="event"]')]; return els.length > 0 && els.every(el => el.dataset.kind === 'return'); }, null, { timeout: 15000 });
     check(`"Returns" shows only returns, ${returnsOnly.events.length} of them`, await events.count() === returnsOnly.events.length, await events.count());
-    check('the chosen chip is marked', await page.getByRole('tab', { name: 'Returns' }).getAttribute('aria-selected') === 'true');
+    check('the chosen chip is marked', await page.getByRole('button', { name: 'Returns' }).getAttribute('aria-pressed') === 'true');
 
     // Back to the list as it was left.
     await page.getByRole('button', { name: 'Customers' }).click();
@@ -143,7 +169,7 @@ async function main() {
   // ── The same page on a phone ──
   {
     const { context, page } = await signedIn(browser, owner, { width: 390, height: 844 });
-    await page.goto(`${APP}/customers/${busiest.id}`);
+    await page.goto(`${APP}/customers/${busiest.id}?tab=timeline`);
     await page.getByTestId('event').first().waitFor({ timeout: 15000 });
     const widths = await page.evaluate(() => ({ scroll: document.documentElement.scrollWidth, inner: window.innerWidth }));
     check('phone: no sideways scroll', widths.scroll <= widths.inner, widths);
@@ -162,7 +188,7 @@ async function main() {
   {
     const { context, page } = await signedIn(browser, owner, { width: 1280, height: 800 });
     if (quiet) {
-      await page.goto(`${APP}/customers/${quiet.id}`);
+      await page.goto(`${APP}/customers/${quiet.id}?tab=timeline`);
       await page.getByTestId('timeline-empty').waitFor({ timeout: 15000 });
       check(`${quiet.name} (no bills): "Nothing here yet", last visit "Not yet"`, (await page.getByTestId('num-last').innerText()).includes('Not yet'));
     }

@@ -71,11 +71,14 @@ async function main() {
     await arrivals.filter({ hasText: 'Anitha Reddy' }).first().getByRole('button', { name: 'Full story' }).click();
     await page.waitForURL(/\/customers\/[0-9a-f-]{36}$/);
     await page.getByTestId('dna').waitFor({ timeout: 15000 });
-    check('"Full story" opens her CRM page, with "What they wear"', /What they wear/.test(await page.getByTestId('dna').innerText()));
+    check('"Full story" opens her CRM page, on "What they wear"', await page.getByRole('tab', { name: 'What they wear' }).getAttribute('aria-selected') === 'true' && await page.getByTestId('dna').isVisible());
 
     await page.goto(`${APP}/customers/${lakshmi}`);
     await page.getByTestId('colours').waitFor({ timeout: 15000 });
-    check('a customer page shows their colours as swatches: Blue, Orange, Red', /Blue[\s\S]*Orange[\s\S]*Red/.test(await page.getByTestId('colours').innerText()) && (await page.locator('.ct-chip').count()) === 3);
+    // Her colours as her reading works them out today (her bills change as the local shop is used).
+    const want = (await (await fetch(`http://localhost:4008/api/v1/counter/card/${lakshmi}`, { headers: { authorization: `Bearer ${tokenFor('owner')}` } })).json()).data.dna.colours;
+    const shown = (await page.getByTestId('colours').innerText()).split(/\s+/).filter(Boolean);
+    check(`a customer page shows their colours as swatches, in order: ${want.join(', ')}`, want.length > 0 && JSON.stringify(shown) === JSON.stringify(want) && (await page.locator('.ct-chip').count()) === want.length, { shown, want });
     await page.screenshot({ path: path.join(shots, 'customer-wear.png') });
 
     await page.goto(`${APP}/counter`);

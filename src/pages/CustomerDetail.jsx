@@ -1,9 +1,11 @@
 import React, { useMemo, useState } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import {
   ArrowLeft, Loader2, IndianRupee, Undo2, Star, Wallet, DoorOpen, Eye, MessageCircle, NotebookPen,
-  CircleCheck, CircleAlert, CircleSlash, ExternalLink, UserX, ShieldOff, CalendarClock, ShieldCheck, ChevronRight
+  CircleCheck, CircleAlert, CircleSlash, ExternalLink, UserX, ShieldOff, CalendarClock, ShieldCheck, ChevronRight,
+  Phone, Mail, MapPin, Cake, Heart, Receipt
 } from 'lucide-react';
+import { useCounterCard } from '../hooks/useCounter';
 import { useCustomer, useTimeline } from '../hooks/useCustomer';
 import { usePermission } from '../hooks/usePermission';
 import { formatPhone } from '../utils/phone';
@@ -13,11 +15,14 @@ import { INVENTORY_URL } from '../lib/config';
 import LoadFailed from '../components/LoadFailed';
 import FollowUpsAndNotes from '../components/FollowUpsAndNotes';
 import ConsentRecord from '../components/ConsentRecord';
-import WhatTheyWear from '../components/WhatTheyWear';
+import WhatTheyWear, { readStore } from '../components/WhatTheyWear';
+import FestivalBuying from '../components/FestivalBuying';
 
 /**
- * One customer: who they are and the numbers at the top, everything that happened with them below.
- * Read-only. The first screen staff open before talking to a customer (plan M2 and M3).
+ * One customer: who they are and their numbers in one header; below, what they wear, their
+ * festivals and the timeline as tabs, with follow-ups and notes beside them (a tab of their own on
+ * a phone). The owner approved the shorter page, 28 Oct: it was too long. The first screen staff
+ * open before talking to a customer (plan M2 and M3).
  */
 
 const FILTERS = [
@@ -71,16 +76,30 @@ function amountText(e) {
   return e.amount < 0 ? `−${r}` : r;
 }
 
+const TABS = [
+  { key: 'wear', label: 'What they wear' },
+  { key: 'festivals', label: 'Festivals' },
+  { key: 'timeline', label: 'Timeline' },
+  { key: 'work', label: 'Follow-ups', phoneOnly: true }
+];
+
 export default function CustomerDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { can } = usePermission();
   const customer = useCustomer(id);
+  const [params, setParams] = useSearchParams();
   // An old link to someone since merged into another customer: open the one they are now.
   const movedTo = customer.data?.mergedInto;
   React.useEffect(() => { if (movedTo) navigate(`/customers/${movedTo}`, { replace: true }); }, [movedTo, navigate]);
 
-  // "← Customers" goes back to the list as it was left (search and page are in its address).
+  // The open tab is in the address, so Back and a shared link keep it. Arriving to add a follow-up
+  // (?followup=1) opens Follow-ups on a phone; on a laptop they are always beside the tabs.
+  const asked = params.get('tab');
+  const tab = TABS.some(t => t.key === asked) ? asked : params.get('followup') === '1' ? 'work' : 'wear';
+  const show = (key) => setParams(prev => { const next = new URLSearchParams(prev); next.set('tab', key); return next; }, { replace: true });
+
+  // "← All customers" goes back to the list as it was left (search and page are in its address).
   const back = () => (window.history.state?.idx > 0 ? navigate(-1) : navigate('/customers'));
 
   if (!can('customer:view')) {
@@ -96,8 +115,8 @@ export default function CustomerDetail() {
   }
 
   return (
-    <main className="crm-page">
-      <button type="button" className="cp-back" onClick={back}><ArrowLeft size={14} /> Customers</button>
+    <main className="crm-page cp-page">
+      <button type="button" className="cp-back" onClick={back}><ArrowLeft size={14} /> All customers</button>
 
       {customer.isLoading || movedTo ? (
         <div className="crm-card crm-row crm-muted" aria-busy="true"><Loader2 size={16} className="animate-spin" /> Loading the customer…</div>
@@ -114,14 +133,25 @@ export default function CustomerDetail() {
         <div className="crm-card"><LoadFailed what="this customer" error={customer.error} onRetry={() => customer.refetch()} /></div>
       ) : (
         <>
-          <section className="cp-top">
-            <Profile profile={customer.data.profile} />
-            <Numbers numbers={customer.data.numbers} favourites={customer.data.favourites} />
-          </section>
-          <WhatTheyWear customerId={customer.data.profile.id} />
-          <section className="cp-split">
+          <Header profile={customer.data.profile} numbers={customer.data.numbers} />
+          <section className={`cp-body${tab === 'work' ? ' on-work' : ''}`}>
+            <div className="crm-card cp-main">
+              <div className="cp-tabs" role="tablist" aria-label="About this customer">
+                {TABS.map(t => (
+                  <button key={t.key} type="button" role="tab" id={`cp-tab-${t.key}`} aria-selected={tab === t.key}
+                    className={`cp-tab${tab === t.key ? ' on' : ''}${t.phoneOnly ? ' phone-only' : ''}`} onClick={() => show(t.key)}>
+                    {t.label}
+                  </button>
+                ))}
+              </div>
+              {/* Follow-ups are a tab on a phone only; on a laptop that tab shows What they wear. */}
+              <div className="cp-pane" role="tabpanel" aria-labelledby={`cp-tab-${tab === 'work' ? 'wear' : tab}`}>
+                {tab === 'timeline' ? <Timeline id={id} />
+                  : tab === 'festivals' ? <FestivalsTab customerId={customer.data.profile.id} />
+                  : <WhatTheyWear customerId={customer.data.profile.id} onFestivals={() => show('festivals')} />}
+              </div>
+            </div>
             <FollowUpsAndNotes customerId={customer.data.profile.id} />
-            <Timeline id={id} />
           </section>
         </>
       )}
@@ -129,47 +159,67 @@ export default function CustomerDetail() {
   );
 }
 
-function Fact({ label, children }) {
+const initials = (name) => (name || '?').trim().split(/\s+/).map(w => w[0]).slice(0, 2).join('').toUpperCase();
+const monthYear = (iso) => new Date(iso).toLocaleDateString('en-IN', { month: 'short', year: 'numeric' });
+
+/** Only what is known: an empty field is left out rather than shown as a dash. */
+function Reach({ icon: Icon, label, children }) {
+  if (!children) return null;
   return (
-    <div className="cp-fact">
-      <small>{label}</small>
-      <span>{children || <span className="crm-muted">—</span>}</span>
-    </div>
+    <span className="cp-reach-item" title={label}>
+      <Icon size={14} aria-hidden="true" /><span className="sr-only">{label}: </span><span>{children}</span>
+    </span>
   );
 }
 
-function Profile({ profile: p }) {
+/**
+ * Who they are, how to reach them, and their numbers: one card (the owner, 28 Oct: the page was too
+ * long). Points, credit and returns show only when there are some.
+ */
+function Header({ profile: p, numbers: n }) {
   const address = p.addresses[0]
     ? `${p.addresses[0].line}${p.addresses[0].pincode ? ` ${p.addresses[0].pincode}` : ''}`
     : (p.shippingAddress || p.billingAddress || null);
   const moreAddresses = Math.max(0, p.addresses.length - 1);
   const inventoryLink = (p.links ?? []).find(l => l.source === 'inventory');
+  const inventoryHref = inventoryLink ? `${INVENTORY_URL}/customers/${encodeURIComponent(inventoryLink.externalId)}` : null;
 
   return (
-    <div className="crm-card cp-who" data-testid="profile">
-      <h1>{p.name}</h1>
-      <div className="cp-code">
-        {[p.code, p.companyName, p.customerType === 'WALK_IN' ? 'Walk-in' : null, `Customer since ${formatDay(p.createdAt)}`].filter(Boolean).join(' · ')}
-        {p.tags.map(t => <span key={t} className="crm-tag" style={{ marginLeft: 6 }}>{t}</span>)}
-      </div>
-      <div className="cp-facts">
-        <Fact label="Phone">{p.phone ? formatPhone(p.phone) : null}</Fact>
-        <Fact label="Email">{p.email}</Fact>
-        <Fact label="Birthday">{dayOfYear(p.birthday)}</Fact>
-        <Fact label="Anniversary">{dayOfYear(p.anniversary)}</Fact>
-        <Fact label="Address">{address ? `${address}${moreAddresses ? ` (+${moreAddresses} more)` : ''}` : null}</Fact>
-        <Fact label="GSTIN">{p.gstNumber}</Fact>
-      </div>
-      <Consent consent={p.consent} customerId={p.id} name={p.name} inventoryHref={inventoryLink ? `${INVENTORY_URL}/customers/${encodeURIComponent(inventoryLink.externalId)}` : null} />
-      {/* Only for a person Inventory knows: CRM's own id is not Inventory's (plan §14). */}
-      {inventoryLink && (
-        <div className="cp-actions">
-          <a className="btn-secondary cp-btn" href={`${INVENTORY_URL}/customers/${encodeURIComponent(inventoryLink.externalId)}`} target="_blank" rel="noreferrer">
-            <ExternalLink size={14} /> Open in Inventory
-          </a>
+    <section className="crm-card cp-head" data-testid="profile">
+      <div className="cp-head-top">
+        <span className="cp-av" aria-hidden="true">{initials(p.name)}</span>
+        <div className="cp-who">
+          <h1>{p.name}{p.tags.map(t => <span key={t} className="crm-tag">{t}</span>)}</h1>
+          <div className="cp-code">
+            {[p.code, p.companyName, p.customerType === 'WALK_IN' ? 'Walk-in' : null, `customer since ${monthYear(p.createdAt)}`].filter(Boolean).join(' · ')}
+          </div>
         </div>
-      )}
-    </div>
+        <div className="cp-head-acts">
+          <Consent consent={p.consent} customerId={p.id} name={p.name} inventoryHref={inventoryHref} />
+          {/* Only for a person Inventory knows: CRM's own id is not Inventory's (plan §14). */}
+          {inventoryHref && (
+            <a className="btn-secondary cp-btn" href={inventoryHref} target="_blank" rel="noreferrer"><ExternalLink size={14} /> Open in Inventory</a>
+          )}
+        </div>
+      </div>
+      <div className="cp-reach">
+        <Reach icon={Phone} label="Phone">{p.phone ? formatPhone(p.phone) : null}</Reach>
+        <Reach icon={Mail} label="Email">{p.email}</Reach>
+        <Reach icon={MapPin} label="Address">{address ? `${address}${moreAddresses ? ` (+${moreAddresses} more)` : ''}` : null}</Reach>
+        <Reach icon={Cake} label="Birthday">{dayOfYear(p.birthday)}</Reach>
+        <Reach icon={Heart} label="Anniversary">{dayOfYear(p.anniversary)}</Reach>
+        <Reach icon={Receipt} label="GSTIN">{p.gstNumber}</Reach>
+      </div>
+      <div className="cp-nums" data-testid="numbers">
+        <Num testid="num-spend" value={formatRupees(n.lifetimeSpend)}
+          note={`${n.bills === 1 ? '1 bill' : `${n.bills} bills`}${n.online > 0 ? ` · ${n.online} online` : ''}`} />
+        <Num testid="num-average" value={n.averageBill === null ? '—' : formatRupees(n.averageBill)} note={n.averageBillOver === 'year' ? 'a bill, last 12 months' : 'a bill'} />
+        <Num testid="num-last" value={n.lastVisit ? formatDay(n.lastVisit) : 'Not yet'} note={n.lastVisit ? `last visit, ${since(n.lastVisit)}` : 'no visit yet'} />
+        {n.loyaltyPoints > 0 && <Num testid="num-points" value={n.loyaltyPoints.toLocaleString('en-IN')} note="points" />}
+        {n.storeCredit > 0 && <Num testid="num-credit" value={formatRupees(n.storeCredit)} note="store credit" />}
+        {n.returns > 0 && <Num testid="num-returns" value={n.returns.toLocaleString('en-IN')} note={`${n.returns === 1 ? 'return' : 'returns'}, ${formatRupees(n.refunded)} refunded`} />}
+      </div>
+    </section>
   );
 }
 
@@ -201,39 +251,21 @@ function Consent({ consent: c, customerId, name, inventoryHref }) {
   );
 }
 
-function Num({ label, value, note, testid }) {
+function Num({ value, note, testid }) {
   return (
     <div className="cp-num" data-testid={testid}>
-      <small>{label}</small>
       <strong>{value}</strong>
-      {note && <em>{note}</em>}
+      {note && <span>{note}</span>}
     </div>
   );
 }
 
-function Numbers({ numbers: n, favourites: f }) {
-  const kinds = f.kinds.map(k => k.toLowerCase());
-  const tastes = [
-    kinds.length ? <span key="k">Buys mostly <strong>{kinds.join(', ')}</strong></span> : null,
-    // One size: "size L". Several kinds of garment: "sizes saree Free, kurti M" (an unknown kind is just its size).
-    f.sizes.length ? <span key="s">{f.sizes.length === 1 ? 'size ' : 'sizes '}<strong>{f.sizes.length === 1 ? f.sizes[0].size : f.sizes.map(s => (s.kind === 'Other' ? s.size : `${s.kind.toLowerCase()} ${s.size}`)).join(', ')}</strong></span> : null,
-    f.colours.length ? <span key="c">colours <strong>{f.colours.join(', ')}</strong></span> : null
-  ].filter(Boolean);
-
-  return (
-    <div className="crm-card cp-numbers" data-testid="numbers">
-      <div className="cp-nums">
-        <Num testid="num-spend" label="Lifetime spend" value={formatRupees(n.lifetimeSpend)} note={n.bills === 1 ? '1 bill' : `${n.bills} bills`} />
-        <Num testid="num-average" label="Average bill" value={n.averageBill === null ? '—' : formatRupees(n.averageBill)} note={n.averageBillOver === 'year' ? 'last 12 months' : n.averageBillOver === 'all' ? 'all bills' : null} />
-        <Num testid="num-last" label="Last visit" value={n.lastVisit ? formatDay(n.lastVisit) : 'Not yet'} note={n.lastVisit ? since(n.lastVisit) : null} />
-        <Num testid="num-points" label="Points" value={n.loyaltyPoints.toLocaleString('en-IN')} />
-        <Num testid="num-credit" label="Store credit" value={formatRupees(n.storeCredit)} />
-        <Num testid="num-returns" label="Returns" value={n.returns.toLocaleString('en-IN')} note={n.returns ? `${formatRupees(n.refunded)} refunded` : null} />
-      </div>
-      {n.bills > 0 && <div className="crm-muted">{n.inStore} in the shop · {n.online} online</div>}
-      {tastes.length > 0 && <div className="crm-muted cp-tastes" data-testid="tastes">{tastes.reduce((acc, el, i) => (i ? [...acc, ' · ', el] : [el]), [])}</div>}
-    </div>
-  );
+/** The Festivals tab: the same reading as What they wear, its festival part in full. */
+function FestivalsTab({ customerId }) {
+  const card = useCounterCard(customerId, readStore());
+  if (card.isLoading) return <div className="crm-row crm-muted" aria-busy="true"><Loader2 size={16} className="animate-spin" /> Reading their festivals…</div>;
+  if (card.isError) return <LoadFailed what="their festivals" error={card.error} onRetry={() => card.refetch()} />;
+  return <FestivalBuying data={card.data.festivals} />;
 }
 
 function Timeline({ id }) {
@@ -253,12 +285,11 @@ function Timeline({ id }) {
   }, [events]);
 
   return (
-    <section className="crm-card cp-timeline" data-testid="timeline">
+    <section className="cp-timeline" data-testid="timeline">
       <div className="cp-tl-head">
-        <h2>Timeline</h2>
-        <div className="cp-chips" role="tablist" aria-label="Show">
+        <div className="cp-chips" role="group" aria-label="Show">
           {FILTERS.map(f => (
-            <button key={f.key} type="button" role="tab" aria-selected={kind === f.key}
+            <button key={f.key} type="button" aria-pressed={kind === f.key}
               className={`cp-chip${kind === f.key ? ' on' : ''}`} onClick={() => setKind(f.key)}>
               {f.label}
             </button>

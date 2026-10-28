@@ -34,8 +34,6 @@ button.fu-hole:hover, button.fu-hole:focus-visible { border-style: solid; border
 .fu-undo:hover { color: var(--text-primary); background: var(--bg-hover); }
 
 /* ── The customer page's working card, beside the timeline ── */
-.cp-split { display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: 18px; align-items: start; }
-.cp-split > .wk-card { order: 2; position: sticky; top: 72px; max-height: calc(100vh - 90px); overflow-y: auto; }
 .wk-card { display: grid; gap: 14px; }
 .wk-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; margin-bottom: 8px; }
 .wk-head h2 { font-size: 17px; margin: 0; }
@@ -54,8 +52,6 @@ button.fu-hole:hover, button.fu-hole:focus-visible { border-style: solid; border
 .wk-done summary { cursor: pointer; font-size: 13px; color: var(--text-secondary); margin-bottom: 8px; }
 .cp-ico.fu { background: rgba(166, 217, 43, .14); color: var(--brand-ink); }
 @media (max-width: 960px) {
-  .cp-split { grid-template-columns: minmax(0, 1fr); }
-  .cp-split > .wk-card { order: 0; position: static; max-height: none; }
 }
 
 /* ── Today ── */

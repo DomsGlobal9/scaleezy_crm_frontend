@@ -84,6 +84,7 @@ async function main() {
 
       if (label === 'desktop') {
         check('the chip says where it stands: yes, taken by Ravi (the newest record)', /WhatsApp offers: yes · taken by Ravi/.test(await chip.innerText()), await chip.innerText());
+        await page.getByRole('tab', { name: 'Timeline' }).click();
         const consentEvents = page.locator('[data-testid="event"][data-kind="consent"]');
         await consentEvents.first().waitFor({ timeout: 15000 });
         check('the timeline carries all three records', (await consentEvents.count()) === 3);

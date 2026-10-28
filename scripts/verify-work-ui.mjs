@@ -52,6 +52,9 @@ async function main() {
     await card.waitFor({ timeout: 20000 });
     check('the customer page has the follow-ups and notes card', await card.getByRole('heading', { name: 'Follow-ups' }).isVisible() && await card.getByRole('heading', { name: 'Notes' }).isVisible());
 
+    check('the boxes for writing are closed until asked for', (await card.getByLabel('Add a follow-up').count()) === 0 && (await card.getByLabel('Write a note for the team').count()) === 0);
+    await card.getByRole('button', { name: 'New follow-up' }).click();
+    check('"Add" opens the follow-up box, ready to type in', await page.evaluate(() => document.activeElement?.tagName === 'TEXTAREA'));
     await card.getByRole('button', { name: 'Save follow-up' }).click();
     check('saving with nothing written: "Write what needs doing."', (await card.getByRole('alert').innerText()).includes('Write what needs doing.'));
     await card.getByLabel('Add a follow-up').fill(`${STAMP} ask about the blouse fitting`);
@@ -75,16 +78,18 @@ async function main() {
     const doneTag = card.getByTestId('followup').filter({ hasText: `${STAMP} send the new Banarasi photos` });
     check('marked done: it moves to "Done lately", with Undo', await doneTag.getAttribute('data-state') === 'done' && await doneTag.getByRole('button', { name: 'Undo' }).isVisible());
 
+    await card.getByRole('button', { name: 'New note' }).click();
     await card.getByLabel('Write a note for the team').fill(`${STAMP} prefers WhatsApp after 6 pm`);
     await card.getByRole('button', { name: 'Save note' }).click();
     await card.getByTestId('note').filter({ hasText: `${STAMP} prefers WhatsApp after 6 pm` }).waitFor({ timeout: 20000 });
     check('a note appears at the top of the notes, with who wrote it', (await card.getByTestId('note').first().innerText()).includes('Verification Owner'));
 
-    await page.getByRole('tab', { name: 'Notes & follow-ups' }).click();
+    await page.getByRole('tab', { name: 'Timeline' }).click();
+    await page.getByRole('button', { name: 'Notes & follow-ups' }).click();
     await page.waitForFunction(() => [...document.querySelectorAll('[data-testid="event"]')].some(e => /Follow-up done/.test(e.textContent)), null, { timeout: 20000 });
     const titles = await page.locator('[data-testid="event"] .cp-ev-title').allInnerTexts();
     check('the timeline\'s "Notes & follow-ups" shows the note, the follow-ups added and the one done', titles.some(t => /^Follow-up added/.test(t)) && titles.some(t => /^Follow-up done/.test(t)) && titles.some(t => /^Note by Verification Owner/.test(t)), titles.slice(0, 6));
-    await page.getByRole('tab', { name: 'Everything' }).click();
+    await page.getByRole('button', { name: 'Everything' }).click();
     await page.waitForTimeout(500);
     await page.screenshot({ path: path.join(shots, 'work-customer-desktop.png'), fullPage: false });
     await ctx.close();
@@ -204,6 +209,9 @@ async function main() {
     await page.screenshot({ path: path.join(shots, 'work-today-phone.png'), fullPage: true });
     await page.goto(`${APP}/customers?q=Lakshmi`);
     await page.getByTestId('customer-row').filter({ hasText: 'Lakshmi Devi' }).first().click();
+    await page.getByTestId('profile').waitFor({ timeout: 20000 });
+    check('phone: follow-ups and notes wait behind their own tab', !(await page.getByTestId('work-card').isVisible()));
+    await page.getByRole('tab', { name: 'Follow-ups' }).click();
     await page.getByTestId('work-card').waitFor({ timeout: 20000 });
     check('phone, customer page with the working card: no sideways scroll', await noOverflow(page));
     await page.screenshot({ path: path.join(shots, 'work-customer-phone.png'), fullPage: false });

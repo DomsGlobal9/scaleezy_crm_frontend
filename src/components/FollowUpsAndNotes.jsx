@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Plus } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { usePermission } from '../hooks/usePermission';
 import { useAddFollowUp, useAddNote, useFollowUpDone, useFollowUps, useNotes, useStaff } from '../hooks/useWork';
@@ -9,8 +9,9 @@ import Select from './common/Select';
 import FollowUpTag from './FollowUpTag';
 
 /**
- * The customer page's working card (approved mockup, 27 Oct): open follow-ups as swing tags, adding
- * one (what, when, who), the last few done, and notes. Notes cannot be changed once saved.
+ * The customer page's follow-ups and notes (approved mockup, 27 Oct; shorter, 28 Oct): open
+ * follow-ups as swing tags, adding one (what, when, who) from "Add", the last few done, and notes
+ * from "Write". Notes cannot be changed once saved. Beside the tabs on a laptop; a tab on a phone.
  */
 const WHEN = [
   { key: 'today', label: 'Today', days: 0 },
@@ -27,23 +28,34 @@ export default function FollowUpsAndNotes({ customerId }) {
   const staff = useStaff();
   const done = useFollowUpDone();
   const today = followUps.data?.today ?? localToday();
+  // The boxes for writing open on asking (the owner, 28 Oct: the page was too long). Arriving from
+  // Today's "Add follow-up" (?followup=1), the follow-up box is open already.
+  const [params] = useSearchParams();
+  const [adding, setAdding] = useState(params.get('followup') === '1');
+  const [writing, setWriting] = useState(false);
+  const open = followUps.data?.open ?? [];
 
   return (
-    <aside className="crm-card wk-card" data-testid="work-card">
-      <section aria-labelledby="fu-h">
+    <aside className="cp-rail" data-testid="work-card">
+      <section className="crm-card wk-card" aria-labelledby="fu-h">
         <div className="wk-head">
-          <h2 id="fu-h">Follow-ups</h2>
-          {followUps.data && <span className="crm-muted">{followUps.data.open.length === 0 ? 'Nothing open' : `${followUps.data.open.length} open`}</span>}
+          <h2 id="fu-h">Follow-ups{followUps.data && open.length > 0 ? <span className="wk-count">{open.length}</span> : null}</h2>
+          {canWrite && !adding && <button type="button" className="si-link wk-add" onClick={() => setAdding(true)} aria-label="New follow-up"><Plus size={14} aria-hidden="true" /> Add</button>}
         </div>
         {followUps.isLoading ? <p className="crm-muted"><Loader2 size={14} className="animate-spin" /> Loading…</p> : (
-          <div className="fu-list">
-            {(followUps.data?.open ?? []).map(f => (
-              <FollowUpTag key={f.id} followUp={f} today={today} canAct={canWrite} busy={done.isPending}
-                onDone={() => done.mutate({ id: f.id, done: true })} />
-            ))}
-          </div>
+          <>
+            {open.length === 0 && !adding && <p className="crm-muted wk-none">Nothing to do for them.</p>}
+            {open.length > 0 && (
+              <div className="fu-list">
+                {open.map(f => (
+                  <FollowUpTag key={f.id} followUp={f} today={today} canAct={canWrite} busy={done.isPending}
+                    onDone={() => done.mutate({ id: f.id, done: true })} />
+                ))}
+              </div>
+            )}
+          </>
         )}
-        {canWrite && <AddFollowUp customerId={customerId} today={today} me={user} staff={staff.data ?? []} />}
+        {canWrite && adding && <AddFollowUp customerId={customerId} today={today} me={user} staff={staff.data ?? []} onClose={() => setAdding(false)} />}
         {(followUps.data?.recentlyDone ?? []).length > 0 && (
           <details className="wk-done">
             <summary>Done lately ({followUps.data.recentlyDone.length})</summary>
@@ -57,11 +69,12 @@ export default function FollowUpsAndNotes({ customerId }) {
         )}
       </section>
 
-      <hr className="wk-rule" />
-
-      <section aria-labelledby="notes-h">
-        <div className="wk-head"><h2 id="notes-h">Notes</h2></div>
-        {canWrite && <AddNote customerId={customerId} />}
+      <section className="crm-card wk-card" aria-labelledby="notes-h">
+        <div className="wk-head">
+          <h2 id="notes-h">Notes</h2>
+          {canWrite && !writing && <button type="button" className="si-link wk-add" onClick={() => setWriting(true)} aria-label="New note"><Plus size={14} aria-hidden="true" /> Write</button>}
+        </div>
+        {canWrite && writing && <AddNote customerId={customerId} onClose={() => setWriting(false)} />}
         <div className="wk-notes" data-testid="notes">
           {(notes.data ?? []).slice(0, 5).map(n => (
             <div key={n.id} className="wk-note" data-testid="note">
@@ -69,27 +82,23 @@ export default function FollowUpsAndNotes({ customerId }) {
               <span className="crm-muted">{[n.byName, new Date(n.at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })].filter(Boolean).join(', ')}</span>
             </div>
           ))}
-          {notes.data && notes.data.length === 0 && <p className="crm-muted">No notes yet. Anything the team should know about this customer goes here.</p>}
+          {notes.data && notes.data.length === 0 && !writing && <p className="crm-muted wk-none">No notes yet.</p>}
         </div>
-        <p className="wk-small">Notes cannot be changed once saved, so the record stays honest. Every note is also on the timeline.</p>
       </section>
     </aside>
   );
 }
 
-function AddFollowUp({ customerId, today, me, staff }) {
+function AddFollowUp({ customerId, today, me, staff, onClose }) {
   const add = useAddFollowUp(customerId);
   const [body, setBody] = useState('');
   const [when, setWhen] = useState('tomorrow');
   const [day, setDay] = useState(addDays(today, 1));
   const [who, setWho] = useState('');
   const [error, setError] = useState('');
-  // Arriving from Today's "Add follow-up": the box is ready to type in.
-  const [params] = useSearchParams();
+  // Opened by "Add" (or arriving from Today's "Add follow-up"): the box is ready to type in.
   const box = useRef(null);
-  useEffect(() => {
-    if (params.get('followup') === '1' && box.current) { box.current.focus(); box.current.scrollIntoView({ block: 'center' }); }
-  }, [params]);
+  useEffect(() => { box.current?.focus(); box.current?.scrollIntoView({ block: 'nearest' }); }, []);
 
   const people = useMemo(() => {
     const others = staff.filter(s => s.id !== me?.id);
@@ -129,12 +138,15 @@ function AddFollowUp({ customerId, today, me, staff }) {
         {people.map(p => <option key={p.id || 'me'} value={p.id}>{p.name}</option>)}
       </Select>
       {error && <p className="si-error" role="alert">{error}</p>}
-      <button type="submit" className="btn-primary wk-save" disabled={add.isPending}>{add.isPending ? 'Saving…' : 'Save follow-up'}</button>
+      <div className="wk-buttons">
+        <button type="submit" className="btn-primary wk-save" disabled={add.isPending}>{add.isPending ? 'Saving…' : 'Save follow-up'}</button>
+        <button type="button" className="btn-secondary wk-save" onClick={onClose}>Close</button>
+      </div>
     </form>
   );
 }
 
-function AddNote({ customerId }) {
+function AddNote({ customerId, onClose }) {
   const add = useAddNote(customerId);
   const [body, setBody] = useState('');
   const [error, setError] = useState('');
@@ -146,9 +158,13 @@ function AddNote({ customerId }) {
       add.mutate(body.trim(), { onSuccess: () => setBody('') });
     }}>
       <textarea className="input-field" rows={2} maxLength={1000} value={body} onChange={(e) => setBody(e.target.value)}
-        placeholder="Write a note for the team" aria-label="Write a note for the team" />
+        placeholder="Write a note for the team" aria-label="Write a note for the team" autoFocus />
       {error && <p className="si-error" role="alert">{error}</p>}
-      <button type="submit" className="btn-secondary wk-save" disabled={add.isPending}>{add.isPending ? 'Saving…' : 'Save note'}</button>
+      <span className="wk-hint">Notes cannot be changed once saved, so the record stays honest. Every note is also on the timeline.</span>
+      <div className="wk-buttons">
+        <button type="submit" className="btn-primary wk-save" disabled={add.isPending}>{add.isPending ? 'Saving…' : 'Save note'}</button>
+        <button type="button" className="btn-secondary wk-save" onClick={onClose}>Close</button>
+      </div>
     </form>
   );
 }

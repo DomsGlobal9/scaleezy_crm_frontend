@@ -50,9 +50,15 @@ async function main() {
   try {
     const { ctx, page } = await as(browser, owner);
     await page.goto(`${APP}/customers/${id}`);
+    await page.getByTestId('tastes').waitFor({ timeout: 25000 });
+    const line = await page.getByTestId('tastes').innerText();
+    check('What they wear: one line names the festivals they buy for, with the share and a way to the Festivals tab', /Festivals\s+Diwali, Sankranti \/ Pongal, Dasara every year · \d+% of their spending · See festivals/.test(line), line);
+    const short = page.getByTestId('festival-soon-short');
+    if (await short.count()) check('...and the near one, said short', /^Diwali is in \d+ days and they bought for it the last 2 years — about ₹10,500 each time\.$/.test(await short.innerText()), await short.innerText());
+    await page.getByRole('button', { name: 'See festivals' }).click();
     const fb = page.getByTestId('festivals');
-    await fb.waitFor({ timeout: 25000 });
-    check('the customer page shows festival buying, inside "What they wear"', await page.getByTestId('dna').getByTestId('festivals').count() === 1);
+    await fb.waitFor({ timeout: 15000 });
+    check('"See festivals" opens the Festivals tab, with festival buying in full', await page.getByRole('tab', { name: 'Festivals' }).getAttribute('aria-selected') === 'true' && /[?&]tab=festivals/.test(page.url()));
     const share = await page.getByTestId('festival-share').innerText();
     check('the share of their spending at festival time', /^\d+% of what they spend is in the three weeks before a festival$/.test(share), share);
     const rows = await page.getByTestId('festival').allInnerTexts();
@@ -99,7 +105,7 @@ async function main() {
 
     {
       const { ctx: c2, page: p2 } = await as(browser, sales);
-      await p2.goto(`${APP}/customers/${id}`);
+      await p2.goto(`${APP}/customers/${id}?tab=festivals`);
       await p2.getByTestId('festivals').waitFor({ timeout: 25000 });
       check('sales: sees festival buying, without the link to change the festivals', (await p2.getByTestId('festival').count()) === 3 && (await p2.getByTestId('festival-dates').count()) === 0);
       await p2.goto(`${APP}/festivals`);
@@ -109,7 +115,7 @@ async function main() {
     }
     {
       const { ctx: c3, page: p3 } = await as(browser, owner, { width: 390, height: 844 });
-      await p3.goto(`${APP}/customers/${id}`);
+      await p3.goto(`${APP}/customers/${id}?tab=festivals`);
       await p3.getByTestId('festival').first().waitFor({ timeout: 25000 });
       check('phone: the customer page, no sideways scroll', await noOverflow(p3));
       await p3.getByTestId('festivals').screenshot({ path: path.join(shots, 'festivals-customer-phone.png') });
