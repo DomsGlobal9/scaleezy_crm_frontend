@@ -1,18 +1,6 @@
-/* Notes, follow-ups, Today, duplicates and the top-bar places (28 Oct 2026). */
+/* Notes, follow-ups, Today and duplicates (28 Oct 2026). */
 
-/* ── The three places in the top bar ── */
-.crm-topbar { flex-wrap: wrap; }
-.crm-nav { display: flex; gap: 4px; flex: 1 1 auto; margin-left: 18px; min-width: 0; }
-.crm-tab { display: inline-flex; align-items: center; gap: 6px; padding: 7px 12px; border-radius: 9px; font-size: 14px; font-weight: 500; color: var(--text-secondary); white-space: nowrap; }
-.crm-tab:hover { color: var(--text-primary); background: var(--bg-hover); }
-.crm-tab.on { color: var(--text-primary); background: var(--bg-hover); font-weight: 600; }
-.crm-tab:focus-visible { outline: 2px solid var(--accent-primary); outline-offset: 2px; }
-.crm-badge { min-width: 20px; height: 20px; padding: 0 6px; border-radius: 999px; background: var(--accent-warning); color: #111; font-size: 11px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; }
-.crm-badge.quiet { background: var(--bg-input); color: var(--text-secondary); border: 1px solid var(--border-light); }
-@media (max-width: 760px) {
-  .crm-nav { order: 3; flex-basis: 100%; margin: 6px 0 0; overflow-x: auto; }
-  .crm-user { display: none; }
-}
+/* The places (Today, Customers, Duplicates) are in the sidebar: styles/shell.css. */
 
 /* ── A follow-up is a swing tag: the punched hole is the done button ── */
 .fu-list { display: grid; gap: 8px; }

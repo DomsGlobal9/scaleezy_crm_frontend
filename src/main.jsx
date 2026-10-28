@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider, QueryCache } from '@tanstack/react-qu
 import toast, { Toaster } from 'react-hot-toast';
 import './index.css';
 import './styles/work.css';
+import './styles/shell.css';
 import App from './App.jsx';
 import { AuthProvider } from './context/AuthContext.jsx';
 

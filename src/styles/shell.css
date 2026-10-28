@@ -1,0 +1,90 @@
+/* The sidebar every CRM screen sits beside (28 Oct 2026). Inventory's measures -- 240px, links
+   10px 16px with a 12px margin, the slide-in below 1024px -- so the two apps read as one product. */
+
+.crm-shell { min-height: 100vh; display: flex; flex-direction: row; }
+.crm-main { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; }
+
+.crm-sidebar {
+  position: sticky; top: 0; height: 100vh;
+  width: 240px; flex-shrink: 0;
+  display: flex; flex-direction: column;
+  background: var(--bg-card);
+  border-right: 1px solid var(--border-light);
+}
+.crm-sidebar-brand {
+  height: 64px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 12px 0 20px;
+  border-bottom: 1px solid var(--border-light);
+}
+.crm-sidebar-close { display: none; }
+
+.crm-nav { flex: 1; min-height: 0; overflow-y: auto; padding: 16px 0; display: flex; flex-direction: column; gap: 2px; }
+.crm-tab {
+  position: relative;
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 16px; margin: 0 12px; border-radius: 8px;
+  color: var(--text-secondary); font-size: 14px; font-weight: 500;
+}
+.crm-tab svg { flex-shrink: 0; }
+.crm-tab-label { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.crm-tab:hover { color: var(--text-primary); background: var(--bg-hover); }
+.crm-tab.on { color: var(--text-primary); background: var(--bg-input); font-weight: 600; }
+/* The one mark of where you are: a short lime bar at the link's edge. */
+.crm-tab.on::before {
+  content: ''; position: absolute; left: -12px; top: 8px; bottom: 8px; width: 3px;
+  border-radius: 0 3px 3px 0; background: var(--brand-solid);
+}
+.crm-tab.on svg { color: var(--brand-ink); }
+.crm-tab:focus-visible { outline: 2px solid var(--accent-primary); outline-offset: 2px; }
+
+.crm-badge { min-width: 20px; height: 20px; padding: 0 6px; border-radius: 999px; background: var(--accent-warning); color: #111; font-size: 11px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; font-variant-numeric: tabular-nums; }
+.crm-badge.quiet { background: var(--bg-input); color: var(--text-secondary); border: 1px solid var(--border-light); }
+
+.crm-sidebar-foot { flex-shrink: 0; padding: 12px; border-top: 1px solid var(--border-light); display: grid; gap: 8px; }
+.crm-me { display: flex; align-items: center; gap: 10px; min-width: 0; padding: 4px; }
+.crm-me-initials {
+  width: 34px; height: 34px; flex-shrink: 0; border-radius: 50%;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: var(--brand-deep); color: #fff; font-size: 12px; font-weight: 700;
+}
+.crm-me-who { display: grid; min-width: 0; }
+.crm-me-name { font-size: 14px; font-weight: 600; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.crm-me-email { font-size: 12px; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.crm-me-actions { display: flex; gap: 6px; }
+.crm-me-actions .crm-iconbtn { flex: 1; border-color: var(--border-light); }
+.crm-signout:hover { color: var(--accent-danger) !important; background: rgba(239, 68, 68, .1) !important; }
+
+.crm-mobilebar { display: none; }
+.crm-sidebar-overlay { display: none; }
+
+/* Phones and tablets (Inventory's 1024px): the sidebar slides in over the page when asked for. */
+@media (max-width: 1024px) {
+  .crm-shell { flex-direction: column; }
+  .crm-mobilebar {
+    position: sticky; top: 0; z-index: 20;
+    display: flex; align-items: center; justify-content: space-between; gap: 8px;
+    height: 56px; padding: 0 8px;
+    background: var(--bg-card); border-bottom: 1px solid var(--border-light);
+  }
+  .crm-mobilebar-spacer { width: 36px; }
+  .crm-mobilebar-due {
+    display: inline-flex; align-items: center; gap: 5px; height: 32px; padding: 0 10px;
+    border-radius: 999px; background: var(--accent-warning); color: #111; font-size: 13px; font-weight: 700;
+  }
+  .crm-sidebar {
+    position: fixed; z-index: 1000; left: 0; top: 0; bottom: 0; height: auto;
+    width: min(280px, 85vw);
+    padding-left: env(safe-area-inset-left); padding-bottom: env(safe-area-inset-bottom);
+    box-shadow: 2px 0 16px rgba(0, 0, 0, .25);
+    transform: translateX(-100%); visibility: hidden;
+    transition: transform .25s ease, visibility 0s linear .25s;
+  }
+  .crm-sidebar.open { transform: translateX(0); visibility: visible; transition: transform .25s ease; }
+  .crm-sidebar-close { display: inline-flex; }
+  .crm-sidebar-overlay { display: block; position: fixed; inset: 0; z-index: 999; background: rgba(0, 0, 0, .5); backdrop-filter: blur(3px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .crm-sidebar, .crm-sidebar.open { transition: none; }
+}

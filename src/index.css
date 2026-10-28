@@ -129,15 +129,7 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
 .animate-spin { animation: spin 1s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-/* ── The shell: a top bar, then the page ── */
-.crm-shell { min-height: 100vh; display: flex; flex-direction: column; }
-.crm-topbar {
-  position: sticky; top: 0; z-index: 10;
-  display: flex; align-items: center; justify-content: space-between; gap: 12px;
-  padding: 10px clamp(12px, 3vw, 24px);
-  background: var(--bg-card);
-  border-bottom: 1px solid var(--border-light);
-}
+/* ── The shell (sidebar, phone bar): styles/shell.css ── */
 .crm-brand { display: inline-flex; align-items: center; gap: 10px; min-width: 0; }
 .crm-brand img { height: 26px; width: auto; display: block; }
 .crm-brand-app {
@@ -145,8 +137,6 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   color: var(--brand-on-solid); background: var(--brand-solid);
   padding: 3px 8px; border-radius: 999px;
 }
-.crm-topbar-right { display: inline-flex; align-items: center; gap: 8px; min-width: 0; }
-.crm-user { font-size: 13px; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 40vw; }
 .crm-iconbtn {
   width: 36px; height: 36px; display: inline-flex; align-items: center; justify-content: center;
   border-radius: 10px; color: var(--text-secondary); border: 1px solid transparent;
