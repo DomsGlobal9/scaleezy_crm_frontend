@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "verify:ui": "node scripts/verify-customers-ui.mjs"
+    "verify:ui": "node scripts/verify-customers-ui.mjs",
+    "verify:customer-page-ui": "node scripts/verify-customer-page-ui.mjs"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.101.4",

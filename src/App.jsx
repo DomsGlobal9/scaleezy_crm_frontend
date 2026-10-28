@@ -5,6 +5,7 @@ import { useAuth } from './context/AuthContext';
 import AppShell from './components/AppShell';
 import SignInNeeded from './components/SignInNeeded';
 import Customers from './pages/Customers';
+import CustomerDetail from './pages/CustomerDetail';
 
 export default function App() {
   const { status } = useAuth();
@@ -23,6 +24,7 @@ export default function App() {
       <Routes>
         <Route element={<AppShell />}>
           <Route path="/customers" element={<Customers />} />
+          <Route path="/customers/:id" element={<CustomerDetail />} />
           <Route path="*" element={<Navigate to="/customers" replace />} />
         </Route>
       </Routes>

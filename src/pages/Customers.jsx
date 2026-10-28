@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Users, Search, X, Loader2, Phone, Mail, ShieldOff, UserX } from 'lucide-react';
+import { rowLink } from '../components/common/rowLink';
 import { useCustomers } from '../hooks/useCustomers';
 import { usePermission } from '../hooks/usePermission';
 import { useMediaQuery } from '../hooks/useMediaQuery';
@@ -14,17 +16,37 @@ import LoadFailed from '../components/LoadFailed';
  */
 export default function Customers() {
   const { can } = usePermission();
-  const [typed, setTyped] = useState('');
-  // The search sent to the server waits for typing to pause: a phone number is ten keystrokes.
-  const [search, setSearch] = useState('');
-  const [page, setPage] = useState(1);
+  const navigate = useNavigate();
+  // The search and the page live in the address (?q=…&page=…), so coming back from a customer
+  // lands on the same list, and a list can be shared or bookmarked.
+  const [params, setParams] = useSearchParams();
+  const search = (params.get('q') || '').trim();
+  const page = Math.max(1, Number.parseInt(params.get('page') || '1', 10) || 1);
+  const [typed, setTyped] = useState(search);
   // A card per customer on a phone; the table needs about 760px to show every column.
   const narrow = useMediaQuery('(max-width: 760px)');
 
+  const setPage = (next) => setParams(p => {
+    const n = typeof next === 'function' ? next(page) : next;
+    if (n <= 1) p.delete('page'); else p.set('page', String(n));
+    return p;
+  });
+
+  // The search sent to the server waits for typing to pause: a phone number is ten keystrokes.
+  // A new search starts at page 1; arriving with the same search keeps the page.
   useEffect(() => {
-    const t = setTimeout(() => { setSearch(typed.trim()); setPage(1); }, 300);
+    const t = setTimeout(() => {
+      if (typed.trim() === search) return;
+      setParams(p => {
+        if (typed.trim()) p.set('q', typed.trim()); else p.delete('q');
+        p.delete('page');
+        return p;
+      }, { replace: true });
+    }, 300);
     return () => clearTimeout(t);
-  }, [typed]);
+  }, [typed]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const open = (c) => navigate(`/customers/${c.id}`);
 
   const result = useCustomers({ search, page });
   const data = result.data;
@@ -97,7 +119,7 @@ export default function Customers() {
         </div>
       ) : narrow ? (
         <div className="crm-cards" data-testid="customer-cards">
-          {rows.map(c => <CustomerCard key={c.id} customer={c} />)}
+          {rows.map(c => <CustomerCard key={c.id} customer={c} onOpen={() => open(c)} />)}
         </div>
       ) : (
         <div className="crm-card" style={{ padding: 0, overflow: 'hidden' }}>
@@ -114,7 +136,7 @@ export default function Customers() {
             </thead>
             <tbody>
               {rows.map(c => (
-                <tr key={c.id} data-testid="customer-row">
+                <tr key={c.id} data-testid="customer-row" {...rowLink(() => open(c), { label: `Open ${c.name}` })}>
                   <td>
                     <div className="crm-name">{c.name}</div>
                     <div className="crm-sub">{[c.code, c.companyName, c.customerType === 'WALK_IN' ? 'Walk-in' : null].filter(Boolean).join(' · ')}</div>
@@ -156,9 +178,9 @@ function Tags({ tags }) {
   );
 }
 
-function CustomerCard({ customer: c }) {
+function CustomerCard({ customer: c, onOpen }) {
   return (
-    <article className="crm-card crm-cust" data-testid="customer-row">
+    <article data-testid="customer-row" {...rowLink(onOpen, { label: `Open ${c.name}` })} className="crm-card crm-cust row-link">
       <div className="crm-cust-top">
         <div style={{ minWidth: 0 }}>
           <div className="crm-name" style={{ fontSize: 16 }}>{c.name}</div>

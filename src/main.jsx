@@ -9,12 +9,13 @@ import { AuthProvider } from './context/AuthContext.jsx';
 /**
  * A request that failed must not look like an empty list: one handler here says so for every
  * screen, keyed on the message so a dropped connection is reported once. A 401 is drawn as the
- * sign-in notice and a 403 as the no-access notice, so neither needs a toast.
+ * sign-in notice, a 403 as the no-access notice and a 404 as a not-found card, so none needs a toast.
  */
 const queryCache = new QueryCache({
   onError: (error) => {
     const status = error?.statusCode;
-    if (status === 401 || status === 403) return;
+    // 404 too: the screen says what was not found, in context.
+    if (status === 401 || status === 403 || status === 404) return;
     const message = error?.message || 'Something did not load. Check your connection and try again.';
     toast.error(message, { id: `query:${message}` });
   }
