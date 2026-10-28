@@ -58,7 +58,7 @@ async function main() {
   {
     const { context, page } = await signedIn(browser, null, { width: 1280, height: 800 });
     await page.goto(`${APP}/customers`);
-    await page.getByRole('heading', { name: 'Sign in to CRM' }).waitFor({ timeout: 15000 });
+    await page.getByRole('heading', { name: 'Sign in', exact: true }).waitFor({ timeout: 15000 });
     check('signed out: the sign-in page, with email and password fields', await page.getByLabel('Email').isVisible() && await page.getByLabel('Password').isVisible());
     check('signed out: no customer is shown', (await page.getByTestId('customer-row').count()) === 0);
     await page.screenshot({ path: path.join(shots, 'signed-out.png') });

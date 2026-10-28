@@ -131,12 +131,7 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
 
 /* ── The shell (sidebar, phone bar): styles/shell.css ── */
 .crm-brand { display: inline-flex; align-items: center; gap: 10px; min-width: 0; }
-.crm-brand img { height: 26px; width: auto; display: block; }
-.crm-brand-app {
-  font-size: 11px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase;
-  color: var(--brand-on-solid); background: var(--brand-solid);
-  padding: 3px 8px; border-radius: 999px;
-}
+.crm-logo { display: block; line-height: 0; }
 .crm-iconbtn {
   width: 36px; height: 36px; display: inline-flex; align-items: center; justify-content: center;
   border-radius: 10px; color: var(--text-secondary); border: 1px solid transparent;
@@ -246,21 +241,7 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
 }
 
 /* ── Sign in (si-*) ── */
-.si-card { width: 100%; max-width: 400px; text-align: left; justify-items: stretch !important; gap: 14px !important; }
-.si-brand { display: flex; align-items: center; gap: 10px; justify-content: center; margin-bottom: 4px; }
-.si-brand img { height: 28px; width: auto; }
-.si-card h2 { text-align: center; }
-.si-card > p, .si-form > p { text-align: center; }
-.si-form { display: grid; gap: 8px; }
-.si-label { font-size: 13px; font-weight: 600; color: var(--text-secondary); margin-top: 6px; }
-.si-form .input-field { height: 44px; font-size: 15px; }
-.si-submit { margin-top: 10px; height: 44px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; font-size: 14px; }
 .si-error { color: var(--accent-danger) !important; font-size: 13px !important; text-align: left !important; margin: 4px 0 0 !important; }
-.si-shops { display: grid; gap: 8px; }
-.si-shop { display: flex; align-items: center; gap: 10px; min-height: 44px; text-align: left; overflow: hidden; }
-.si-shop span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.si-shop-name { display: grid; min-width: 0; }
-.si-shop-name small { font-size: 11px; color: var(--text-secondary); font-weight: 400; }
 .si-link { display: inline-flex; align-items: center; gap: 6px; color: var(--text-secondary); font-size: 13px; justify-self: center; }
 .si-link:hover { color: var(--text-primary); }
 

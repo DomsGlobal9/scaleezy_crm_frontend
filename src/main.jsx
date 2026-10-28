@@ -13,6 +13,7 @@ import './styles/today.css';
 import './styles/week.css';
 import './styles/festivals.css';
 import './styles/customer-page.css';
+import './styles/sign-in.css';
 import App from './App.jsx';
 import { AuthProvider } from './context/AuthContext.jsx';
 

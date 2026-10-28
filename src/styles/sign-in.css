@@ -1,0 +1,40 @@
+/*
+ * Sign in, kept basic (the owner, 28 Oct): the logo and the form, centred, the same on a laptop and
+ * a phone, following the theme.
+ */
+.sn-page { min-height: 100vh; min-height: 100dvh; display: grid; background: var(--bg-primary); }
+.sn-side { display: grid; place-items: center; padding: 40px 20px; }
+.sn-form-wrap { width: 100%; max-width: 380px; }
+.sn-logo { display: flex; justify-content: center; margin: 0 auto 32px; }
+
+.sn-form { display: grid; gap: 8px; }
+.sn-form h1 { margin: 0; font-size: 24px; letter-spacing: -0.01em; text-align: center; }
+.sn-sub { margin: 4px 0 18px; color: var(--text-secondary); font-size: 14.5px; line-height: 1.5; text-align: center; }
+.sn-label { font-size: 13px; font-weight: 600; color: var(--text-secondary); margin-top: 6px; }
+.sn-input { height: 46px; font-size: 15px; border-radius: 12px; }
+.sn-input:focus { border-color: var(--brand-solid); box-shadow: 0 0 0 3px rgba(166, 217, 43, .35); }
+.sn-password { position: relative; }
+.sn-password .sn-input { padding-right: 64px; }
+.sn-show { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); padding: 6px 8px; border-radius: 8px; font-size: 13px; font-weight: 600; color: var(--text-muted); }
+.sn-show:hover { color: var(--text-primary); background: var(--bg-hover); }
+.sn-show:focus-visible { outline: 2px solid var(--accent-primary); outline-offset: 1px; }
+.sn-submit { margin-top: 14px; height: 48px; border-radius: 12px; background: #164B1E; color: #fff; font-weight: 700; font-size: 15px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+[data-theme='dark'] .sn-submit { background: var(--brand-solid); color: var(--brand-on-solid); }
+.sn-submit:hover:not(:disabled) { filter: brightness(1.12); }
+.sn-submit:disabled { opacity: .7; cursor: progress; }
+.sn-submit:focus-visible { outline: 2px solid var(--accent-primary); outline-offset: 2px; }
+.sn-forgot { margin-top: 12px; font-size: 13.5px; color: var(--text-secondary); line-height: 1.6; }
+.sn-forgot summary { cursor: pointer; text-align: center; list-style: none; font-weight: 500; }
+.sn-forgot summary::-webkit-details-marker { display: none; }
+.sn-forgot p { margin: 8px 0 0; text-align: center; }
+.sn-one { margin: 26px 0 0; padding-top: 16px; border-top: 1px solid var(--border-light); text-align: center; font-size: 12.5px; color: var(--text-muted); }
+
+/* Which shop? */
+.sn-shops { display: grid; gap: 8px; }
+.si-shop { display: flex; align-items: center; gap: 12px; min-height: 52px; padding: 8px 14px; text-align: left; border-radius: 12px; border: 1px solid var(--border-light); background: var(--bg-card); overflow: hidden; }
+.si-shop:hover:not(:disabled) { border-color: var(--brand-solid); }
+.sn-shop-icon { width: 32px; height: 32px; border-radius: 10px; display: grid; place-items: center; background: var(--bg-input); color: var(--brand-ink); flex-shrink: 0; }
+.si-shop-name { display: grid; min-width: 0; font-weight: 600; }
+.si-shop-name, .si-shop-name small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.si-shop-name small { font-size: 11px; color: var(--text-secondary); font-weight: 400; }
+.sn-back { margin-top: 10px; }

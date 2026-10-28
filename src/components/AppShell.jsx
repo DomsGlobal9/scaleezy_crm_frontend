@@ -4,6 +4,7 @@ import { CalendarCheck2, TrendingUp, DoorOpen, Users, Tags, ListFilter, Moon, Su
 import { useAuth } from '../context/AuthContext';
 import { usePermission } from '../hooks/usePermission';
 import { useTodayCount } from '../hooks/useWork';
+import CrmLogo from './CrmLogo';
 
 const THEME_KEY = 'scale_easy_theme'; // Inventory's key, so the two apps share one setting
 
@@ -69,9 +70,7 @@ export default function AppShell() {
           <Menu size={20} />
         </button>
         <Link className="crm-brand" to="/today" aria-label="Scaleezy CRM, go to Today">
-          <img src="/scaleezy-logo.png" alt="Scaleezy" className="logo-on-light" />
-          <img src="/scaleezy-logo-dark.png" alt="Scaleezy" className="logo-on-dark" />
-          <span className="crm-brand-app">CRM</span>
+          <CrmLogo height={26} />
         </Link>
         {dueCount > 0 ? (
           <Link to="/today" className="crm-mobilebar-due" aria-label={`Today: ${dueCount} follow-up${dueCount === 1 ? '' : 's'} due`}>
@@ -85,9 +84,7 @@ export default function AppShell() {
       <aside id="crm-sidebar" className={`crm-sidebar${open ? ' open' : ''}`} aria-label="CRM">
         <div className="crm-sidebar-brand">
           <Link className="crm-brand" to="/today" aria-label="Scaleezy CRM, go to Today">
-            <img src="/scaleezy-logo.png" alt="Scaleezy" className="logo-on-light" />
-            <img src="/scaleezy-logo-dark.png" alt="Scaleezy" className="logo-on-dark" />
-            <span className="crm-brand-app">CRM</span>
+            <CrmLogo height={30} />
           </Link>
           <button type="button" className="crm-iconbtn crm-sidebar-close" onClick={() => setOpen(false)} aria-label="Close menu">
             <X size={20} />
