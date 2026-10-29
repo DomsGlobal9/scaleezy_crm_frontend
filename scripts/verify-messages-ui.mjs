@@ -92,7 +92,9 @@ async function main() {
     await page.getByRole('link', { name: 'Messages' }).click();
     await page.waitForURL(/\/messages$/);
     await page.getByTestId('fact-whatsapp').waitFor({ timeout: 20000 });
-    check('the three facts: linked, who agreed, how fast', /linked/.test(await page.getByTestId('fact-whatsapp').innerText()) && /agreed to offers/.test(await page.getByTestId('fact-agreed').innerText()) && /a day, 10 am to 8 pm/.test(await page.getByTestId('fact-pace').innerText()));
+    // The card is there before the facts arrive (it says "not linked" until then): wait for them.
+    await page.waitForFunction(() => /ending \d{4}\./.test(document.querySelector('[data-testid="fact-whatsapp"]')?.textContent ?? ''), null, { timeout: 20000 });
+    check('the three facts: linked (the number as the service gives it, its end), who agreed, how fast', /linked/.test(await page.getByTestId('fact-whatsapp').innerText()) && /ending 9623\./.test(await page.getByTestId('fact-whatsapp').innerText()) && /agreed to offers/.test(await page.getByTestId('fact-agreed').innerText()) && /a day, 10 am to 8 pm/.test(await page.getByTestId('fact-pace').innerText()));
     check('"still sent from Inventory", with the way to Shop settings', /still sent from Inventory/.test(await page.getByTestId('not-moved').innerText()));
 
     console.log('\n2. Shop settings');
@@ -128,8 +130,9 @@ async function main() {
 
     console.log('\n4. Test, start, sent');
     await page.getByRole('button', { name: 'Send me a test' }).click();
-    await page.getByText(/Test sent to the shop's own number, ending 2338\./).waitFor({ timeout: 15000 });
-    check('a test goes to the shop\'s own number', (await stub('messages')).some(m => m.to === '919848022338' && m.text.startsWith('[Test]')));
+    const shopPhone = sql(`select regexp_replace(coalesce(business_phone, ''), '\\D', '', 'g') from client_settings where client_id = '${SHOP}'`).slice(-10);
+    await page.getByText(new RegExp(`Test sent to the shop's phone from Settings, ending ${shopPhone.slice(-4)}\\.`)).waitFor({ timeout: 15000 });
+    check('a test goes to the shop\'s phone from Settings', (await stub('messages')).some(m => m.to === `91${shopPhone}` && m.text.startsWith('[Test]')));
     await page.getByRole('button', { name: 'Start', exact: true }).click();
     check('Start asks first', await page.getByRole('button', { name: 'Yes, start sending' }).isVisible());
     await page.screenshot({ path: path.join(shots, 'messages-start.png') });
