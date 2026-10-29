@@ -14,6 +14,7 @@ import './styles/week.css';
 import './styles/festivals.css';
 import './styles/profile-edit.css';
 import './styles/messages.css';
+import './styles/topbar.css';
 import './styles/customer-page.css';
 import './styles/sign-in.css';
 import App from './App.jsx';

@@ -24,6 +24,8 @@ export default function Customers() {
   const search = (params.get('q') || '').trim();
   const page = Math.max(1, Number.parseInt(params.get('page') || '1', 10) || 1);
   const [typed, setTyped] = useState(search);
+  // A search started elsewhere (the top bar) while this page is open fills the box too.
+  useEffect(() => { setTyped(t => (t.trim() === search ? t : search)); }, [search]);
 
   const setPage = (next) => setParams(p => {
     const n = typeof next === 'function' ? next(page) : next;

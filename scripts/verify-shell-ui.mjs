@@ -66,11 +66,13 @@ async function main() {
       }));
 
       const before = await page.evaluate(() => document.documentElement.getAttribute('data-theme'));
-      await side.getByRole('button', { name: /Switch to/ }).click();
+      // Light and dark moved to the top bar, on the right (the owner, 29 Oct).
+      const topbar = page.locator('.crm-topbar');
+      await topbar.getByRole('button', { name: /Switch to/ }).click();
       const after = await page.evaluate(() => document.documentElement.getAttribute('data-theme'));
-      check('desktop: light and dark switch from the sidebar', before !== after && ['light', 'dark'].includes(after), { before, after });
+      check('desktop: light and dark switch from the top bar', before !== after && ['light', 'dark'].includes(after), { before, after });
       await page.screenshot({ path: path.join(shots, `shell-desktop-${after}.png`) });
-      await side.getByRole('button', { name: /Switch to/ }).click();
+      await topbar.getByRole('button', { name: /Switch to/ }).click();
       await ctx.close();
     }
 

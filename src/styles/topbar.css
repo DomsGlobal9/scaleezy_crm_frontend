@@ -1,0 +1,59 @@
+/* The top bar (the mockup approved 29 Oct: mockups/top-bar.html): customer search in the middle, the
+   bell and light/dark on the right. Laptops get a bar across the top of the page; phones and tablets
+   keep their one bar, with the logo moved to the left. */
+
+.crm-topbar {
+  position: sticky; top: 0; z-index: 30;
+  display: grid; grid-template-columns: 1fr minmax(0, 520px) 1fr; align-items: center; gap: 14px;
+  height: 60px; padding: 0 clamp(14px, 2vw, 22px);
+  background: var(--bg-card); border-bottom: 1px solid var(--border-light);
+}
+.tb-right { display: flex; gap: 8px; justify-content: flex-end; align-items: center; }
+.tb-ib { width: 40px; height: 40px; border: 1px solid var(--border-light); border-radius: 10px; position: relative; }
+.tb-ib.on { border-color: var(--brand-solid); }
+
+/* The search. */
+.tb-search { position: relative; min-width: 0; }
+.tb-field { display: flex; align-items: center; gap: 8px; height: 40px; padding: 0 12px; background: var(--bg-input); border: 1px solid var(--border-light); border-radius: 10px; color: var(--text-muted); }
+.tb-field.on { border-color: var(--brand-solid); box-shadow: 0 0 0 3px rgba(22, 75, 30, .12); }
+.tb-field input { flex: 1; min-width: 0; border: 0; outline: 0; background: transparent; color: var(--text-primary); font: inherit; font-size: 14px; }
+.tb-field input::placeholder { color: var(--text-muted); }
+.tb-field input::-webkit-search-cancel-button { display: none; }
+.tb-field kbd { font: inherit; font-size: 11px; color: var(--text-muted); border: 1px solid var(--border-light); border-radius: 5px; padding: 1px 6px; }
+
+.tb-drop { position: absolute; top: calc(100% + 8px); z-index: 40; background: var(--bg-card); border: 1px solid var(--border-light); border-radius: 14px; box-shadow: var(--shadow-panel); padding: 6px; }
+.tb-search .tb-drop { left: 0; right: 0; }
+.tb-hit { width: 100%; display: grid; grid-template-columns: 34px minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 8px 10px; border-radius: 10px; text-align: left; color: var(--text-primary); font-size: 14px; }
+.tb-hit.on, .tb-hit:hover { background: var(--bg-hover); }
+.tb-av { width: 34px; height: 34px; border-radius: 50%; background: var(--brand-solid); color: var(--brand-on-solid); display: grid; place-items: center; font-size: 12px; font-weight: 700; }
+.tb-who { min-width: 0; }
+.tb-who b { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tb-who small { display: block; color: var(--text-secondary); font-size: 12px; }
+.tb-who mark { background: rgba(166, 217, 43, .35); color: inherit; border-radius: 3px; padding: 0 1px; }
+.tb-when { font-size: 12px; color: var(--text-muted); white-space: nowrap; }
+.tb-all { width: 100%; text-align: left; padding: 9px 10px; font-size: 13px; font-weight: 600; color: var(--brand-ink); border-top: 1px solid var(--border-light); margin-top: 4px; }
+.tb-empty { margin: 0; padding: 10px; font-size: 13px; color: var(--text-secondary); }
+
+/* The bell. */
+.tb-bell { position: relative; }
+.tb-dot { position: absolute; top: -6px; right: -6px; min-width: 19px; height: 19px; padding: 0 5px; border-radius: 999px; background: var(--accent-warning); color: #111; font-size: 11px; font-weight: 700; display: grid; place-items: center; font-variant-numeric: tabular-nums; }
+.tb-notes { right: 0; width: min(340px, calc(100vw - 24px)); }
+.tb-notes h3 { margin: 4px 10px 6px; font-size: 13px; color: var(--text-muted); font-weight: 600; }
+.tb-note { display: grid; grid-template-columns: 30px minmax(0, 1fr); gap: 10px; padding: 10px; border-radius: 10px; font-size: 14px; color: var(--text-primary); text-decoration: none; }
+.tb-note:hover, .tb-note:focus-visible { background: var(--bg-hover); outline: none; }
+.tb-note + .tb-note { border-top: 1px solid var(--border-light); }
+.tb-note b { display: block; }
+.tb-note small { display: block; color: var(--text-secondary); font-size: 12px; margin-top: 2px; overflow-wrap: anywhere; }
+.tb-i { width: 30px; height: 30px; border-radius: 9px; display: grid; place-items: center; background: var(--bg-input); color: var(--brand-ink); }
+
+/* Phones and tablets: one bar. */
+.tb-mfield, .tb-msearch { display: none; }
+@media (max-width: 1024px) {
+  .crm-topbar { display: none; }
+  .crm-mobilebar { display: grid !important; grid-template-columns: 36px auto minmax(0, 1fr) 36px 36px; gap: 6px; }
+  .crm-mobilebar .tb-ib { width: 36px; height: 36px; border-radius: 9px; }
+  .tb-mfield { display: flex; align-items: center; gap: 6px; height: 36px; padding: 0 10px; min-width: 0; background: var(--bg-input); border: 1px solid var(--border-light); border-radius: 9px; color: var(--text-muted); font-size: 13px; }
+  .tb-msearch { display: grid; grid-column: 1 / -1; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; align-items: center; }
+  .tb-cancel { font-size: 14px; font-weight: 600; color: var(--brand-ink); padding: 6px 4px; }
+  .crm-mobilebar .tb-notes { right: -42px; }
+}
