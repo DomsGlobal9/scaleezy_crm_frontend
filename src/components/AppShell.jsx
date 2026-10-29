@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom';
-import { CalendarCheck2, TrendingUp, DoorOpen, Users, Tags, ListFilter, Moon, Sun, LogOut, Menu, X } from 'lucide-react';
+import { CalendarCheck2, TrendingUp, DoorOpen, Users, Tags, ListFilter, Megaphone, Moon, Sun, LogOut, Menu, X } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { usePermission } from '../hooks/usePermission';
 import { useTodayCount } from '../hooks/useWork';
@@ -58,6 +58,7 @@ export default function AppShell() {
     { to: '/customers', label: 'All customers', icon: Users },
     { to: '/groups', label: 'Customer groups', icon: Tags },
     { to: '/segments', label: 'Saved lists', icon: ListFilter },
+    ...(can('campaign:view') ? [{ to: '/messages', label: 'Messages', icon: Megaphone }] : []),
   ] : [];
 
   const initials = (user?.name || user?.email || '?').split(/\s+/).map(w => w[0]).slice(0, 2).join('').toUpperCase();

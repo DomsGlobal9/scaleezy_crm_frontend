@@ -19,6 +19,8 @@ import WhatTheyWear, { readStore } from '../components/WhatTheyWear';
 import FestivalBuying from '../components/FestivalBuying';
 import DatesEditor from '../components/DatesEditor';
 import DeleteCustomer from '../components/DeleteCustomer';
+import SendOne from '../components/SendOne';
+import { useOneStatus } from '../hooks/useMessages';
 
 /**
  * One customer: who they are and their numbers in one header; below, what they wear, their
@@ -223,6 +225,11 @@ function Header({ profile: p, numbers: n }) {
   const { can, isOwner } = usePermission();
   const [editingDates, setEditingDates] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [messaging, setMessaging] = useState(false);
+  // A note on WhatsApp: for whoever may change customers, once messages are sent from CRM, to a
+  // customer who agreed and did not reply STOP (the service checks every rule again).
+  const oneStatus = useOneStatus(can('customer:update'));
+  const mayMessage = can('customer:update') && !!oneStatus.data?.available && !!p.phone && !!p.consent?.whatsappOffers && !p.consent?.stoppedAt;
   const address = p.addresses[0]
     ? `${p.addresses[0].line}${p.addresses[0].pincode ? ` ${p.addresses[0].pincode}` : ''}`
     : (p.shippingAddress || p.billingAddress || null);
@@ -247,6 +254,7 @@ function Header({ profile: p, numbers: n }) {
           {inventoryHref && (
             <a className="btn-secondary cp-btn" href={inventoryHref} target="_blank" rel="noreferrer"><ExternalLink size={14} /> Open in Inventory</a>
           )}
+          {mayMessage && <button type="button" className="btn-primary cp-btn" onClick={() => setMessaging(true)} data-testid="message-one"><MessageCircle size={14} /> Message</button>}
           {isOwner && inventoryLink && <MoreMenu onDelete={() => setDeleting(true)} />}
         </div>
       </div>
@@ -260,6 +268,7 @@ function Header({ profile: p, numbers: n }) {
       </div>
       {editingDates && <DatesEditor customerId={p.id} birthday={p.birthday} anniversary={p.anniversary} onClose={() => setEditingDates(false)} />}
       {deleting && <DeleteCustomer customerId={p.id} onClose={() => setDeleting(false)} />}
+      {messaging && <SendOne customerId={p.id} name={p.name} onClose={() => setMessaging(false)} />}
       <div className="cp-nums" data-testid="numbers">
         <Num testid="num-spend" value={formatRupees(n.lifetimeSpend)}
           note={`${n.bills === 1 ? '1 bill' : `${n.bills} bills`}${n.online > 0 ? ` · ${n.online} online` : ''}`} />

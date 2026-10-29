@@ -77,3 +77,15 @@ export function useSetProfileMoved() {
     onSuccess: (data) => qc.setQueryData(['shop', 'moved'], data)
   });
 }
+
+/** Campaigns or wishes: sent from CRM from now on, or given back to Inventory. Inventory's refusal comes as it is. */
+export function useSetMoved(key) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (on) => (await api.put(`/shop/moved/${key}`, { on })).data,
+    onSuccess: (data) => {
+      qc.setQueryData(['shop', 'moved'], data);
+      qc.invalidateQueries({ queryKey: ['messages'] });
+    }
+  });
+}

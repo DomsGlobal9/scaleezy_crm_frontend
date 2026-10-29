@@ -1,0 +1,98 @@
+/* Messages (Phase 3, the mockup approved 29 Oct: mockups/messages.html). */
+
+.ms-page { display: grid; gap: 16px; }
+.ms-new { display: inline-flex; align-items: center; gap: 8px; white-space: nowrap; }
+.ms-small { padding: 6px 11px !important; font-size: 13px !important; display: inline-flex; align-items: center; gap: 6px; }
+
+/* The three facts. */
+.ms-facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; }
+.ms-fact { display: flex; gap: 10px; align-items: flex-start; padding: 14px 16px; }
+.ms-fact > svg { flex-shrink: 0; margin-top: 1px; color: var(--text-secondary); }
+.ms-fact > svg.ok { color: #15803d; }
+.ms-fact > svg.warn { color: var(--accent-warning); }
+.ms-fact b { display: block; font-size: 14px; font-weight: 600; }
+.ms-fact span { display: block; font-size: 13px; color: var(--text-secondary); line-height: 1.45; margin-top: 2px; }
+.ms-note { margin: 0; padding: 12px 14px; border-radius: 12px; background: rgba(245, 158, 11, .12); border-left: 3px solid var(--accent-warning); font-size: 14px; line-height: 1.45; }
+.ms-note a { color: var(--brand-ink); font-weight: 600; }
+.ms-refused { margin: -6px 0 0; padding: 10px 12px; border-radius: 10px; background: rgba(245, 158, 11, .12); border-left: 3px solid var(--accent-warning); font-size: 13px; line-height: 1.45; }
+
+/* Tabs. */
+.ms-tabs { display: flex; gap: 6px; flex-wrap: wrap; }
+.ms-tab { padding: 6px 14px; border-radius: 999px; font-size: 13px; border: 1px solid var(--border-light); background: var(--bg-card); color: var(--text-primary); }
+.ms-tab.on { background: var(--brand-solid); color: var(--brand-on-solid); border-color: transparent; font-weight: 600; }
+.ms-tab:focus-visible { outline: 2px solid var(--accent-primary); outline-offset: 2px; }
+
+/* The list. */
+.ms-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.ms-item { display: grid; gap: 8px; padding: 14px 16px; }
+.ms-item-top { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; }
+.ms-name { font-weight: 600; color: var(--text-primary); text-decoration: none; overflow-wrap: anywhere; }
+.ms-meta { font-size: 12px; color: var(--text-secondary); margin-top: 2px; overflow-wrap: anywhere; }
+.ms-snip { font-size: 13px; color: var(--text-secondary); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; white-space: pre-wrap; }
+.ms-status { font-size: 12px; font-weight: 600; padding: 3px 10px; border-radius: 999px; white-space: nowrap; flex-shrink: 0; }
+.ms-status.sending { background: rgba(166, 217, 43, .22); color: var(--brand-ink); }
+.ms-status.done { background: var(--bg-input); color: var(--text-secondary); }
+.ms-status.draft { background: rgba(245, 158, 11, .16); color: #b45309; }
+.ms-bar { height: 8px; border-radius: 999px; background: var(--bg-input); overflow: hidden; display: flex; }
+.ms-bar i { display: block; height: 100%; background: var(--brand-solid); opacity: .55; }
+.ms-bar i.read { background: #15803d; opacity: 1; }
+.ms-legend { display: flex; gap: 14px; flex-wrap: wrap; font-size: 12px; color: var(--text-secondary); }
+.ms-came { font-size: 13px; color: var(--brand-ink); font-weight: 600; }
+
+/* Wishes, under Automatic. */
+.ms-wishes { display: grid; gap: 14px; }
+.ms-wish { display: grid; gap: 8px; border-top: 1px solid var(--border-light); padding-top: 14px; }
+.ms-wishes > .ms-note + .ms-wish, .ms-wishes > .ms-wish:first-child { border-top: none; padding-top: 0; }
+.ms-wish-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.ms-wish-head h3 { margin: 0; font-size: 15px; }
+.ms-wish-foot { display: flex; justify-content: space-between; gap: 10px; align-items: center; flex-wrap: wrap; }
+
+/* The editor. */
+.ms-edit { display: grid; grid-template-columns: minmax(0, 1fr) minmax(260px, 340px); gap: 16px; align-items: start; }
+.ms-form { display: grid; gap: 14px; }
+.ms-input { background: var(--bg-input); border: 1px solid var(--border-light); border-radius: 8px; padding: 10px 12px; font-size: 14px; color: var(--text-primary); width: 100%; }
+.ms-area { background: var(--bg-input); border: 1px solid var(--border-light); border-radius: 8px; padding: 10px 12px; font-size: 14px; line-height: 1.5; color: var(--text-primary); width: 100%; resize: vertical; font-family: inherit; white-space: pre-wrap; }
+.ms-input:focus-visible, .ms-area:focus-visible { outline: 2px solid var(--accent-primary); outline-offset: 1px; }
+.ms-who { padding: 12px 14px; border-radius: 12px; background: var(--bg-input); font-size: 14px; line-height: 1.6; }
+.ms-who b { font-variant-numeric: tabular-nums; }
+.ms-who small { display: block; color: var(--text-secondary); font-size: 12px; line-height: 1.5; margin-top: 2px; }
+.ms-att { display: flex; gap: 8px; flex-wrap: wrap; }
+.ms-linkbox { display: grid; gap: 10px; padding: 12px; border-radius: 12px; border: 1px solid var(--border-light); }
+.ms-choice { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.ms-side { display: grid; gap: 8px; position: sticky; top: 16px; }
+.ms-page > .ms-side { position: static; max-width: 360px; }
+.ms-pics { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 8px; }
+.ms-pic-pick { border-radius: 10px; overflow: hidden; border: 1px solid var(--border-light); aspect-ratio: 1; padding: 0; background: var(--bg-input); }
+.ms-pic-pick img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.ms-pic-pick:focus-visible { outline: 2px solid var(--accent-primary); outline-offset: 2px; }
+
+/* The WhatsApp bubble: always WhatsApp's own colours, in both themes. */
+.ms-phone { background: #e9e4dc; border-radius: 16px; padding: 14px; }
+.ms-bub { background: #fff; color: #111; border-radius: 4px 12px 12px 12px; padding: 8px 10px; font-size: 14px; line-height: 1.5; max-width: 300px; box-shadow: 0 1px 1px rgba(0, 0, 0, .08); }
+.ms-pic { width: 100%; max-height: 220px; object-fit: cover; border-radius: 8px; margin-bottom: 6px; display: block; }
+.ms-words { white-space: pre-wrap; overflow-wrap: anywhere; }
+.ms-link { color: #0a66c2; }
+.ms-stop { color: #666; font-size: 12px; margin-top: 6px; font-style: italic; }
+
+/* One message's page. */
+.ms-detail { display: grid; gap: 14px; }
+.ms-detail-head { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; }
+.ms-detail-head h1 { margin: 0; font-size: clamp(20px, 2.6vw, 24px); overflow-wrap: anywhere; }
+.ms-detail-head p { margin: 4px 0 0; color: var(--text-secondary); font-size: 14px; }
+.ms-confirm { display: grid; gap: 10px; padding: 12px 14px; border-radius: 12px; background: var(--bg-input); width: 100%; }
+.ms-confirm p { margin: 0; font-size: 14px; line-height: 1.45; }
+.ms-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; }
+.ms-stat { padding: 12px; border-radius: 12px; background: var(--bg-input); display: grid; gap: 2px; }
+.ms-stat b { font-size: 22px; font-variant-numeric: tabular-nums; }
+.ms-stat span { font-size: 12px; color: var(--text-secondary); }
+.ms-sub { font-size: 13px; font-weight: 600; margin-bottom: 6px; }
+.ms-skips { margin: 0; padding-left: 18px; font-size: 13px; color: var(--text-secondary); line-height: 1.7; }
+
+@media (max-width: 860px) {
+  .ms-edit { grid-template-columns: minmax(0, 1fr); }
+  .ms-side { position: static; }
+}
+@media (max-width: 640px) {
+  .ms-new { width: 100%; justify-content: center; }
+  .ms-choice { grid-template-columns: 1fr; }
+}

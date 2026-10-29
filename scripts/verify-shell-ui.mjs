@@ -48,7 +48,7 @@ async function main() {
       check('desktop: the sidebar is on screen', await side.isVisible());
       check('desktop: no phone bar', !(await page.locator('.crm-mobilebar').isVisible()));
       const places = await side.locator('.crm-tab .crm-tab-label').allInnerTexts();
-      check('desktop (owner): the places in shop words: To do today, This week, At the door, All customers, Customer groups, Saved lists (duplicates live on All customers)', JSON.stringify(places) === JSON.stringify(['To do today', 'This week', 'At the door', 'All customers', 'Customer groups', 'Saved lists']), places);
+      check('desktop (owner): the places in shop words: To do today, This week, At the door, All customers, Customer groups, Saved lists, Messages (duplicates live on All customers)', JSON.stringify(places) === JSON.stringify(['To do today', 'This week', 'At the door', 'All customers', 'Customer groups', 'Saved lists', 'Messages']), places);
       check('desktop: Today is marked as where you are', /\bon\b/.test(await side.locator('.crm-tab', { hasText: 'Today' }).getAttribute('class')));
       const width = await side.evaluate(el => el.getBoundingClientRect().width);
       check('desktop: 240px wide, like Inventory\'s', Math.round(width) === 240, width);
@@ -116,7 +116,7 @@ async function main() {
       const side = page.locator('#crm-sidebar');
       await side.locator('.crm-tab', { hasText: 'Today' }).waitFor({ timeout: 20000 });
       const places = await side.locator('.crm-tab .crm-tab-label').allInnerTexts();
-      check('sales: the same five places', JSON.stringify(places) === JSON.stringify(['To do today', 'At the door', 'All customers', 'Customer groups', 'Saved lists']), places);
+      check('sales: the same five places (no Messages: campaign:view is not theirs)', JSON.stringify(places) === JSON.stringify(['To do today', 'At the door', 'All customers', 'Customer groups', 'Saved lists']), places);
       await ctx.close();
     }
   } finally {
