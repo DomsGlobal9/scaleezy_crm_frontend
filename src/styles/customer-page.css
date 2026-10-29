@@ -51,6 +51,8 @@
 .cp-tab.phone-only { display: none; }
 .cp-pane { padding: var(--cp-pad); min-width: 0; }
 .cp-pane > .fb { border-top: none; padding-top: 0; }
+/* The tab already says "Festivals": its heading sits at the size of the other sub-headings. */
+.cp-pane > .fb .fb-head h3 { font-size: 14px; margin: 0; }
 
 .cp-rail { display: grid; gap: var(--cp-gap); position: sticky; top: 72px; }
 .cp-rail .wk-card { padding: var(--cp-pad); gap: 10px; }

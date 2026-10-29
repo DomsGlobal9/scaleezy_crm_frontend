@@ -30,7 +30,8 @@ function whatWords(f) {
   else if (f.usual) bits.push(f.timesBought > 1 ? `Usually ${band(f.usual)}` : formatRupees(f.usual.from));
   if (f.kinds.length) bits.push(kindsWords(f.kinds));
   if (f.colours.length) bits.push(lower(f.colours));
-  return bits.join(' · ');
+  const line = bits.join(' · ');
+  return line.charAt(0).toUpperCase() + line.slice(1);
 }
 
 export default function FestivalBuying({ data }) {
