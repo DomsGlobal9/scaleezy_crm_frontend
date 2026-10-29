@@ -31,7 +31,7 @@ export default function FeedbackSettings() {
       <div className="pe-sw-row">
         <div>
           <h3 id="pe-feedback">Ask how the visit was</h3>
-          <p>A day after a bill. 4 or 5 stars are asked to tell others on Google; 1 to 3 become a follow-up for you, never public.</p>
+          <p>A day after a bill. 4 or 5 stars are asked to tell others on Google; 1 to 3 also become a follow-up for you. Everyone can leave a Google review: asking only happy customers is against Google's rules.</p>
         </div>
         <button type="button" role="switch" aria-checked={d.on} aria-labelledby="pe-feedback" className={`pe-toggle${d.on ? ' on' : ''}`} disabled={save.isPending}
           onClick={() => send({ on: !d.on, ...(url !== null ? { reviewUrl: url } : {}) }, !d.on ? 'Customers are asked how the visit was, from tomorrow morning.' : 'Customers are no longer asked how the visit was.')} data-testid="feedback-switch" />

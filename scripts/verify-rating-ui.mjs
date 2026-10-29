@@ -5,7 +5,8 @@
  *
  *   1. It asks, with the shop's name and five answers, and nothing of the customer's
  *   2. A 5: thanks, and on to Google (noted on their timeline); opened again: "you have answered"
- *   3. A 2, with JavaScript off: sorry, the owner will call; a follow-up for the owner
+ *   3. A 2, with JavaScript off: sorry, the owner will call; a follow-up for the owner -- and still a
+ *      quiet link to Google (no review gating: Google forbids asking only happy customers)
  *   4. A week later the link has ended; it fits a phone
  *
  *   node scripts/verify-rating-ui.mjs      (CRM on 4008)
@@ -86,9 +87,14 @@ async function main() {
     await p2.goto(`${API}/l/${code(2)}`);
     await p2.getByRole('button', { name: '2 of 5' }).click();
     await p2.locator('h1').filter({ hasText: 'Sorry it was not right.' }).waitFor({ timeout: 10000 });
-    check('sorry: the owner will call; never posted', /will call you to put it right/.test(await p2.locator('main').innerText()) && /not posted anywhere/.test(await p2.locator('main').innerText()) && (await p2.getByRole('link', { name: /Google/ }).count()) === 0);
+    check('sorry: the owner will call; their answer never posted', /will call you to put it right/.test(await p2.locator('main').innerText()) && /not posted anywhere/.test(await p2.locator('main').innerText()));
+    // Must be there: without it, the page would ask only happy customers for reviews (review gating).
+    const quiet = p2.getByRole('link', { name: 'You can also leave a review on Google' });
+    check('...and a quiet link to Google all the same', (await quiet.count()) === 1 && (await quiet.getAttribute('href')) === `/l/${code(2)}/review`);
     check('...a follow-up for the owner, due today', /Rated their visit 2 of 5/.test(sql(`select body from crm.follow_ups f join crm.feedback b on b.follow_up_id = f.id where b.recipient_id = '${rid[1]}'`)));
     await p2.screenshot({ path: path.join(shots, 'rating-sorry.png'), fullPage: true });
+    await p2.goto(`${API}/l/${code(2)}`);
+    check('opened again after a 2: the review button whatever they gave', (await p2.locator('h1').innerText()) === 'Thank you, you have answered.' && (await p2.getByRole('link', { name: 'Write a Google review' }).count()) === 1);
     await plain.close();
 
     console.log('\n4. A week later');
