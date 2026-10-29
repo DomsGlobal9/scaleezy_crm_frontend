@@ -184,6 +184,23 @@ async function main() {
     await context.close();
   }
 
+  // ── A tablet or a narrow window (800px): the name is never squeezed by the buttons ──
+  {
+    const { context, page } = await signedIn(browser, owner, { width: 800, height: 900 });
+    await page.goto(`${APP}/customers/${busiest.id}`);
+    await page.getByTestId('profile').waitFor({ timeout: 15000 });
+    const head = await page.evaluate(() => {
+      const h1 = document.querySelector('.cp-who h1'), acts = document.querySelector('.cp-head-acts'), av = document.querySelector('.cp-av');
+      const lh = parseFloat(getComputedStyle(h1).lineHeight);
+      const r = (el) => el.getBoundingClientRect();
+      return { nameLines: Math.round(r(h1).height / lh), nameWidth: Math.round(r(h1).width), actsTop: Math.round(r(acts).top), nameBottom: Math.round(r(h1).bottom), actsLeft: Math.round(r(acts).left), avLeft: Math.round(r(av).left) };
+    });
+    check('800px: the name on one line, not squeezed into a column', head.nameLines <= 1 && head.nameWidth >= 200, head);
+    check('800px: the buttons on their own line below, from the same left edge as the avatar', head.actsTop > head.nameBottom && Math.abs(head.actsLeft - head.avLeft) <= 1, head);
+    await page.screenshot({ path: path.join(shots, 'customer-page-800.png') });
+    await context.close();
+  }
+
   // ── Edges ──
   {
     const { context, page } = await signedIn(browser, owner, { width: 1280, height: 800 });

@@ -8,8 +8,15 @@
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
 
 /* ── The header ── */
-.cp-head { padding: var(--cp-pad); display: grid; gap: 14px; }
+.cp-head { padding: var(--cp-pad); display: grid; gap: 14px; container-type: inline-size; }
 .cp-head-top { display: grid; grid-template-columns: 48px minmax(0, 1fr) auto; gap: 14px; align-items: center; }
+/* Decided by the card's own width, not the screen's: where the name and both buttons cannot share a
+   line (a tablet, a narrow window), the buttons take their own line, from the same left edge -- the
+   name is never squeezed into a column a syllable wide. */
+@container (max-width: 860px) {
+  .cp-head-top { grid-template-columns: 48px minmax(0, 1fr); }
+  .cp-head-acts { grid-column: 1 / -1; justify-content: flex-start; }
+}
 .cp-av { width: 48px; height: 48px; border-radius: 50%; display: grid; place-items: center; background: var(--brand-solid); color: var(--brand-on-solid); font-weight: 700; font-size: 16px; }
 .cp-who { min-width: 0; }
 .cp-who h1 { margin: 0; font-size: clamp(20px, 2.6vw, 24px); line-height: 1.25; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; overflow-wrap: anywhere; }
