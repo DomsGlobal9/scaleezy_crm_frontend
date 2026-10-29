@@ -5,6 +5,7 @@ import { usePermission } from '../hooks/usePermission';
 import { useMoved, useSetMoved, useSetProfileMoved } from '../hooks/useProfileEdit';
 import { formatDay } from '../utils/dates';
 import LoadFailed from '../components/LoadFailed';
+import FeedbackSettings from '../components/FeedbackSettings';
 
 /**
  * The owner's Shop settings: what this shop does in CRM instead of Inventory (Inventory's hand-over
@@ -90,6 +91,7 @@ export default function ShopSettings() {
               <p>{m.wishes?.fromDay ? `From ${formatDay(`${m.wishes.fromDay}T12:00:00Z`)}. Inventory wished the days before.` : 'Off: Inventory sends your wishes for now. When this goes on, the words and pictures come with them.'}</p>
             </Row>
             <p className="pe-hint">Birthday gift points and the "points lapsing" reminder stay in Inventory: they are about points.</p>
+            <FeedbackSettings />
           </>
         )}
       </section>

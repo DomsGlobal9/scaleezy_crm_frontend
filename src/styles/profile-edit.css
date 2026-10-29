@@ -67,6 +67,10 @@
 .pe-toggle:focus-visible { outline: 2px solid var(--accent-primary); outline-offset: 2px; }
 .pe-toggle:disabled { opacity: .6; }
 .pe-state { font-size: 13px; color: var(--text-muted); }
+.pe-auto { display: grid; gap: 12px; border-top: 1px solid var(--border-light); padding-top: 18px; margin-top: 6px; }
+.pe-auto h2 { margin: 0; font-size: 17px; }
+.pe-link-row { display: flex; gap: 8px; align-items: center; }
+.pe-link-row .ms-input { flex: 1; min-width: 0; }
 
 .crm-me-link { text-decoration: none; color: inherit; border-radius: 10px; }
 .crm-me-link:hover { background: var(--bg-hover); }

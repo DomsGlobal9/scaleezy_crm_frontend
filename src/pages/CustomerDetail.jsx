@@ -35,7 +35,7 @@ const FILTERS = [
   { key: 'returns', label: 'Returns' },
   { key: 'points', label: 'Points & credit' },
   { key: 'visits', label: 'Visits' },
-  { key: 'messages', label: 'Messages' },
+  { key: 'messages', label: 'Messages & feedback' },
   { key: 'notes', label: 'Notes & follow-ups' }
 ];
 
@@ -47,6 +47,7 @@ const KIND = {
   visit: { icon: DoorOpen, tone: '' },
   online: { icon: Eye, tone: '' },
   message: { icon: MessageCircle, tone: 'msg' },
+  feedback: { icon: Star, tone: 'msg' },
   consent: { icon: ShieldCheck, tone: 'consent' },
   note: { icon: NotebookPen, tone: '' },
   followup: { icon: CalendarClock, tone: 'fu' }
@@ -73,7 +74,7 @@ function dayHeading(iso) {
 }
 
 function amountText(e) {
-  if (e.amount === null || e.amount === undefined) return null;
+  if (e.amount === null || e.amount === undefined || e.unit === 'stars') return null;
   if (e.unit === 'points') return `${e.amount > 0 ? '+' : e.amount < 0 ? '−' : ''}${Math.abs(e.amount).toLocaleString('en-IN')}`;
   const r = formatRupees(Math.abs(e.amount));
   if (e.kind === 'credit') return `${e.amount >= 0 ? '+' : '−'}${r}`;

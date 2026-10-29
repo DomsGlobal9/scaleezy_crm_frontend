@@ -80,3 +80,15 @@ export function useSendOne(customerId) {
     onSuccess: () => qc.invalidateQueries({ queryKey: ['customer', customerId] })
   });
 }
+
+/** A1: "How was your visit?" -- the owner's switch and Google review link (Shop settings). */
+export function useFeedbackSettings(enabled = true) {
+  return useQuery({ queryKey: ['shop', 'feedback'], queryFn: async () => (await api.get('/shop/feedback')).data, enabled });
+}
+export function useSaveFeedback() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (body) => (await api.put('/shop/feedback', body)).data,
+    onSuccess: (data) => qc.setQueryData(['shop', 'feedback'], data)
+  });
+}
