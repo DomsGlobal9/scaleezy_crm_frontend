@@ -6,6 +6,7 @@ import AppShell from './components/AppShell';
 import SignIn from './pages/SignIn';
 import Customers from './pages/Customers';
 import CustomerDetail from './pages/CustomerDetail';
+import ShopSettings from './pages/ShopSettings';
 import Today from './pages/Today';
 import Duplicates from './pages/Duplicates';
 import Segments from './pages/Segments';
@@ -62,6 +63,7 @@ export default function App() {
           <Route path="/segments/new" element={<SegmentEditor />} />
           <Route path="/segments/:id" element={<SegmentView />} />
           <Route path="/segments/:id/edit" element={<SegmentEditor />} />
+          <Route path="/settings" element={<ShopSettings />} />
           <Route path="*" element={<Navigate to="/today" replace />} />
         </Route>
       </Routes>

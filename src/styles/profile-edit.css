@@ -1,0 +1,80 @@
+/* Changing a customer's offers answer and dates, deleting them, and the owner's Shop settings
+   (the mockup approved 29 Oct: mockups/customer-edit.html). */
+
+/* "Change" / "Add" beside a date in the header. */
+.pe-chg { color: var(--brand-ink); font-weight: 600; font-size: 13px; padding: 0 2px; border-radius: 4px; }
+.pe-chg:hover { text-decoration: underline; }
+.pe-chg:focus-visible { outline: 2px solid var(--accent-primary); outline-offset: 2px; }
+
+/* The owner's More menu. */
+.pe-more { position: relative; }
+.pe-menu { position: absolute; right: 0; top: calc(100% + 6px); min-width: 210px; background: var(--bg-card); border: 1px solid var(--border-light); border-radius: 12px; box-shadow: var(--shadow-panel); padding: 6px; z-index: 20; }
+.pe-menu button { width: 100%; text-align: left; padding: 9px 10px; border-radius: 8px; font-size: 14px; font-weight: 500; display: flex; gap: 8px; align-items: center; color: var(--text-primary); }
+.pe-menu button:hover, .pe-menu button:focus-visible { background: var(--bg-hover); outline: none; }
+.pe-menu .danger { color: var(--accent-danger); }
+.pe-menu small { display: block; color: var(--text-muted); font-size: 12px; padding: 4px 10px 6px; }
+
+/* The dates editor, under the header. */
+.pe-dates { display: grid; gap: 14px; border-top: 1px solid var(--border-light); padding-top: 16px; max-width: 520px; }
+.pe-dates h3 { margin: 0; font-size: 15px; }
+.pe-field { display: grid; gap: 6px; }
+.pe-field > span { font-size: 12px; font-weight: 600; color: var(--text-secondary); }
+.pe-pair { display: grid; grid-template-columns: 96px minmax(0, 170px) auto; gap: 8px; align-items: center; }
+.pe-bad .custom-select-trigger { border-color: var(--accent-danger); }
+.pe-clear { justify-self: start; color: var(--text-secondary); font-size: 13px; font-weight: 600; padding: 4px 2px; }
+.pe-clear:hover { color: var(--text-primary); }
+
+.pe-err { margin: 0; color: var(--accent-danger); font-size: 13px; line-height: 1.45; }
+.pe-hint { margin: 0; color: var(--text-muted); font-size: 12px; line-height: 1.45; }
+.pe-btns { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.pe-btns button { display: inline-flex; align-items: center; gap: 6px; }
+
+/* The offers answer, at the top of the consent record. */
+.pe-answer { display: grid; gap: 10px; margin-bottom: 16px; }
+.pe-choice { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.pe-opt { border: 1px solid var(--border-light); border-radius: 12px; padding: 12px; display: grid; gap: 3px; font-size: 14px; font-weight: 600; text-align: left; background: var(--bg-card); color: var(--text-primary); }
+.pe-opt small { font-weight: 400; color: var(--text-secondary); font-size: 12px; }
+.pe-opt.on { border-color: var(--brand-solid); box-shadow: inset 0 0 0 1px var(--brand-solid); }
+.pe-opt:focus-visible { outline: 2px solid var(--accent-primary); outline-offset: 2px; }
+.pe-said { margin: 0; font-size: 13px; color: var(--text-secondary); }
+.pe-locked { margin: 0 0 16px; padding: 12px 14px; border-radius: 12px; background: var(--bg-input); font-size: 14px; line-height: 1.45; }
+
+/* Deleting a customer. */
+.pe-delete { display: grid; gap: 14px; }
+.pe-what { margin: 0; padding: 12px 14px; border-radius: 12px; font-size: 14px; line-height: 1.5; background: rgba(239, 68, 68, .08); border-left: 3px solid var(--accent-danger); }
+.pe-what.soft { background: var(--bg-input); border-left-color: var(--border-focus); margin-bottom: 14px; }
+.pe-facts { display: flex; gap: 18px; flex-wrap: wrap; font-size: 13px; color: var(--text-secondary); }
+.pe-facts b { color: var(--text-primary); }
+.pe-type { display: grid; gap: 6px; }
+.pe-type span { font-size: 13px; font-weight: 600; }
+.pe-input { background: var(--bg-input); border: 1px solid var(--border-light); border-radius: 8px; padding: 10px 12px; font-size: 15px; letter-spacing: .08em; width: min(240px, 100%); color: var(--text-primary); }
+.pe-input:focus-visible { outline: 2px solid var(--accent-primary); outline-offset: 1px; }
+.pe-danger { padding: 9px 14px; border-radius: 10px; font-size: 14px; font-weight: 600; background: #b42318; color: #fff; }
+.pe-danger:disabled { opacity: .45; cursor: not-allowed; }
+
+/* Shop settings. */
+.pe-settings { padding: 20px; display: grid; gap: 14px; max-width: 720px; }
+.pe-settings h1 { margin: 0; font-size: 22px; }
+.pe-sw-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 16px; align-items: start; border-top: 1px solid var(--border-light); padding-top: 14px; }
+.pe-sw-row h3 { margin: 0 0 4px; font-size: 15px; }
+.pe-sw-row p { margin: 0; font-size: 13px; color: var(--text-secondary); line-height: 1.5; }
+.pe-sw-row ul { margin: 6px 0 0; padding-left: 18px; font-size: 13px; color: var(--text-secondary); line-height: 1.6; }
+.pe-gap { margin-top: 6px !important; }
+.pe-toggle { width: 46px; height: 26px; border-radius: 999px; background: var(--border-focus); position: relative; flex-shrink: 0; }
+.pe-toggle::after { content: ""; position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%; background: #fff; box-shadow: 0 1px 2px rgba(0, 0, 0, .2); transition: left .15s ease; }
+.pe-toggle.on { background: var(--brand-solid); }
+.pe-toggle.on::after { left: 23px; }
+.pe-toggle:focus-visible { outline: 2px solid var(--accent-primary); outline-offset: 2px; }
+.pe-toggle:disabled { opacity: .6; }
+.pe-state { font-size: 13px; color: var(--text-muted); }
+
+.crm-me-link { text-decoration: none; color: inherit; border-radius: 10px; }
+.crm-me-link:hover { background: var(--bg-hover); }
+.crm-me-link:focus-visible { outline: 2px solid var(--accent-primary); outline-offset: 2px; }
+
+@media (max-width: 640px) {
+  .pe-pair { grid-template-columns: 80px minmax(0, 1fr); }
+  .pe-pair .pe-clear { grid-column: 1 / -1; }
+  .pe-choice { grid-template-columns: 1fr; }
+}
+@media (prefers-reduced-motion: reduce) { .pe-toggle::after { transition: none; } }

@@ -13,5 +13,7 @@ export function usePermission() {
     if (permissions.includes(WILDCARD) || roles.includes('SUPER_ADMIN')) return true;
     return permissions.includes(permission);
   };
-  return { can, permissions };
+  // The shop owner: deleting customers and the shop's settings are theirs alone, as in Inventory.
+  const isOwner = permissions.includes(WILDCARD) || roles.includes('SUPER_ADMIN');
+  return { can, permissions, isOwner };
 }

@@ -26,7 +26,7 @@ function readTheme() {
  */
 export default function AppShell() {
   const { user, signOut } = useAuth();
-  const { can } = usePermission();
+  const { can, isOwner } = usePermission();
   const location = useLocation();
   const [theme, setTheme] = useState(readTheme);
   const [open, setOpen] = useState(false);
@@ -105,13 +105,24 @@ export default function AppShell() {
         </nav>
 
         <div className="crm-sidebar-foot">
-          <div className="crm-me">
-            <span className="crm-me-initials" aria-hidden="true">{initials}</span>
-            <span className="crm-me-who">
-              <span className="crm-me-name">{user?.name || 'Signed in'}</span>
-              {user?.email && <span className="crm-me-email">{user.email}</span>}
-            </span>
-          </div>
+          {/* The owner's name opens Shop settings (theirs alone); for everyone else it is just who is signed in. */}
+          {isOwner ? (
+            <Link to="/settings" className="crm-me crm-me-link" title="Shop settings" onClick={() => setOpen(false)}>
+              <span className="crm-me-initials" aria-hidden="true">{initials}</span>
+              <span className="crm-me-who">
+                <span className="crm-me-name">{user?.name || 'Signed in'}</span>
+                <span className="crm-me-email">Shop settings</span>
+              </span>
+            </Link>
+          ) : (
+            <div className="crm-me">
+              <span className="crm-me-initials" aria-hidden="true">{initials}</span>
+              <span className="crm-me-who">
+                <span className="crm-me-name">{user?.name || 'Signed in'}</span>
+                {user?.email && <span className="crm-me-email">{user.email}</span>}
+              </span>
+            </div>
+          )}
           <div className="crm-me-actions">
             <button type="button" className="crm-iconbtn" onClick={() => setTheme(t => (t === 'dark' ? 'light' : 'dark'))}
               aria-label={theme === 'dark' ? 'Switch to light' : 'Switch to dark'} title={theme === 'dark' ? 'Light' : 'Dark'}>

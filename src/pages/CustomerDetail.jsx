@@ -3,7 +3,7 @@ import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import {
   ArrowLeft, Loader2, IndianRupee, Undo2, Star, Wallet, DoorOpen, Eye, MessageCircle, NotebookPen,
   CircleCheck, CircleAlert, CircleSlash, ExternalLink, UserX, ShieldOff, CalendarClock, ShieldCheck, ChevronRight,
-  Phone, Mail, MapPin, Cake, Heart, Receipt
+  Phone, Mail, MapPin, Cake, Heart, Receipt, ChevronDown, Trash2
 } from 'lucide-react';
 import { useCounterCard } from '../hooks/useCounter';
 import { useCustomer, useTimeline } from '../hooks/useCustomer';
@@ -17,6 +17,8 @@ import FollowUpsAndNotes from '../components/FollowUpsAndNotes';
 import ConsentRecord from '../components/ConsentRecord';
 import WhatTheyWear, { readStore } from '../components/WhatTheyWear';
 import FestivalBuying from '../components/FestivalBuying';
+import DatesEditor from '../components/DatesEditor';
+import DeleteCustomer from '../components/DeleteCustomer';
 
 /**
  * One customer: who they are and their numbers in one header; below, what they wear, their
@@ -172,17 +174,62 @@ function Reach({ icon: Icon, label, children }) {
   );
 }
 
+/** A birthday or anniversary, with "Change" (or "Add") for whoever may change it. */
+function DateReach({ icon: Icon, label, value, onChange }) {
+  if (!value && !onChange) return null;
+  return (
+    <span className="cp-reach-item" title={label}>
+      <Icon size={14} aria-hidden="true" />
+      <span>{value ? `${label} ${value}` : label}</span>
+      {onChange && <button type="button" className="pe-chg" onClick={onChange} aria-label={`${value ? 'Change' : 'Add'} ${label.toLowerCase()}`}>{value ? 'Change' : 'Add'}</button>}
+    </span>
+  );
+}
+
+/** The owner's More menu: Delete customer. Closes on a click outside or Escape. */
+function MoreMenu({ onDelete }) {
+  const [open, setOpen] = useState(false);
+  const wrap = React.useRef(null);
+  React.useEffect(() => {
+    if (!open) return undefined;
+    const away = (e) => { if (!wrap.current?.contains(e.target)) setOpen(false); };
+    const key = (e) => { if (e.key === 'Escape') setOpen(false); };
+    document.addEventListener('mousedown', away);
+    window.addEventListener('keydown', key);
+    return () => { document.removeEventListener('mousedown', away); window.removeEventListener('keydown', key); };
+  }, [open]);
+  return (
+    <div className="pe-more" ref={wrap}>
+      <button type="button" className="btn-secondary cp-btn" aria-haspopup="menu" aria-expanded={open} onClick={() => setOpen(o => !o)}>
+        More <ChevronDown size={14} />
+      </button>
+      {open && (
+        <div className="pe-menu" role="menu">
+          <button type="button" role="menuitem" className="danger" onClick={() => { setOpen(false); onDelete(); }}><Trash2 size={15} /> Delete customer…</button>
+          <small>Only the owner sees this.</small>
+        </div>
+      )}
+    </div>
+  );
+}
+
 /**
  * Who they are, how to reach them, and their numbers: one card (the owner, 28 Oct: the page was too
- * long). Points, credit and returns show only when there are some.
+ * long). Points, credit and returns show only when there are some. For a customer Inventory knows,
+ * their offers answer and dates can be changed here (customer:update), and the owner can delete them;
+ * each is done in Inventory (services/customers/profile-edit there and here).
  */
 function Header({ profile: p, numbers: n }) {
+  const { can, isOwner } = usePermission();
+  const [editingDates, setEditingDates] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const address = p.addresses[0]
     ? `${p.addresses[0].line}${p.addresses[0].pincode ? ` ${p.addresses[0].pincode}` : ''}`
     : (p.shippingAddress || p.billingAddress || null);
   const moreAddresses = Math.max(0, p.addresses.length - 1);
   const inventoryLink = (p.links ?? []).find(l => l.source === 'inventory');
   const inventoryHref = inventoryLink ? `${INVENTORY_URL}/customers/${encodeURIComponent(inventoryLink.externalId)}` : null;
+  const editable = !!inventoryLink && can('customer:update');
 
   return (
     <section className="crm-card cp-head" data-testid="profile">
@@ -195,21 +242,24 @@ function Header({ profile: p, numbers: n }) {
           </div>
         </div>
         <div className="cp-head-acts">
-          <Consent consent={p.consent} customerId={p.id} name={p.name} inventoryHref={inventoryHref} />
+          <Consent consent={p.consent} customerId={p.id} name={p.name} inventoryHref={inventoryHref} editable={editable} hasPhone={!!p.phone} />
           {/* Only for a person Inventory knows: CRM's own id is not Inventory's (plan §14). */}
           {inventoryHref && (
             <a className="btn-secondary cp-btn" href={inventoryHref} target="_blank" rel="noreferrer"><ExternalLink size={14} /> Open in Inventory</a>
           )}
+          {isOwner && inventoryLink && <MoreMenu onDelete={() => setDeleting(true)} />}
         </div>
       </div>
       <div className="cp-reach">
         <Reach icon={Phone} label="Phone">{p.phone ? formatPhone(p.phone) : null}</Reach>
         <Reach icon={Mail} label="Email">{p.email}</Reach>
         <Reach icon={MapPin} label="Address">{address ? `${address}${moreAddresses ? ` (+${moreAddresses} more)` : ''}` : null}</Reach>
-        <Reach icon={Cake} label="Birthday">{dayOfYear(p.birthday)}</Reach>
-        <Reach icon={Heart} label="Anniversary">{dayOfYear(p.anniversary)}</Reach>
+        <DateReach icon={Cake} label="Birthday" value={dayOfYear(p.birthday)} onChange={editable && !editingDates ? () => setEditingDates(true) : null} />
+        <DateReach icon={Heart} label="Anniversary" value={dayOfYear(p.anniversary)} onChange={editable && !editingDates ? () => setEditingDates(true) : null} />
         <Reach icon={Receipt} label="GSTIN">{p.gstNumber}</Reach>
       </div>
+      {editingDates && <DatesEditor customerId={p.id} birthday={p.birthday} anniversary={p.anniversary} onClose={() => setEditingDates(false)} />}
+      {deleting && <DeleteCustomer customerId={p.id} onClose={() => setDeleting(false)} />}
       <div className="cp-nums" data-testid="numbers">
         <Num testid="num-spend" value={formatRupees(n.lifetimeSpend)}
           note={`${n.bills === 1 ? '1 bill' : `${n.bills} bills`}${n.online > 0 ? ` · ${n.online} online` : ''}`} />
@@ -227,7 +277,7 @@ function Header({ profile: p, numbers: n }) {
  * WhatsApp consent, with the proof the DPDP Act asks for: who recorded it, and when. A button: it
  * opens the whole record (every yes, no and STOP, and where each came from).
  */
-function Consent({ consent: c, customerId, name, inventoryHref }) {
+function Consent({ consent: c, customerId, name, inventoryHref, editable, hasPhone }) {
   const [open, setOpen] = useState(false);
   let tone = 'no';
   let icon = <CircleAlert size={15} />;
@@ -244,9 +294,9 @@ function Consent({ consent: c, customerId, name, inventoryHref }) {
   return (
     <>
       <button type="button" className={`cp-consent${tone ? ` ${tone}` : ''}`} data-testid="consent" onClick={() => setOpen(true)} aria-haspopup="dialog">
-        {icon} <span>{words}</span> <span className="cp-consent-more">Record <ChevronRight size={14} /></span>
+        {icon} <span>{words}</span> <span className="cp-consent-more">{editable ? 'Change' : 'Record'} <ChevronRight size={14} /></span>
       </button>
-      {open && <ConsentRecord customerId={customerId} name={name} inventoryHref={inventoryHref} onClose={() => setOpen(false)} />}
+      {open && <ConsentRecord customerId={customerId} name={name} inventoryHref={inventoryHref} editable={editable} hasPhone={hasPhone} onClose={() => setOpen(false)} />}
     </>
   );
 }
