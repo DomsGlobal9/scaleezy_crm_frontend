@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import toast from 'react-hot-toast';
 import { Loader2 } from 'lucide-react';
-import { useFeedbackSettings, useSaveFeedback } from '../hooks/useMessages';
+import { useArrivalsSettings, useFeedbackSettings, useSaveArrivals, useSaveFeedback } from '../hooks/useMessages';
 import LoadFailed from './LoadFailed';
 
 /**
- * Automatic messages in Shop settings (the mockup approved 29 Oct): "Ask how the visit was" and the
- * shop's Google review link (decision N4: typed by the owner). On needs the link, because a happy
+ * Automatic messages in Shop settings (the mockup approved 29 Oct): "Ask how the visit was" with the
+ * shop's Google review link (decision N4: typed by the owner), and "New in their size and colour" (A2). On needs the link, because a happy
  * customer is sent there. The service checks the link and says what is wrong in its own words.
  */
 export default function FeedbackSettings() {
@@ -47,6 +47,33 @@ export default function FeedbackSettings() {
       </label>
       <p className="pe-hint">In Google, open your shop's profile and choose "Ask for reviews": copy the link it gives.</p>
       {error && <p className="pe-err" role="alert" data-testid="feedback-error">{error}</p>}
+      <Arrivals />
     </div>
+  );
+}
+
+/** A2: when new stock comes in, tell those who hearted it or wear that size and colour. From the moment it goes on. */
+function Arrivals() {
+  const s = useArrivalsSettings();
+  const save = useSaveArrivals();
+  const [error, setError] = useState(null);
+  if (s.isLoading || s.isError) return s.isError ? <LoadFailed what="the new-stock setting" error={s.error} onRetry={() => s.refetch()} /> : null;
+  const on = s.data.on;
+  const flip = async () => {
+    setError(null);
+    try { await save.mutateAsync({ on: !on }); toast.success(!on ? 'From now on, customers hear about new stock in their size and colour.' : 'Customers are no longer told about new stock.'); }
+    catch (err) { setError(err?.message || 'The setting could not be saved. Try again.'); }
+  };
+  return (
+    <>
+      <div className="pe-sw-row">
+        <div>
+          <h3 id="pe-arrivals">New in their size and colour</h3>
+          <p>When new stock comes in: first those who hearted that piece in the online shop, then those who wear that size and colour. One a week at most, with the photo.</p>
+        </div>
+        <button type="button" role="switch" aria-checked={on} aria-labelledby="pe-arrivals" className={`pe-toggle${on ? ' on' : ''}`} disabled={save.isPending} onClick={flip} data-testid="arrivals-switch" />
+      </div>
+      {error && <p className="pe-err" role="alert" data-testid="arrivals-error">{error}</p>}
+    </>
   );
 }

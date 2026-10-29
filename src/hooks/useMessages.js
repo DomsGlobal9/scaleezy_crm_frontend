@@ -92,3 +92,15 @@ export function useSaveFeedback() {
     onSuccess: (data) => qc.setQueryData(['shop', 'feedback'], data)
   });
 }
+
+/** A2: "New in their size and colour" -- the owner's switch (Shop settings). */
+export function useArrivalsSettings(enabled = true) {
+  return useQuery({ queryKey: ['shop', 'arrivals'], queryFn: async () => (await api.get('/shop/arrivals')).data, enabled });
+}
+export function useSaveArrivals() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (body) => (await api.put('/shop/arrivals', body)).data,
+    onSuccess: (data) => qc.setQueryData(['shop', 'arrivals'], data)
+  });
+}

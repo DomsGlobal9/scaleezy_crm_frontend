@@ -87,7 +87,7 @@ function List({ tab, navigate }) {
         <div className="crm-empty">
           <Megaphone size={26} aria-hidden="true" />
           <h3>{tab === 'shop' ? 'No messages yet' : 'No wishes sent yet'}</h3>
-          <p>{tab === 'shop' ? 'Write one message, choose who gets it, and CRM sends it to each customer by name.' : 'Each day\'s birthday and anniversary wishes show here once they are switched on above.'}</p>
+          <p>{tab === 'shop' ? 'Write one message, choose who gets it, and CRM sends it to each customer by name.' : 'Wishes, "How was your visit?" and news of new stock show here once they are switched on.'}</p>
         </div>
       </div>
     );

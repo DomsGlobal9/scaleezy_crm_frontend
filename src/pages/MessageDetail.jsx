@@ -52,7 +52,7 @@ export default function MessageDetail() {
     catch (err) { setError(err?.message || 'The draft could not be deleted. Try again.'); }
   };
   const busy = act.isPending || del.isPending;
-  const kind = d.kind === 'manual' ? null : d.kind === 'birthday' ? 'Automatic birthday wishes' : d.kind === 'anniversary' ? 'Automatic anniversary wishes' : 'A note to one customer';
+  const kind = { manual: null, birthday: 'Automatic birthday wishes', anniversary: 'Automatic anniversary wishes', feedback: 'Automatic: how was the visit?', arrival: 'Automatic: new in their size and colour', one: 'A note to one customer' }[d.kind] ?? null;
 
   return (
     <main className="crm-page ms-page">

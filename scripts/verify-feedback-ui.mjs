@@ -1,6 +1,7 @@
 /**
  * A1 in a real browser (installed Edge), signed in for real, local database only: the owner's
- * "Ask how the visit was" switch and Google review link in Shop settings, and the week's ratings on
+ * "Ask how the visit was" switch and Google review link in Shop settings, the "New in their size and
+ * colour" switch (A2), and the week's ratings on
  * This week. (The customer's rating page waits for the owner's OK on its mockup.)
  *
  *   node scripts/verify-feedback-ui.mjs      (CRM on 4008, the app on 5176)
@@ -57,7 +58,15 @@ async function main() {
     await sw.click();
     await page.waitForFunction(() => document.querySelector('[data-testid="feedback-switch"]')?.getAttribute('aria-checked') === 'true', null, { timeout: 15000 });
     check('with the link: on, and saved in CRM', sql(`select feedback_on::text || '|' || review_url from crm.message_settings where client_id = '${SHOP}'`) === `true|${REVIEW}`);
+    // A2: "New in their size and colour", on from the moment it is switched on, and off again.
+    const arr = page.getByTestId('arrivals-switch');
+    await arr.click();
+    await page.waitForFunction(() => document.querySelector('[data-testid="arrivals-switch"]')?.getAttribute('aria-checked') === 'true', null, { timeout: 15000 });
+    check('"New in their size and colour" switches on, from now', sql(`select arrivals_on::text || '|' || (arrivals_seen_to is not null)::text from crm.message_settings where client_id = '${SHOP}'`) === 'true|true');
     await page.screenshot({ path: path.join(shots, 'feedback-settings.png'), fullPage: true });
+    await arr.click();
+    await page.waitForFunction(() => document.querySelector('[data-testid="arrivals-switch"]')?.getAttribute('aria-checked') === 'false', null, { timeout: 15000 });
+    check('...and off again', sql(`select arrivals_on::text from crm.message_settings where client_id = '${SHOP}'`) === 'false');
 
     await page.goto(`${APP}/week`);
     const card = page.getByTestId('feedback');
@@ -75,7 +84,7 @@ async function main() {
   } finally {
     await browser.close();
     sql(`delete from crm.feedback where id in ('${fb[0]}', '${fb[1]}')`);
-    sql(`delete from crm.audit_log where client_id = '${SHOP}' and action = 'feedback.settings' and at >= now() - interval '10 minutes'`);
+    sql(`delete from crm.audit_log where client_id = '${SHOP}' and action in ('feedback.settings', 'arrivals.settings') and at >= now() - interval '10 minutes'`);
     const [on, url] = before.split('|');
     if (before) sql(`update crm.message_settings set feedback_on = ${on === 'true'}, review_url = ${url ? `'${url}'` : 'null'} where client_id = '${SHOP}'`);
     else sql(`delete from crm.message_settings where client_id = '${SHOP}'`);
