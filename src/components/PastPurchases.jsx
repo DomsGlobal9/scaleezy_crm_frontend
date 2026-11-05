@@ -124,16 +124,20 @@ function Bill({ bill: b }) {
   );
 }
 
-/** At the foot of the timeline: past purchases, kept together, never mixed in by date. */
+/** On the timeline: past purchases, listed together after everything dated, never mixed in by date. */
 export function PastOnTimeline({ customerId }) {
   const past = usePast(customerId);
+  const [all, setAll] = useState(false);
   const bills = past.data?.bills ?? [];
   if (bills.length === 0) return null;
   const net = bills.reduce((t, b) => t + b.net, 0);
+  const anyDated = bills.some(b => b.billedOn);
   return (
     <div className="pp-timeline" data-testid="past-on-timeline">
       <div className="pp-bill-top"><span>{plural(bills.length, 'past purchase', 'past purchases')}</span><span>{formatRupees(net)}</span></div>
-      <div className="pp-note">Date not known unless the bill shows one. Kept here, never mixed in by date.</div>
+      <div className="pp-note">{anyDated ? "From the shop's earlier records, kept together here." : "From the shop's earlier records. Date not known, so they are kept together here."}</div>
+      {(all ? bills : bills.slice(0, 5)).map(b => <Bill key={b.id} bill={b} />)}
+      {bills.length > 5 && <button type="button" className="si-link" style={{ justifySelf: 'start', marginTop: 6 }} onClick={() => setAll(a => !a)}>{all ? 'Show fewer' : `Show all ${bills.length.toLocaleString('en-IN')}`}</button>}
     </div>
   );
 }

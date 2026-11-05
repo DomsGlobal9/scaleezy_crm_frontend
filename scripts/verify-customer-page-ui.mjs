@@ -48,7 +48,11 @@ async function main() {
   // The customer with the most bills in the test shop: the busiest page.
   const list = await api(owner, '/customers?pageSize=100');
   const busiest = [...list.customers].sort((a, b) => b.orders - a.orders)[0];
-  const quiet = list.customers.find(c => c.orders === 0);
+  // Someone with nothing at all on their timeline: no bills is not enough, they may have looked at the online shop.
+  let quiet = null;
+  for (const c of list.customers.filter(x => x.orders === 0 && !x.hasPast)) {
+    if ((await api(owner, `/customers/${c.id}/timeline?limit=1`)).events.length === 0) { quiet = c; break; }
+  }
   const expected = await api(owner, `/customers/${busiest.id}`);
   const firstPage = await api(owner, `/customers/${busiest.id}/timeline?limit=30`);
   const returnsOnly = await api(owner, `/customers/${busiest.id}/timeline?kind=returns&limit=30`);

@@ -22,7 +22,7 @@ import DeleteCustomer from '../components/DeleteCustomer';
 import SendOne from '../components/SendOne';
 import { useOneStatus } from '../hooks/useMessages';
 import { useCustomerReviews } from '../hooks/useReviews';
-import PastPurchases, { PastOnTimeline } from '../components/PastPurchases';
+import PastPurchases, { PastOnTimeline, usePast } from '../components/PastPurchases';
 import { useMediaQuery } from '../hooks/useMediaQuery';
 import { FeedbackCard, ReviewCard } from '../components/ReviewCards';
 
@@ -175,7 +175,7 @@ export default function CustomerDetail() {
               </div>
               {/* Follow-ups are a tab on a phone only; on a laptop that tab shows What they wear. */}
               <div className="cp-pane" role="tabpanel" aria-labelledby={`cp-tab-${tab === 'work' ? 'wear' : tab}`}>
-                {tab === 'timeline' ? <><Timeline id={id} /><PastOnTimeline customerId={customer.data.profile.id} /></>
+                {tab === 'timeline' ? <Timeline id={id} />
                   : tab === 'festivals' ? <FestivalsTab customerId={customer.data.profile.id} />
                   : tab === 'reviews' ? <ReviewsTab reviews={reviews} />
                   : <><PastPurchases customerId={customer.data.profile.id} /><WhatTheyWear customerId={customer.data.profile.id} onFestivals={() => show('festivals')} /></>}
@@ -392,6 +392,9 @@ function Timeline({ id }) {
   const [kind, setKind] = useState('all');
   const timeline = useTimeline(id, kind);
   const events = useMemo(() => (timeline.data?.pages ?? []).flatMap(p => p.events), [timeline.data]);
+  // Past purchases are bills: they show under Everything and Bills, kept apart because they have no date.
+  const past = usePast(id);
+  const showPast = (kind === 'all' || kind === 'bills') && (past.data?.bills?.length ?? 0) > 0;
 
   // Grouped by day, in the order they came.
   const days = useMemo(() => {
@@ -421,7 +424,7 @@ function Timeline({ id }) {
         <div className="crm-row crm-muted" aria-busy="true" style={{ padding: '12px 0' }}><Loader2 size={16} className="animate-spin" /> Loading the timeline…</div>
       ) : timeline.isError ? (
         <LoadFailed what="the timeline" error={timeline.error} onRetry={() => timeline.refetch()} />
-      ) : events.length === 0 ? (
+      ) : events.length === 0 && showPast ? null : events.length === 0 ? (
         <div className="crm-empty" data-testid="timeline-empty">
           <h3>{kind === 'all' ? 'Nothing here yet' : 'None of these yet'}</h3>
           <p>{kind === 'all' ? 'Bills, returns, visits and messages appear here as they happen.' : 'Choose Everything to see all that happened with this customer.'}</p>
@@ -444,6 +447,7 @@ function Timeline({ id }) {
           </button>
         </div>
       )}
+      {showPast && !timeline.hasNextPage && <PastOnTimeline customerId={id} />}
     </section>
   );
 }

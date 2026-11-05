@@ -64,6 +64,15 @@ async function main() {
     await page.getByRole('tab', { name: 'Timeline' }).click();
     await page.getByTestId('past-on-timeline').waitFor({ timeout: 10000 });
     check('the timeline keeps them together at the foot, with no dates', /5 past purchases/.test(await page.getByTestId('past-on-timeline').innerText()) && (await page.getByTestId('event').count()) === 0);
+    const onTl = await page.getByTestId('past-on-timeline').innerText();
+    check('the timeline lists the past bills, and does not say "Nothing here yet"', onTl.includes(`Bill ${STAMP}900`) && (await page.getByTestId('timeline-empty').count()) === 0, onTl.slice(0, 200));
+    await page.getByRole('button', { name: 'Returns', exact: true }).click();
+    await page.getByTestId('timeline-empty').waitFor({ timeout: 10000 });
+    check('other filters leave past bills out', (await page.getByTestId('past-on-timeline').count()) === 0);
+    await page.getByRole('button', { name: 'Bills', exact: true }).click();
+    await page.getByTestId('past-on-timeline').waitFor({ timeout: 10000 });
+    check('and Bills shows them', true);
+    await page.screenshot({ path: path.join(shots, 'past-timeline.png'), fullPage: true });
 
     await page.goto(`${APP}/customers/${s.exchange}`);
     await page.getByTestId('past-purchases').waitFor({ timeout: 15000 });
