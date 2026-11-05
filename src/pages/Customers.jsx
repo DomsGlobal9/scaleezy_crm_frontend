@@ -127,7 +127,7 @@ export default function Customers() {
           type="search"
           value={typed}
           onChange={(e) => setTyped(e.target.value)}
-          placeholder="Search by name, phone, code or email"
+          placeholder="Search by name, phone, code, email or bill number"
           aria-label="Search customers"
           autoComplete="off"
           enterKeyHint="search"

@@ -162,6 +162,21 @@ async function main() {
     await applied();
     check('a bar in the overview opens that filter', /Budget/.test(await page.getByTestId('filter-chip').first().innerText()));
 
+    // Whose bill is this? The top bar and All customers.
+    await page.goto(`${APP}/customers`);
+    const top = page.locator('[data-testid="top-search"]:visible');
+    await top.fill(`${STAMP}400`);
+    const results = page.locator('[data-testid="top-search-results"]:visible');
+    await results.getByText(`Past bill ${STAMP}400`).waitFor({ timeout: 15000 });
+    check('the top bar finds the customer by an old bill\'s number, and says so', new RegExp(`Pastnophone ${STAMP}`).test(await results.innerText()), await results.innerText());
+    await page.screenshot({ path: path.join(shots, 'search-bill-top.png') });
+    await page.keyboard.press('Escape');
+    await page.getByLabel('Search customers').fill(`${STAMP}400`);
+    await page.getByTestId('customer-table').getByText(`Past bill ${STAMP}400`).waitFor({ timeout: 15000 });
+    check('and All customers too', (await rows().count()) >= 1 && new RegExp(`Pastnophone ${STAMP}`).test(await rows().first().innerText()));
+    await page.screenshot({ path: path.join(shots, 'search-bill-list.png') });
+    await page.getByLabel('Search customers').fill('');
+
     // Each shop sets its own price ranges.
     await page.goto(`${APP}/settings`);
     const bands = page.getByTestId('price-bands');

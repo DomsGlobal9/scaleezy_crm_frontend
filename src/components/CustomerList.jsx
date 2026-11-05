@@ -40,7 +40,7 @@ export default function CustomerList({ rows, onOpen }) {
             <tr key={c.id} data-testid="customer-row" {...rowLink(() => open(c), { label: `Open ${c.name}` })}>
               <td>
                 <div className="crm-name">{c.name}</div>
-                <div className="crm-sub">{[c.code, c.companyName, c.customerType === 'WALK_IN' ? 'Walk-in' : null].filter(Boolean).join(' · ')}</div>
+                <div className="crm-sub">{[c.matched, c.code, c.companyName, c.customerType === 'WALK_IN' ? 'Walk-in' : null].filter(Boolean).join(' · ')}</div>
               </td>
               <td style={{ whiteSpace: 'nowrap' }}>{c.phone ? formatPhone(c.phone) : <span className="crm-muted">—</span>}</td>
               <td style={{ wordBreak: 'break-all' }}>{c.email || <span className="crm-muted">—</span>}</td>
@@ -76,7 +76,7 @@ function CustomerCard({ customer: c, onOpen }) {
       <div className="crm-cust-top">
         <div style={{ minWidth: 0 }}>
           <div className="crm-name" style={{ fontSize: 16 }}>{c.name}</div>
-          <div className="crm-sub">{[c.code, c.companyName, c.customerType === 'WALK_IN' ? 'Walk-in' : null].filter(Boolean).join(' · ')}</div>
+          <div className="crm-sub">{[c.matched, c.code, c.companyName, c.customerType === 'WALK_IN' ? 'Walk-in' : null].filter(Boolean).join(' · ')}</div>
         </div>
         <div style={{ textAlign: 'right' }}>
           <div className="crm-cust-spent">{formatRupees(c.totalSpent)}</div>

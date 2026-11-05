@@ -7,8 +7,8 @@ import { formatPhone } from '../utils/phone';
 import { formatDay } from '../utils/dates';
 
 /**
- * The top bar's customer search (the mockup approved 29 Oct): a name, any part of a phone number, or a
- * customer code. The best five show as you type; Enter opens the one highlighted, or the full list on
+ * The top bar's customer search (the mockup approved 29 Oct): a name, any part of a phone number, a
+ * customer code, or the exact number of an order, invoice or old bill. The best five show as you type; Enter opens the one highlighted, or the full list on
  * All customers (?q=). "/" jumps here from anywhere that is not already a text box.
  *
  * `onDone` closes the phone's search when something is opened.
@@ -77,7 +77,7 @@ export default function CustomerSearch({ autoFocus = false, onDone, shortcut = f
     <div className="tb-search" ref={wrap}>
       <div className={`tb-field${open ? ' on' : ''}`}>
         <Search size={16} aria-hidden="true" />
-        <input ref={input} type="search" value={typed} autoFocus={autoFocus} placeholder="Search customers: name, phone or code"
+        <input ref={input} type="search" value={typed} autoFocus={autoFocus} placeholder="Search: name, phone, code or bill number"
           onChange={(e) => { setTyped(e.target.value); setOpen(true); }} onFocus={() => setOpen(true)} onKeyDown={onKeyDown}
           role="combobox" aria-label="Find a customer" aria-expanded={showList} aria-controls={listId} aria-autocomplete="list"
           aria-activedescendant={active >= 0 ? `${listId}-${active}` : undefined} data-testid="top-search" />
@@ -93,7 +93,7 @@ export default function CustomerSearch({ autoFocus = false, onDone, shortcut = f
                 <span className="tb-av" aria-hidden="true">{initials(c.name)}</span>
                 <span className="tb-who">
                   <b><Marked text={c.name} query={digits ? '' : query} /></b>
-                  <small>{[c.code, c.phone ? (digits ? formatPhone(c.phone) : `…${c.phone.replace(/\D/g, '').slice(-4)}`) : 'no phone'].filter(Boolean).join(' · ')}</small>
+                  <small>{[c.matched, c.code, c.phone ? (digits ? formatPhone(c.phone) : `…${c.phone.replace(/\D/g, '').slice(-4)}`) : 'no phone'].filter(Boolean).join(' · ')}</small>
                 </span>
                 <span className="tb-when">{c.lastVisit ? `Last visit ${formatDay(c.lastVisit)}` : 'Not yet'}</span>
               </button>
