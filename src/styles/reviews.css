@@ -1,0 +1,52 @@
+/* Customer reviews and private feedback: the customer page's tab and the one simple list. */
+.rv-stars { color: var(--accent-warning); font-size: 15px; letter-spacing: 1px; font-weight: 400; white-space: nowrap; }
+.rv-stars.low { color: var(--accent-danger); }
+[data-theme="light"] .rv-stars { color: #b45309; }
+[data-theme="light"] .rv-stars.low { color: #b42318; }
+
+.rv-card { padding: 14px 16px; display: grid; gap: 8px; border: 1px solid var(--border-light); border-radius: 12px; background: var(--bg-card); min-width: 0; }
+.rv-stack { display: grid; gap: 10px; min-width: 0; }
+.rv-top { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; align-items: center; min-width: 0; }
+.rv-kind { font-size: 13px; font-weight: 600; min-width: 0; overflow-wrap: anywhere; }
+.rv-item { font-size: 14px; font-weight: 600; overflow-wrap: anywhere; }
+/* The customer's own words: plain text, line breaks kept, and one very long word still wraps. */
+.rv-words { margin: 0; font-size: 14px; line-height: 1.5; white-space: pre-wrap; overflow-wrap: anywhere; min-width: 0; }
+.rv-words.clamp { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.rv-note { margin: 0; font-size: 12px; color: var(--text-muted); line-height: 1.45; }
+.rv-ask { font-size: 13px; font-weight: 600; }
+.rv-pill { font-size: 12px; font-weight: 600; padding: 3px 10px; border-radius: 999px; background: rgba(245, 158, 11, .16); color: var(--accent-warning); overflow-wrap: anywhere; }
+[data-theme="light"] .rv-pill { color: #92400e; }
+.rv-pill.grey, [data-theme="light"] .rv-pill.grey { background: var(--bg-input); color: var(--text-secondary); }
+.rv-pics { display: flex; gap: 6px; flex-wrap: wrap; }
+.rv-pics img { width: 54px; height: 54px; border-radius: 8px; object-fit: cover; display: block; background: var(--bg-input); }
+.rv-reply { padding: 10px 12px; border-radius: 10px; background: var(--bg-input); font-size: 13px; line-height: 1.5; white-space: pre-wrap; overflow-wrap: anywhere; }
+.rv-reply b { display: block; font-size: 12px; color: var(--text-secondary); margin-bottom: 2px; white-space: normal; }
+.rv-acts { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.rv-form { display: grid; gap: 8px; }
+.rv-area { width: 100%; resize: vertical; min-height: 76px; line-height: 1.5; }
+.rv-reasons { display: grid; gap: 10px; }
+.rv-reasons fieldset { border: 0; margin: 0; padding: 0; display: grid; gap: 8px; }
+.rv-opt { display: flex; gap: 10px; align-items: center; padding: 10px 12px; border: 1px solid var(--border-light); border-radius: 10px; font-size: 14px; cursor: pointer; }
+.rv-opt.on { border-color: var(--brand-solid); box-shadow: inset 0 0 0 1px var(--brand-solid); }
+.rv-opt input { accent-color: var(--brand-solid); }
+.rv-empty { padding: 8px 0; }
+
+/* The warning on the customer's page. */
+.rv-warn { padding: 12px 14px; border-radius: 12px; background: rgba(217, 45, 32, .08); border-left: 3px solid var(--accent-danger); display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; align-items: center; font-size: 14px; min-width: 0; }
+.rv-warn b { display: block; }
+.rv-warn span { min-width: 0; overflow-wrap: anywhere; }
+
+/* The small count on the customer page's tab. */
+.rv-tabcount { margin-left: 6px; font-size: 12px; font-weight: 600; padding: 1px 7px; border-radius: 999px; background: rgba(245, 158, 11, .16); color: var(--accent-warning); }
+[data-theme="light"] .rv-tabcount { color: #92400e; }
+
+/* The one simple list. */
+.rv-facts { display: flex; gap: 8px 22px; flex-wrap: wrap; font-size: 14px; color: var(--text-secondary); margin-bottom: 8px; }
+.rv-facts b { color: var(--text-primary); font-size: 18px; }
+.rv-list { list-style: none; margin: 0; padding: 0; }
+.rv-line { padding: 12px 8px; margin: 0 -8px; border-top: 1px solid var(--border-light); display: grid; gap: 6px; min-width: 0; }
+.rv-list .rv-line:first-child { border-top: 0; }
+.rv-open { display: inline-flex; align-items: center; gap: 2px; font-size: 13px; font-weight: 600; color: var(--brand-ink); white-space: nowrap; }
+
+/* The ready-made group, above the shop's own. */
+.gr-ready { margin-bottom: 10px; }

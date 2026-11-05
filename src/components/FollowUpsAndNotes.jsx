@@ -31,7 +31,9 @@ export default function FollowUpsAndNotes({ customerId }) {
   // The boxes for writing open on asking (the owner, 28 Oct: the page was too long). Arriving from
   // Today's "Add follow-up" (?followup=1), the follow-up box is open already.
   const [params] = useSearchParams();
-  const [adding, setAdding] = useState(params.get('followup') === '1');
+  const [adding, setAdding] = useState(!!params.get('followup'));
+  const askedAt = params.get('followup');
+  useEffect(() => { if (askedAt) setAdding(true); }, [askedAt]);
   const [writing, setWriting] = useState(false);
   const open = followUps.data?.open ?? [];
 

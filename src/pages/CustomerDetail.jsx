@@ -21,6 +21,9 @@ import DatesEditor from '../components/DatesEditor';
 import DeleteCustomer from '../components/DeleteCustomer';
 import SendOne from '../components/SendOne';
 import { useOneStatus } from '../hooks/useMessages';
+import { useCustomerReviews } from '../hooks/useReviews';
+import { useMediaQuery } from '../hooks/useMediaQuery';
+import { FeedbackCard, ReviewCard } from '../components/ReviewCards';
 
 /**
  * One customer: who they are and their numbers in one header; below, what they wear, their
@@ -47,6 +50,7 @@ const KIND = {
   visit: { icon: DoorOpen, tone: '' },
   online: { icon: Eye, tone: '' },
   message: { icon: MessageCircle, tone: 'msg' },
+  review: { icon: Star, tone: 'msg' },
   feedback: { icon: Star, tone: 'msg' },
   consent: { icon: ShieldCheck, tone: 'consent' },
   note: { icon: NotebookPen, tone: '' },
@@ -85,6 +89,7 @@ const TABS = [
   { key: 'wear', label: 'What they wear' },
   { key: 'festivals', label: 'Festivals' },
   { key: 'timeline', label: 'Timeline' },
+  { key: 'reviews', label: 'Reviews and feedback' },
   { key: 'work', label: 'Follow-ups', phoneOnly: true }
 ];
 
@@ -101,8 +106,24 @@ export default function CustomerDetail() {
   // The open tab is in the address, so Back and a shared link keep it. Arriving to add a follow-up
   // (?followup=1) opens Follow-ups on a phone; on a laptop they are always beside the tabs.
   const asked = params.get('tab');
-  const tab = TABS.some(t => t.key === asked) ? asked : params.get('followup') === '1' ? 'work' : 'wear';
+  const tab = TABS.some(t => t.key === asked) ? asked : params.get('followup') ? 'work' : 'wear';
+  const reviews = useCustomerReviews(id, can('customer:view'));
+  const waiting = (reviews.data?.reviews ?? []).filter(r => r.needsReply).length + (reviews.data?.feedback ?? []).filter(f => !f.handledAt).length;
+  const narrow = useMediaQuery('(max-width: 860px)');
+  // The warning's "Add follow-up": opens the box, each time; on a phone that is a tab of its own.
+  const askFollowUp = () => setParams(prev => {
+    const next = new URLSearchParams(prev);
+    next.set('followup', String(Date.now()));
+    if (narrow) next.set('tab', 'work');
+    return next;
+  }, { replace: true });
   const show = (key) => setParams(prev => { const next = new URLSearchParams(prev); next.set('tab', key); return next; }, { replace: true });
+
+  // On a phone the tabs scroll sideways: the open one is brought into view, so arriving on it shows it.
+  React.useEffect(() => {
+    const open = document.querySelector('.cp-tab.on');
+    if (open?.parentElement) open.parentElement.scrollLeft = Math.max(0, open.offsetLeft - open.parentElement.offsetLeft - 16);
+  }, [tab, customer.isLoading]);
 
   // "← All customers" goes back to the list as it was left (search and page are in its address).
   const back = () => (window.history.state?.idx > 0 ? navigate(-1) : navigate('/customers'));
@@ -139,6 +160,7 @@ export default function CustomerDetail() {
       ) : (
         <>
           <Header profile={customer.data.profile} numbers={customer.data.numbers} />
+          {reviews.data?.unhappy && <Unhappy unhappy={reviews.data.unhappy} profile={customer.data.profile} onFollowUp={askFollowUp} />}
           <section className={`cp-body${tab === 'work' ? ' on-work' : ''}`}>
             <div className="crm-card cp-main">
               <div className="cp-tabs" role="tablist" aria-label="About this customer">
@@ -146,6 +168,7 @@ export default function CustomerDetail() {
                   <button key={t.key} type="button" role="tab" id={`cp-tab-${t.key}`} aria-selected={tab === t.key}
                     className={`cp-tab${tab === t.key ? ' on' : ''}${t.phoneOnly ? ' phone-only' : ''}`} onClick={() => show(t.key)}>
                     {t.label}
+                    {t.key === 'reviews' && waiting > 0 && <span className="rv-tabcount" aria-label={`${waiting} waiting`} data-testid="reviews-tab-count">{waiting}</span>}
                   </button>
                 ))}
               </div>
@@ -153,6 +176,7 @@ export default function CustomerDetail() {
               <div className="cp-pane" role="tabpanel" aria-labelledby={`cp-tab-${tab === 'work' ? 'wear' : tab}`}>
                 {tab === 'timeline' ? <Timeline id={id} />
                   : tab === 'festivals' ? <FestivalsTab customerId={customer.data.profile.id} />
+                  : tab === 'reviews' ? <ReviewsTab reviews={reviews} />
                   : <WhatTheyWear customerId={customer.data.profile.id} onFestivals={() => show('festivals')} />}
               </div>
             </div>
@@ -162,6 +186,41 @@ export default function CustomerDetail() {
       )}
     </main>
   );
+}
+
+/** "Unhappy 2 days ago. No follow-up yet." On every tab: it is the first thing to know before talking to them. */
+function Unhappy({ unhappy: u, profile: p, onFollowUp }) {
+  const { can } = usePermission();
+  const [messaging, setMessaging] = useState(false);
+  const mayWrite = can('customer:update');
+  const oneStatus = useOneStatus(mayWrite);
+  const mayMessage = mayWrite && !!oneStatus.data?.available && !!p.phone && !!p.consent?.whatsappOffers && !p.consent?.stoppedAt;
+  return (
+    <div className="rv-warn" role="status" data-testid="unhappy">
+      <span><b>Unhappy {since(u.at)}. No follow-up yet.</b>{u.about ? `Rated ${u.about} ${u.rating} of 5.` : `Rated their visit ${u.rating} of 5.`}</span>
+      {mayWrite && (
+        <span className="rv-acts">
+          <button type="button" className="btn-primary cp-btn" onClick={onFollowUp} data-testid="unhappy-followup">Add follow-up</button>
+          {mayMessage && <button type="button" className="btn-secondary cp-btn" onClick={() => setMessaging(true)} data-testid="unhappy-message">Message</button>}
+        </span>
+      )}
+      {messaging && <SendOne customerId={p.id} name={p.name} onClose={() => setMessaging(false)} />}
+    </div>
+  );
+}
+
+/** The Reviews and feedback tab: everything of theirs, newest first. Reply and Hide are right here. */
+function ReviewsTab({ reviews }) {
+  if (reviews.isLoading) return <div className="crm-row crm-muted rv-empty" aria-busy="true"><Loader2 size={16} className="animate-spin" /> Loading their reviews…</div>;
+  if (reviews.isError) return <div className="rv-empty"><LoadFailed what="their reviews" error={reviews.error} onRetry={() => reviews.refetch()} /></div>;
+  const items = [
+    ...reviews.data.reviews.map(r => ({ at: r.at, key: `r${r.id}`, node: <ReviewCard review={r} /> })),
+    ...reviews.data.feedback.map(f => ({ at: f.at, key: `f${f.id}`, node: <FeedbackCard feedback={f} /> }))
+  ].sort((a, b) => new Date(b.at) - new Date(a.at));
+  if (items.length === 0) {
+    return <div className="crm-empty rv-empty" data-testid="reviews-tab-empty"><h3>No reviews or feedback yet</h3><p>They appear here when this customer writes one in the online shop.</p></div>;
+  }
+  return <div className="rv-stack" data-testid="reviews-tab">{items.map(i => <React.Fragment key={i.key}>{i.node}</React.Fragment>)}</div>;
 }
 
 const initials = (name) => (name || '?').trim().split(/\s+/).map(w => w[0]).slice(0, 2).join('').toUpperCase();

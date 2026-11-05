@@ -1,11 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom';
-import { CalendarCheck2, TrendingUp, DoorOpen, Users, Tags, ListFilter, Megaphone, Moon, Sun, LogOut, Menu, X, Search } from 'lucide-react';
+import { CalendarCheck2, TrendingUp, DoorOpen, Users, Tags, ListFilter, Megaphone, Moon, Sun, LogOut, Menu, X, Search, Star } from 'lucide-react';
 import CustomerSearch from './CustomerSearch';
 import NotificationsBell from './NotificationsBell';
 import { useAuth } from '../context/AuthContext';
 import { usePermission } from '../hooks/usePermission';
 import { useTodayCount } from '../hooks/useWork';
+import { useReviewStats } from '../hooks/useReviews';
 import CrmLogo from './CrmLogo';
 
 const THEME_KEY = 'scale_easy_theme'; // Inventory's key, so the two apps share one setting
@@ -39,6 +40,8 @@ export default function AppShell() {
   const seesCustomers = can('customer:view');
   const due = useTodayCount(seesCustomers);
   const dueCount = due.data?.mine ?? 0;
+  const reviewStats = useReviewStats(seesCustomers);
+  const waiting = (reviewStats.data?.needsReply ?? 0) + (reviewStats.data?.feedbackOpen ?? 0);
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
@@ -60,6 +63,7 @@ export default function AppShell() {
     ...(can('crm:team:view') ? [{ to: '/week', label: 'This week', icon: TrendingUp }] : []),
     { to: '/counter', label: 'At the door', icon: DoorOpen },
     { to: '/customers', label: 'All customers', icon: Users },
+    { to: '/reviews', label: 'Reviews', icon: Star, count: waiting, countLabel: `${waiting} waiting` },
     { to: '/groups', label: 'Customer groups', icon: Tags },
     { to: '/segments', label: 'Saved lists', icon: ListFilter },
     ...(can('campaign:view') ? [{ to: '/messages', label: 'Messages', icon: Megaphone }] : []),

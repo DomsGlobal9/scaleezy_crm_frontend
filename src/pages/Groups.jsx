@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Tags, Plus, Loader2, ShieldOff, BellOff, CakeSlice, Sparkles, BadgePercent } from 'lucide-react';
+import { Tags, Plus, Loader2, ShieldOff, BellOff, CakeSlice, Sparkles, BadgePercent, Star } from 'lucide-react';
 import { usePermission } from '../hooks/usePermission';
 import { useCreateGroup, useGroups } from '../hooks/useGroups';
+import { useRatedLow } from '../hooks/useReviews';
 import { formatRupees } from '../utils/money';
 import { rowLink } from '../components/common/rowLink';
 import LoadFailed from '../components/LoadFailed';
@@ -16,6 +17,7 @@ export default function Groups() {
   const { can } = usePermission();
   const navigate = useNavigate();
   const groups = useGroups();
+  const ratedLow = useRatedLow(can('customer:view'));
   const create = useCreateGroup();
   const mayManage = can('customer:manage_groups');
   const [name, setName] = useState('');
@@ -60,6 +62,14 @@ export default function Groups() {
           </div>
           {problem && <p className="si-error" role="alert" data-testid="group-problem">{problem}</p>}
         </form>
+      )}
+
+      {ratedLow.data && (
+        <div data-testid="rated-low-card" {...rowLink(() => navigate('/reviews/rated-low'), { label: 'Open Rated 1 or 2' })} className="crm-card gr-item gr-ready row-link">
+          <div className="gr-name"><span className="crm-tag">Rated 1 or 2</span></div>
+          <div className="gr-count"><strong>{ratedLow.data.count.toLocaleString('en-IN')}</strong> {ratedLow.data.count === 1 ? 'customer' : 'customers'}</div>
+          <div className="gr-rules"><span className="gr-badge"><Star size={13} aria-hidden="true" /> Ready-made: their latest review or visit rating was 1 or 2 out of 5</span></div>
+        </div>
       )}
 
       {groups.isLoading ? (

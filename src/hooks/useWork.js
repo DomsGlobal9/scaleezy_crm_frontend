@@ -36,6 +36,8 @@ function useRefresh() {
       qc.invalidateQueries({ queryKey: ['customer', customerId] });
     }
     qc.invalidateQueries({ queryKey: ['today'] });
+    // A follow-up clears the "Unhappy, no follow-up yet" warning.
+    qc.invalidateQueries({ queryKey: ['reviews', 'customer'] });
     qc.invalidateQueries({ queryKey: ['todayCount'] });
   };
 }

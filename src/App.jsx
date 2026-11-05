@@ -21,6 +21,8 @@ import Week from './pages/Week';
 import Festivals from './pages/Festivals';
 import Groups from './pages/Groups';
 import GroupView from './pages/GroupView';
+import Reviews from './pages/Reviews';
+import RatedLow from './pages/RatedLow';
 
 export default function App() {
   const { status, refresh } = useAuth();
@@ -59,6 +61,8 @@ export default function App() {
           <Route path="/duplicates" element={<Duplicates />} />
           <Route path="/customers/from/:source/:externalId" element={<CustomerFrom />} />
           <Route path="/customers/:id" element={<CustomerDetail />} />
+          <Route path="/reviews" element={<Reviews />} />
+          <Route path="/reviews/rated-low" element={<RatedLow />} />
           <Route path="/festivals" element={<Festivals />} />
           <Route path="/groups" element={<Groups />} />
           <Route path="/groups/:key" element={<GroupView />} />

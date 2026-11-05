@@ -119,6 +119,14 @@ export default function Week() {
               <p>{d.fresh.count === 0 ? 'No first-time customers.' : `${plural(d.fresh.count, 'first-time customer', 'first-time customers')}${d.fresh.viaDoor ? `, ${d.fresh.viaDoor} of them through the door QR` : ''}. ${d.fresh.whatsappYes} agreed to WhatsApp offers.`}</p>
               {d.fresh.count > 0 && <Link to="/customers">All customers <ArrowRight size={13} /></Link>}
             </section>
+            {(d.reviews?.count > 0 || d.reviews?.feedbackOpen > 0) && (
+              <section className="crm-card wk-mini" data-testid="reviews">
+                <h3>Reviews</h3>
+                <p>{d.reviews.count > 0 ? `${d.reviews.average.toLocaleString('en-IN')} out of 5 from ${plural(d.reviews.count, 'review', 'reviews')}. ${d.reviews.newThisWeek} new ${which === 'this' ? 'this week' : 'last week'}. ` : ''}
+                  {`${d.reviews.needsReply} ${d.reviews.needsReply === 1 ? 'needs' : 'need'} a reply, ${d.reviews.feedbackOpen} private feedback ${d.reviews.feedbackOpen === 1 ? 'is' : 'are'} open.`}</p>
+                <Link to="/reviews">Open Reviews <ArrowRight size={13} /></Link>
+              </section>
+            )}
             {d.feedback?.count > 0 && (
               <section className="crm-card wk-mini" data-testid="feedback">
                 <h3>How the visits went</h3>

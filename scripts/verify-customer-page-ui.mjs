@@ -87,7 +87,7 @@ async function main() {
     }
 
     const n = expected.numbers;
-    check(`lifetime spend ${rupees(n.lifetimeSpend)} and ${n.bills} bills`, (await page.getByTestId('num-spend').innerText()).includes(rupees(n.lifetimeSpend)) && (await page.getByTestId('num-spend').innerText()).includes(`${n.bills} bills`));
+    check(`lifetime spend ${rupees(n.lifetimeSpend)} and ${n.bills} bills`, (await page.getByTestId('num-spend').innerText()).includes(rupees(n.lifetimeSpend)) && (await page.getByTestId('num-spend').innerText()).includes(`${n.bills} bill`));
     if (n.averageBill !== null) check(`average bill ${rupees(n.averageBill)}`, (await page.getByTestId('num-average').innerText()).includes(rupees(n.averageBill)));
     if (n.lastVisit) check(`last visit ${day(n.lastVisit)}`, (await page.getByTestId('num-last').innerText()).includes(day(n.lastVisit)));
     // Points, credit and returns: shown when there are some, left out when there are none (the page was too long).
@@ -151,13 +151,15 @@ async function main() {
       check('no event appears twice after "Show earlier"', new Set(ids).size === ids.length, ids.length - new Set(ids).size);
     }
 
-    // A filter chip.
+    // A filter chip: only if this customer has returns (which customer is busiest depends on the local data).
+    if (returnsOnly.events.length > 0) {
     await page.getByRole('button', { name: 'Returns' }).click();
     // Wait for the returns themselves: while the filter loads, the list is briefly empty, and an
     // empty list would pass "every event is a return" trivially.
     await page.waitForFunction(() => { const els = [...document.querySelectorAll('[data-testid="event"]')]; return els.length > 0 && els.every(el => el.dataset.kind === 'return'); }, null, { timeout: 15000 });
     check(`"Returns" shows only returns, ${returnsOnly.events.length} of them`, await events.count() === returnsOnly.events.length, await events.count());
     check('the chosen chip is marked', await page.getByRole('button', { name: 'Returns' }).getAttribute('aria-pressed') === 'true');
+    }
 
     // Back to the list as it was left.
     await page.getByRole('button', { name: 'Customers' }).click();
