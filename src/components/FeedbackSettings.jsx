@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import toast from 'react-hot-toast';
 import { Loader2 } from 'lucide-react';
-import { useArrivalsSettings, useFeedbackSettings, useSaveArrivals, useSaveFeedback } from '../hooks/useMessages';
+import { useArrivalsSettings, useFeedbackSettings, useReviewAskSettings, useSaveArrivals, useSaveFeedback, useSaveReviewAsk } from '../hooks/useMessages';
 import LoadFailed from './LoadFailed';
 
 /**
@@ -31,7 +31,7 @@ export default function FeedbackSettings() {
       <div className="pe-sw-row">
         <div>
           <h3 id="pe-feedback">Ask how the visit was</h3>
-          <p>A day after a bill. 4 or 5 stars are asked to tell others on Google; 1 to 3 also become a follow-up for you. Everyone can leave a Google review: asking only happy customers is against Google's rules.</p>
+          <p>A day after a till bill. 4 or 5 stars are asked to tell others on Google; 1 to 3 also become a follow-up for you. Everyone can leave a Google review: asking only happy customers is against Google's rules.</p>
         </div>
         <button type="button" role="switch" aria-checked={d.on} aria-labelledby="pe-feedback" className={`pe-toggle${d.on ? ' on' : ''}`} disabled={save.isPending}
           onClick={() => send({ on: !d.on, ...(url !== null ? { reviewUrl: url } : {}) }, !d.on ? 'Customers are asked how the visit was, from tomorrow morning.' : 'Customers are no longer asked how the visit was.')} data-testid="feedback-switch" />
@@ -47,8 +47,35 @@ export default function FeedbackSettings() {
       </label>
       <p className="pe-hint">In Google, open your shop's profile and choose "Ask for reviews": copy the link it gives.</p>
       {error && <p className="pe-err" role="alert" data-testid="feedback-error">{error}</p>}
+      <ReviewAsk />
       <Arrivals />
     </div>
+  );
+}
+
+/** Online orders, once they have arrived: the link to rate what they bought (the owner, 5 Nov). */
+function ReviewAsk() {
+  const s = useReviewAskSettings();
+  const save = useSaveReviewAsk();
+  const [error, setError] = useState(null);
+  if (s.isLoading || s.isError) return s.isError ? <LoadFailed what="this setting" error={s.error} onRetry={() => s.refetch()} /> : null;
+  const on = s.data.on;
+  const flip = async () => {
+    setError(null);
+    try { await save.mutateAsync({ on: !on }); toast.success(!on ? 'From now on, online customers are asked to rate what they bought.' : 'Online customers are no longer asked.'); }
+    catch (err) { setError(err?.message || 'The setting could not be saved. Try again.'); }
+  };
+  return (
+    <>
+      <div className="pe-sw-row">
+        <div>
+          <h3 id="pe-review-ask">Ask online customers to rate what they bought</h3>
+          <p>The morning after an online order has all arrived, with a link to their order, where each item has "Rate this item". Once per order, and not if they have already rated everything. From the moment you turn it on.</p>
+        </div>
+        <button type="button" role="switch" aria-checked={on} aria-labelledby="pe-review-ask" className={`pe-toggle${on ? ' on' : ''}`} disabled={save.isPending} onClick={flip} data-testid="review-ask-switch" />
+      </div>
+      {error && <p className="pe-err" role="alert" data-testid="review-ask-error">{error}</p>}
+    </>
   );
 }
 

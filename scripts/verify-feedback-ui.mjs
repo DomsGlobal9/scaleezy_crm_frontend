@@ -67,6 +67,17 @@ async function main() {
     await arr.click();
     await page.waitForFunction(() => document.querySelector('[data-testid="arrivals-switch"]')?.getAttribute('aria-checked') === 'false', null, { timeout: 15000 });
     check('...and off again', sql(`select arrivals_on::text from crm.message_settings where client_id = '${SHOP}'`) === 'false');
+    // Online customers: the link to rate what they bought. Off to start, the owner's to turn on.
+    const ask = page.getByTestId('review-ask-switch');
+    check('"Ask online customers to rate what they bought" is there, off', /Ask online customers to rate what they bought/.test(await box.innerText()) && (await ask.getAttribute('aria-checked')) === 'false');
+    check('and "Ask how the visit was" says it is for till bills', /A day after a till bill/.test(await box.innerText()));
+    await ask.click();
+    await page.waitForFunction(() => document.querySelector('[data-testid="review-ask-switch"]')?.getAttribute('aria-checked') === 'true', null, { timeout: 15000 });
+    check('it switches on, from now', sql(`select review_ask_on::text || '|' || (review_ask_since is not null)::text from crm.message_settings where client_id = '${SHOP}'`) === 'true|true');
+    await page.getByTestId('automatic-messages').screenshot({ path: path.join(shots, 'review-ask-settings.png') });
+    await ask.click();
+    await page.waitForFunction(() => document.querySelector('[data-testid="review-ask-switch"]')?.getAttribute('aria-checked') === 'false', null, { timeout: 15000 });
+    check('...and off again', sql(`select review_ask_on::text from crm.message_settings where client_id = '${SHOP}'`) === 'false');
 
     await page.goto(`${APP}/week`);
     const card = page.getByTestId('feedback');

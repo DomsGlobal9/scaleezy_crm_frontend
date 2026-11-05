@@ -94,6 +94,16 @@ export function useSaveFeedback() {
 }
 
 /** A2: "New in their size and colour" -- the owner's switch (Shop settings). */
+export function useReviewAskSettings(enabled = true) {
+  return useQuery({ queryKey: ['shop', 'review-ask'], queryFn: async () => (await api.get('/shop/review-ask')).data, enabled });
+}
+export function useSaveReviewAsk() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (body) => (await api.put('/shop/review-ask', body)).data,
+    onSuccess: (data) => qc.setQueryData(['shop', 'review-ask'], data)
+  });
+}
 export function useArrivalsSettings(enabled = true) {
   return useQuery({ queryKey: ['shop', 'arrivals'], queryFn: async () => (await api.get('/shop/arrivals')).data, enabled });
 }
