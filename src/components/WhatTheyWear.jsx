@@ -46,7 +46,7 @@ export default function WhatTheyWear({ customerId, onFestivals }) {
   return (
     <div className="ct-wear" data-testid="dna">
       {nothing ? (
-        <p className="crm-muted">Nothing bought yet: no sizes or colours to go on.</p>
+        <p className="crm-muted">No sizes or colours on their bills yet.</p>
       ) : (
         <div className="ct-lines" data-testid="tastes">
           {dna.colours.length > 0 && (

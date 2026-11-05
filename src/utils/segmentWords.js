@@ -1,4 +1,5 @@
 import { formatRupees } from './money';
+import { payWord, rangeWord } from './customerFilters';
 
 /**
  * Segment rules in the shop's words (backend: services/segments/rules.ts). One list drives both the
@@ -25,7 +26,18 @@ export const RULES = [
   { key: 'groups', label: 'In a group…', input: 'groups', start: [], says: v => `are in ${list(v)}` },
   { key: 'whatsapp', label: 'WhatsApp offers…', input: 'whatsapp', start: 'agreed', says: v => (v === 'agreed' ? 'agreed to WhatsApp offers' : 'have not agreed to WhatsApp offers') },
   { key: 'hasPoints', label: 'Have loyalty points', input: 'flag', start: true, says: () => 'have loyalty points' },
-  { key: 'hasCredit', label: 'Have store credit', input: 'flag', start: true, says: () => 'have store credit' }
+  { key: 'hasCredit', label: 'Have store credit', input: 'flag', start: true, says: () => 'have store credit' },
+  { key: 'billsAtMost', label: 'Bought at most … times', input: 'count', start: 1, lead: 'bought at most', says: v => `bought at most ${v} ${v === 1 ? 'time' : 'times'}` },
+  { key: 'budget', label: 'Budget for one piece…', input: 'pick', from: 'ranges', word: rangeWord, lead: 'have a budget of', start: [], says: v => `have a budget of ${list(v.map(rangeWord))}` },
+  { key: 'fabrics', label: 'Bought a fabric…', input: 'pick', from: 'fabrics', lead: 'bought', start: [], says: v => `bought ${list(v)}` },
+  { key: 'boughtOver', label: 'Bought a piece over…', input: 'rupees', start: 10000, lead: 'bought a piece over', says: v => `bought a piece over ${formatRupees(v)}` },
+  { key: 'crafts', label: 'Bought a craft…', input: 'pick', from: 'crafts', lead: 'bought', start: [], says: v => `bought ${list(v)}` },
+  { key: 'colours', label: 'Bought a colour…', input: 'pick', from: 'colours', lead: 'bought in', start: [], says: v => `bought in ${list(v)}` },
+  { key: 'sizes', label: 'Bought a size…', input: 'pick', from: 'sizes', lead: 'bought size', start: [], says: v => `bought size ${list(v)}` },
+  { key: 'pays', label: 'Pay by…', input: 'pick', from: 'pays', word: payWord, lead: 'pay by', start: [], says: v => `pay by ${list(v.map(payWord))}` },
+  { key: 'place', label: 'Live in a town or pincode…', input: 'text', start: '', lead: 'live in', says: v => `live in ${v}` },
+  { key: 'returned', label: 'Have returned something', input: 'flag', start: true, says: () => 'have returned something' },
+  { key: 'earlier', label: 'Past or new…', input: 'earlier', start: 'earlier', says: v => (v === 'earlier' ? 'are from earlier records' : 'are new since joining') }
 ];
 export const RULE = Object.fromEntries(RULES.map(r => [r.key, r]));
 

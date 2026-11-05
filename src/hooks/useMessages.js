@@ -94,6 +94,16 @@ export function useSaveFeedback() {
 }
 
 /** A2: "New in their size and colour" -- the owner's switch (Shop settings). */
+export function usePriceBands() {
+  return useQuery({ queryKey: ['shop', 'price-bands'], queryFn: async () => (await api.get('/shop/price-bands')).data });
+}
+export function useSavePriceBands() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (bands) => (await api.put('/shop/price-bands', { bands })).data,
+    onSuccess: (data) => { qc.setQueryData(['shop', 'price-bands'], data); qc.invalidateQueries({ queryKey: ['segmentChoices'] }); qc.invalidateQueries({ queryKey: ['customers'] }); }
+  });
+}
 export function useReviewAskSettings(enabled = true) {
   return useQuery({ queryKey: ['shop', 'review-ask'], queryFn: async () => (await api.get('/shop/review-ask')).data, enabled });
 }

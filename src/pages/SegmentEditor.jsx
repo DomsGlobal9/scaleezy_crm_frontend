@@ -4,6 +4,7 @@ import { ArrowLeft, X, Loader2, ShieldOff, Plus } from 'lucide-react';
 import { usePermission } from '../hooks/usePermission';
 import { useCreateSegment, useSegment, useSegmentChoices, useSegmentPreview, useUpdateSegment } from '../hooks/useSegments';
 import { RULES, RULE, WHEN_CHOICES, cleanRules, sentence, STARTERS } from '../utils/segmentWords';
+import { readRules } from '../utils/customerFilters';
 import Select from '../components/common/Select';
 import CustomerList from '../components/CustomerList';
 import { Numbers } from './Segments';
@@ -28,7 +29,9 @@ export default function SegmentEditor() {
   const update = useUpdateSegment(id);
 
   const starter = STARTERS.find(s => s.name === params.get('starter'));
-  const [rules, setRules] = useState(() => (starter ? { ...starter.rules } : { spentAtLeast: 10000 }));
+  // "Save as a list" from All customers arrives with its filters.
+  const fromFilters = readRules(params.get('rules'));
+  const [rules, setRules] = useState(() => (starter ? { ...starter.rules } : Object.keys(fromFilters).length ? fromFilters : { spentAtLeast: 10000 }));
   const [name, setName] = useState(starter?.name ?? '');
   const [loaded, setLoaded] = useState(!editing);
   const [page, setPage] = useState(1);
@@ -164,7 +167,7 @@ function RuleInput({ rule, value, onChange, choices }) {
     case 'rupees':
       return (
         <label className="sg-rule-body">
-          <span>{rule.key === 'spentAtLeast' ? 'spent at least' : 'spent at most'}</span>
+          <span>{rule.lead ?? (rule.key === 'spentAtLeast' ? 'spent at least' : 'spent at most')}</span>
           <span className="sg-money"><span aria-hidden="true">₹</span>
             <input className="input-field" type="number" inputMode="numeric" min="1" step="1" value={value} onChange={(e) => onChange(number(e.target.value))} aria-label={rule.label.replace('…', ' (₹)')} />
           </span>
@@ -173,7 +176,7 @@ function RuleInput({ rule, value, onChange, choices }) {
     case 'count':
       return (
         <label className="sg-rule-body">
-          <span>bought at least</span>
+          <span>{rule.lead ?? 'bought at least'}</span>
           <input className="input-field sg-small" type="number" inputMode="numeric" min="1" step="1" value={value} onChange={(e) => onChange(number(e.target.value))} aria-label="Number of times" />
           <span>times</span>
         </label>
@@ -239,6 +242,44 @@ function RuleInput({ rule, value, onChange, choices }) {
         </div>
       );
     }
+    case 'pick': {
+      const pairs = rule.pairs ?? (choices?.[rule.from] ?? []).map(o => [o, rule.word ? rule.word(o) : o]);
+      const nameOf = (k) => pairs.find(p => p[0] === k)?.[1] ?? k;
+      const left = pairs.filter(p => !value.includes(p[0]));
+      return (
+        <div className="sg-rule-body sg-pick">
+          <span>{rule.lead}</span>
+          {value.map((v, i) => (
+            <span key={v} className="sg-chip">
+              {i > 0 && <em>or</em>} {nameOf(v)}
+              <button type="button" onClick={() => onChange(value.filter(x => x !== v))} aria-label={`Take away ${nameOf(v)}`}><X size={12} /></button>
+            </span>
+          ))}
+          {left.length > 0 ? (
+            <Select value="" onChange={(e) => e.target.value && onChange([...value, e.target.value])} aria-label={rule.label}>
+              <option value="">{value.length ? 'or…' : 'choose'}</option>
+              {left.map(p => <option key={p[0]} value={p[0]}>{p[1]}</option>)}
+            </Select>
+          ) : value.length === 0 ? <span className="crm-muted">None on any bill yet.</span> : null}
+        </div>
+      );
+    }
+    case 'text':
+      return (
+        <label className="sg-rule-body">
+          <span>{rule.lead}</span>
+          <input className="input-field" maxLength={80} value={value} onChange={(e) => onChange(e.target.value)} aria-label={rule.label} placeholder="Town or pincode" />
+        </label>
+      );
+    case 'earlier':
+      return (
+        <div className="sg-rule-body">
+          <Select value={value} onChange={(e) => onChange(e.target.value)} aria-label="Past or new">
+            <option value="earlier">are from earlier records</option>
+            <option value="new">are new since joining</option>
+          </Select>
+        </div>
+      );
     default: // flags: nothing to fill in
       return <div className="sg-rule-body"><span>{rule.says(true)}</span></div>;
   }

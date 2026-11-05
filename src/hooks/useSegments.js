@@ -1,3 +1,4 @@
+import { rangesOf } from '../utils/customerFilters';
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { api } from '../lib/api';
@@ -18,7 +19,7 @@ export function useSegment(id, page = 1) {
   });
 }
 export function useSegmentChoices() {
-  return useQuery({ queryKey: ['segmentChoices'], queryFn: async () => (await api.get('/segments/choices')).data, staleTime: 5 * 60_000 });
+  return useQuery({ queryKey: ['segmentChoices'], queryFn: async () => { const d = (await api.get('/segments/choices')).data; return { ...d, ranges: rangesOf(d.bands) }; }, staleTime: 5 * 60_000 });
 }
 /** Who meets these rules now. The last answer stays on screen while the next is worked out. */
 export function useSegmentPreview(rules, page = 1, enabled = true) {

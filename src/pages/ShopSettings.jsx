@@ -6,6 +6,7 @@ import { useMoved, useSetMoved, useSetProfileMoved } from '../hooks/useProfileEd
 import { formatDay } from '../utils/dates';
 import LoadFailed from '../components/LoadFailed';
 import FeedbackSettings from '../components/FeedbackSettings';
+import PriceBands from '../components/PriceBands';
 
 /**
  * The owner's Shop settings: what this shop does in CRM instead of Inventory (Inventory's hand-over
@@ -92,6 +93,7 @@ export default function ShopSettings() {
             </Row>
             <p className="pe-hint">Birthday gift points and the "points lapsing" reminder stay in Inventory: they are about points.</p>
             <FeedbackSettings />
+            <PriceBands />
           </>
         )}
       </section>

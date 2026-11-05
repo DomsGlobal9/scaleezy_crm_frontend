@@ -15,7 +15,8 @@ import LoadFailed from '../components/LoadFailed';
  */
 const REASON = {
   same_phone_other_name: 'Same phone number, different names. A family often shares one phone, so check before merging.',
-  same_email_other_phone: 'Same email, different phone numbers. Often one person who changed their number.'
+  same_email_other_phone: 'Same email, different phone numbers. Often one person who changed their number.',
+  same_name_one_digit: 'Same name, and phone numbers one digit apart. Probably a mistyped digit, so check before merging.'
 };
 const SOURCE = { inventory: 'Inventory', pos: 'Till', boutique: 'Boutique' };
 

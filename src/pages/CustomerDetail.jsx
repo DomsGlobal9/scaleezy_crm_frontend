@@ -22,6 +22,7 @@ import DeleteCustomer from '../components/DeleteCustomer';
 import SendOne from '../components/SendOne';
 import { useOneStatus } from '../hooks/useMessages';
 import { useCustomerReviews } from '../hooks/useReviews';
+import PastPurchases, { PastOnTimeline } from '../components/PastPurchases';
 import { useMediaQuery } from '../hooks/useMediaQuery';
 import { FeedbackCard, ReviewCard } from '../components/ReviewCards';
 
@@ -174,10 +175,10 @@ export default function CustomerDetail() {
               </div>
               {/* Follow-ups are a tab on a phone only; on a laptop that tab shows What they wear. */}
               <div className="cp-pane" role="tabpanel" aria-labelledby={`cp-tab-${tab === 'work' ? 'wear' : tab}`}>
-                {tab === 'timeline' ? <Timeline id={id} />
+                {tab === 'timeline' ? <><Timeline id={id} /><PastOnTimeline customerId={customer.data.profile.id} /></>
                   : tab === 'festivals' ? <FestivalsTab customerId={customer.data.profile.id} />
                   : tab === 'reviews' ? <ReviewsTab reviews={reviews} />
-                  : <WhatTheyWear customerId={customer.data.profile.id} onFestivals={() => show('festivals')} />}
+                  : <><PastPurchases customerId={customer.data.profile.id} /><WhatTheyWear customerId={customer.data.profile.id} onFestivals={() => show('festivals')} /></>}
               </div>
             </div>
             <FollowUpsAndNotes customerId={customer.data.profile.id} />
@@ -305,7 +306,7 @@ function Header({ profile: p, numbers: n }) {
         <div className="cp-who">
           <h1>{p.name}{p.tags.map(t => <span key={t} className="crm-tag">{t}</span>)}</h1>
           <div className="cp-code">
-            {[p.code, p.companyName, p.customerType === 'WALK_IN' ? 'Walk-in' : null, `customer since ${monthYear(p.createdAt)}`].filter(Boolean).join(' · ')}
+            {[p.code, p.companyName, p.customerType === 'WALK_IN' ? 'Walk-in' : null, p.fromRecords ? 'from earlier records' : `customer since ${monthYear(p.createdAt)}`].filter(Boolean).join(' · ')}
           </div>
         </div>
         <div className="cp-head-acts">
@@ -333,7 +334,7 @@ function Header({ profile: p, numbers: n }) {
         <Num testid="num-spend" value={formatRupees(n.lifetimeSpend)}
           note={`${n.bills === 1 ? '1 bill' : `${n.bills} bills`}${n.online > 0 ? ` · ${n.online} online` : ''}`} />
         <Num testid="num-average" value={n.averageBill === null ? '—' : formatRupees(n.averageBill)} note={n.averageBillOver === 'year' ? 'a bill, last 12 months' : 'a bill'} />
-        <Num testid="num-last" value={n.lastVisit ? formatDay(n.lastVisit) : 'Not yet'} note={n.lastVisit ? `last visit, ${since(n.lastVisit)}` : 'no visit yet'} />
+        <Num testid="num-last" value={n.lastVisit ? formatDay(n.lastVisit) : n.hasPast ? 'Not known' : 'Not yet'} note={n.lastVisit ? `last visit, ${since(n.lastVisit)}` : n.hasPast ? 'last visit' : 'no visit yet'} />
         {n.loyaltyPoints > 0 && <Num testid="num-points" value={n.loyaltyPoints.toLocaleString('en-IN')} note="points" />}
         {n.storeCredit > 0 && <Num testid="num-credit" value={formatRupees(n.storeCredit)} note="store credit" />}
         {n.returns > 0 && <Num testid="num-returns" value={n.returns.toLocaleString('en-IN')} note={`${n.returns === 1 ? 'return' : 'returns'}, ${formatRupees(n.refunded)} refunded`} />}

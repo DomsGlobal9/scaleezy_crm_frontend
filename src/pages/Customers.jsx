@@ -1,8 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { Users, Search, X, Loader2, ShieldOff, UserX, DownloadCloud, GitMerge } from 'lucide-react';
+import { Users, Search, X, Loader2, ShieldOff, UserX, DownloadCloud, GitMerge, SlidersHorizontal } from 'lucide-react';
 import { useShop } from '../hooks/useShop';
-import { useCustomers } from '../hooks/useCustomers';
+import { useCustomerOverview, useCustomers } from '../hooks/useCustomers';
+import CustomerFilters from '../components/CustomerFilters';
+import Select from '../components/common/Select';
+import { chipsOf, rangeWord, readRules } from '../utils/customerFilters';
 import { useMerges } from '../hooks/useWork';
 import { usePermission } from '../hooks/usePermission';
 import LoadFailed from '../components/LoadFailed';
@@ -24,6 +27,24 @@ export default function Customers() {
   const search = (params.get('q') || '').trim();
   const page = Math.max(1, Number.parseInt(params.get('page') || '1', 10) || 1);
   const [typed, setTyped] = useState(search);
+  // The filters and the order live there too.
+  const rules = readRules(params.get('rules'));
+  const sort = ['spend', 'last'].includes(params.get('sort')) ? params.get('sort') : 'newest';
+  const [filtering, setFiltering] = useState(false);
+  const closeFilters = useCallback(() => setFiltering(false), []);
+  const setRules = (next) => setParams(p => {
+    if (Object.keys(next).length) p.set('rules', JSON.stringify(next)); else p.delete('rules');
+    p.delete('page');
+    return p;
+  });
+  const setSort = (next) => setParams(p => {
+    if (next === 'newest') p.delete('sort'); else p.set('sort', next);
+    p.delete('page');
+    return p;
+  });
+  const without = (keys) => setRules(Object.fromEntries(Object.entries(rules).filter(([k]) => !keys.includes(k))));
+  const chips = chipsOf(rules);
+  const filtered = chips.length > 0;
   // A search started elsewhere (the top bar) while this page is open fills the box too.
   useEffect(() => { setTyped(t => (t.trim() === search ? t : search)); }, [search]);
 
@@ -53,7 +74,8 @@ export default function Customers() {
   const shop = useShop();
   const copying = !!shop.data && shop.data.on && !shop.data.firstCopyDone;
   const notOn = !!shop.data && !shop.data.on;
-  const result = useCustomers({ search, page, refetchInterval: copying ? 5000 : false });
+  const result = useCustomers({ search, page, rules, sort, refetchInterval: copying ? 5000 : false });
+  const overview = useCustomerOverview();
   const data = result.data;
   const rows = data?.customers ?? [];
 
@@ -81,7 +103,7 @@ export default function Customers() {
           <p>Everyone who has bought from you, from the till, the online shop and Shopify, in one list.</p>
         </div>
         <div className="cu-head-end">
-          {data && (
+          {data && !filtered && (
             <span className="crm-muted" data-testid="count">
               {total === 0 ? 'No customers' : total === 1 ? '1 customer' : `${total.toLocaleString('en-IN')} customers`}
               {search ? ' match' : ''}
@@ -95,6 +117,9 @@ export default function Customers() {
         </div>
       </div>
 
+      {overview.data?.show && !filtered && !search && <Overview data={overview.data} onPick={setRules} />}
+
+      <div className="cf-bar">
       <div className="crm-search">
         <Search size={20} className="crm-search-icon" />
         <input
@@ -116,6 +141,38 @@ export default function Customers() {
           )}
         </div>
       </div>
+      <button type="button" className="btn-secondary cf-open" onClick={() => setFiltering(true)} data-testid="filters-open">
+        <SlidersHorizontal size={15} aria-hidden="true" /> Filters{filtered && <span className="crm-badge" aria-label={`${chips.length} on`}>{chips.length}</span>}
+      </button>
+      <span className="cf-sort">
+        <Select value={sort} onChange={(e) => setSort(e.target.value)} aria-label="Sort customers">
+          <option value="newest">Sort: Newest</option>
+          <option value="spend">Sort: Highest spend</option>
+          <option value="last">Sort: Last visit</option>
+        </Select>
+      </span>
+      </div>
+
+      {filtered && (
+        <>
+          <div className="cf-on" data-testid="filters-on">
+            {chips.map(c => (
+              <span key={c.id} className="cf-tag" data-testid="filter-chip">
+                <span>{c.group}</span> <b>{c.value}</b>
+                <button type="button" className="crm-iconbtn" style={{ width: 22, height: 22 }} aria-label={`Take off ${c.group} ${c.value}`} onClick={() => without(c.keys)}><X size={13} /></button>
+              </span>
+            ))}
+            <button type="button" className="si-link" onClick={() => setRules({})} data-testid="filters-clear-all">Clear all</button>
+          </div>
+          {data && (
+            <div className="cf-result">
+              <span><strong>{total.toLocaleString('en-IN')}</strong> {total === 1 ? 'customer matches' : 'customers match'}</span>
+              {can('crm:segment:manage') && total > 0 && <Link className="si-link" to={`/segments/new?rules=${encodeURIComponent(JSON.stringify(rules))}`} data-testid="filters-save">Save as a list</Link>}
+            </div>
+          )}
+        </>
+      )}
+      {filtering && <CustomerFilters rules={rules} search={search} onClose={closeFilters} onApply={(next) => { setRules(next); setFiltering(false); }} />}
 
       {copying && rows.length > 0 && (
         <div className="cu-copying" role="status" data-testid="copying-banner">
@@ -133,6 +190,17 @@ export default function Customers() {
             <Loader2 size={26} className="animate-spin" style={{ color: 'var(--brand-ink)' }} />
             <h3>Bringing your customers over from Inventory…</h3>
             <p>This happens once, the first time your shop opens CRM. They will appear here by themselves; you can leave this page open.</p>
+          </div>
+        </div>
+      ) : rows.length === 0 && filtered ? (
+        <div className="crm-card">
+          <div className="crm-empty" data-testid="filters-none">
+            <UserX size={26} />
+            <h3>Nobody matches these filters</h3>
+            <p>{rules.crafts || rules.colours || rules.sizes
+              ? 'Earlier records do not always have a craft, colour or size, so those customers appear under these only once they buy again. Try a kind or a budget instead.'
+              : 'Take a filter off to see more customers.'}</p>
+            <button type="button" className="btn-secondary" onClick={() => setRules({})}>Clear all</button>
           </div>
         </div>
       ) : rows.length === 0 ? (
@@ -157,5 +225,30 @@ export default function Customers() {
         </nav>
       )}
     </main>
+  );
+}
+
+/** The small overview: how many customers at each budget and by what they buy. A number opens that filter. */
+function Overview({ data, onPick }) {
+  const bars = (rows, words, ruleKey, title) => {
+    const most = Math.max(1, ...rows.map(r => r.count));
+    return (
+      <section className="crm-card" aria-label={title}>
+        <h2>{title}</h2>
+        {rows.map(r => (
+          <button key={r.key} type="button" className="cf-bar-row" onClick={() => onPick({ [ruleKey]: [r.key] })} data-testid={`overview-${r.key}`}>
+            <span>{words ? words(r.key) : r.key}</span>
+            <span className="cf-track" aria-hidden="true"><i style={{ width: `${Math.max(r.count ? 2 : 0, (r.count / most) * 100)}%` }} /></span>
+            <b>{r.count.toLocaleString('en-IN')}</b>
+          </button>
+        ))}
+      </section>
+    );
+  };
+  return (
+    <div className="cf-overview" data-testid="customer-overview">
+      {bars(data.budget, rangeWord, 'budget', 'By budget')}
+      {data.kinds.length > 0 && bars(data.kinds, null, 'boughtKinds', 'By what they buy')}
+    </div>
   );
 }

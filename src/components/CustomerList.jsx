@@ -11,8 +11,11 @@ import { formatDay, since } from '../utils/dates';
  * phone (the table needs about 760px for every column). Segments show their people with it too,
  * so a person reads the same wherever they are listed.
  */
+const bandWords = (b) => (!b ? null : b.from === b.to ? `About ${formatRupees(b.from)}` : `Usually ${formatRupees(b.from)} to ${formatRupees(b.to)}`);
+
 export default function CustomerList({ rows, onOpen }) {
   const narrow = useMediaQuery('(max-width: 760px)');
+  const anyBuys = rows.some(c => c.topKind);
   const open = onOpen;
   return narrow ? (
     <div className="crm-cards" data-testid="customer-cards">
@@ -27,6 +30,7 @@ export default function CustomerList({ rows, onOpen }) {
             <th>Phone</th>
             <th>Email</th>
             <th>Groups</th>
+            {anyBuys && <th>Buys</th>}
             <th className="num">Total spent</th>
             <th>Last visit</th>
           </tr>
@@ -41,12 +45,13 @@ export default function CustomerList({ rows, onOpen }) {
               <td style={{ whiteSpace: 'nowrap' }}>{c.phone ? formatPhone(c.phone) : <span className="crm-muted">—</span>}</td>
               <td style={{ wordBreak: 'break-all' }}>{c.email || <span className="crm-muted">—</span>}</td>
               <td><Tags tags={c.tags} /></td>
+              {anyBuys && <td data-testid="customer-buys">{c.topKind ? <><div>{c.topKind}</div>{c.band && <div className="crm-sub">{bandWords(c.band)}</div>}</> : <span className="crm-muted">—</span>}</td>}
               <td className="num">
                 <div style={{ fontWeight: 600 }}>{formatRupees(c.totalSpent)}</div>
                 {c.orders > 0 && <div className="crm-sub">{c.orders} {c.orders === 1 ? 'bill' : 'bills'}</div>}
               </td>
               <td style={{ whiteSpace: 'nowrap' }}>
-                {c.lastVisit ? <><div>{formatDay(c.lastVisit)}</div><div className="crm-sub">{since(c.lastVisit)}</div></> : <span className="crm-muted">Not yet</span>}
+                {c.lastVisit ? <><div>{formatDay(c.lastVisit)}</div><div className="crm-sub">{since(c.lastVisit)}</div></> : c.hasPast ? <><div>Not known</div><div className="crm-sub">past purchases</div></> : <span className="crm-muted">Not yet</span>}
               </td>
             </tr>
           ))}
@@ -75,7 +80,7 @@ function CustomerCard({ customer: c, onOpen }) {
         </div>
         <div style={{ textAlign: 'right' }}>
           <div className="crm-cust-spent">{formatRupees(c.totalSpent)}</div>
-          <div className="crm-sub">{c.orders > 0 ? `${c.orders} ${c.orders === 1 ? 'bill' : 'bills'}` : 'no bills yet'}</div>
+          <div className="crm-sub">{c.orders > 0 ? `${c.orders} ${c.orders === 1 ? 'bill' : 'bills'}` : c.hasPast ? 'past purchases' : 'no bills yet'}</div>
         </div>
       </div>
       {(c.phone || c.email) && (
@@ -86,7 +91,7 @@ function CustomerCard({ customer: c, onOpen }) {
       )}
       <div className="crm-cust-foot">
         <Tags tags={c.tags} />
-        <span className="crm-muted">{c.lastVisit ? `Last visit ${formatDay(c.lastVisit)} · ${since(c.lastVisit)}` : 'No visit yet'}</span>
+        <span className="crm-muted">{c.lastVisit ? `Last visit ${formatDay(c.lastVisit)} · ${since(c.lastVisit)}` : c.hasPast ? 'Last visit not known' : 'No visit yet'}</span>
       </div>
     </article>
   );
