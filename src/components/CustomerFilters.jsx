@@ -21,6 +21,8 @@ export default function CustomerFilters({ rules, search, onApply, onClose }) {
   const opener = useRef(document.activeElement);
   const choices = useSegmentChoices();
   const c = choices.data;
+  // Which filters this shop has anything for. While that is on its way, nothing extra shows.
+  const f = c?.has ?? {};
 
   useEffect(() => { const t = setTimeout(() => setAsked(tidy(draft)), 300); return () => clearTimeout(t); }, [draft]);
   const count = useCustomers({ search, rules: asked, page: 1, pageSize: 1 });
@@ -96,31 +98,46 @@ export default function CustomerFilters({ rules, search, onApply, onClose }) {
 
           <Group title="How often">
             <Row label="Bills"><OneOf name="bills" rules={draft} onPick={oneOf} /></Row>
-            <Row label="Last visit" note="Only bills with a real date count. Someone with only past purchases has no known last visit, so they don't appear under any of these."><OneOf name="visit" rules={draft} onPick={oneOf} /></Row>
-            <Row label="Past or new"><OneOf name="earlier" rules={draft} onPick={oneOf} /></Row>
+            {f.visits && <Row label="Last visit" note="Only bills with a real date count. Someone with only past purchases has no known last visit, so they don't appear under any of these."><OneOf name="visit" rules={draft} onPick={oneOf} /></Row>}
+            {f.earlier && <Row label="Past or new"><OneOf name="earlier" rules={draft} onPick={oneOf} /></Row>}
           </Group>
 
-          <Group title="Returns and paying">
-            <Row label="Returns"><Chip on={!!draft.returned} onClick={() => flag('returned')}>Has returned something</Chip></Row>
-            {has(c?.pays) && <Row label="Usually pays by">{c.pays.map(k => <Chip key={k} on={draft.pays?.includes(k)} onClick={() => toggle('pays', k)}>{payWord(k)}</Chip>)}</Row>}
-          </Group>
+          {(f.returned || has(c?.pays)) && (
+            <Group title="Returns and paying">
+              {f.returned && <Row label="Returns"><Chip on={!!draft.returned} onClick={() => flag('returned')}>Has returned something</Chip></Row>}
+              {has(c?.pays) && <Row label="Usually pays by">{c.pays.map(k => <Chip key={k} on={draft.pays?.includes(k)} onClick={() => toggle('pays', k)}>{payWord(k)}</Chip>)}</Row>}
+            </Group>
+          )}
 
-          <Group title="Where">
-            <Row label="Bought"><OneOf name="channel" rules={draft} onPick={oneOf} /></Row>
-            <Row label="Place" note="Only customers whose address the shop has.">
-              <input className="input-field cf-text" maxLength={80} placeholder="Town or pincode" aria-label="Town or pincode" value={draft.place ?? ''} onChange={(e) => set('place', e.target.value)} />
-            </Row>
-          </Group>
+          {(f.inStore || f.online || f.place) && (
+            <Group title="Where">
+              {(f.inStore || f.online) && <Row label="Bought"><OneOf name="channel" rules={draft} onPick={oneOf} only={[f.inStore && 'in_store', f.online && 'online']} /></Row>}
+              {f.place && (
+                <Row label="Place" note="Only customers whose address the shop has.">
+                  <input className="input-field cf-text" maxLength={80} placeholder="Town or pincode" aria-label="Town or pincode" value={draft.place ?? ''} onChange={(e) => set('place', e.target.value)} />
+                </Row>
+              )}
+            </Group>
+          )}
 
-          <Group title="More">
-            {has(c?.groups) && <Row label="Customer group"><Pick label="Any group" options={c.groups} chosen={draft.groups} onChange={(v) => set('groups', v)} wide /></Row>}
-            <Row label="Dates"><OneOf name="birthday" rules={draft} onPick={oneOf} /><OneOf name="anniversary" rules={draft} onPick={oneOf} /></Row>
-            <Row label="Has">
-              <Chip on={!!draft.hasPoints} onClick={() => flag('hasPoints')}>Points</Chip>
-              <Chip on={!!draft.hasCredit} onClick={() => flag('hasCredit')}>Store credit</Chip>
-              <OneOf name="whatsapp" rules={draft} onPick={oneOf} />
-            </Row>
-          </Group>
+          {(has(c?.groups) || f.birthday || f.anniversary || f.points || f.credit || f.agreed) && (
+            <Group title="More">
+              {has(c?.groups) && <Row label="Customer group"><Pick label="Any group" options={c.groups} chosen={draft.groups} onChange={(v) => set('groups', v)} wide /></Row>}
+              {(f.birthday || f.anniversary) && (
+                <Row label="Dates">
+                  {f.birthday && <OneOf name="birthday" rules={draft} onPick={oneOf} />}
+                  {f.anniversary && <OneOf name="anniversary" rules={draft} onPick={oneOf} />}
+                </Row>
+              )}
+              {(f.points || f.credit || f.agreed) && (
+                <Row label="Has">
+                  {f.points && <Chip on={!!draft.hasPoints} onClick={() => flag('hasPoints')}>Points</Chip>}
+                  {f.credit && <Chip on={!!draft.hasCredit} onClick={() => flag('hasCredit')}>Store credit</Chip>}
+                  {f.agreed && <OneOf name="whatsapp" rules={draft} onPick={oneOf} />}
+                </Row>
+              )}
+            </Group>
+          )}
         </div>
 
         <footer className="cf-foot">
@@ -154,9 +171,9 @@ function Row({ label, note, children }) {
 function Chip({ on, onClick, children }) {
   return <button type="button" className={`cf-chip${on ? ' on' : ''}`} aria-pressed={!!on} onClick={onClick}>{children}</button>;
 }
-function OneOf({ name, rules, onPick }) {
+function OneOf({ name, rules, onPick, only }) {
   const on = oneOfOn(rules, name);
-  return ONE_OF[name].options.map(o => <Chip key={o[0]} on={on === o[0]} onClick={() => onPick(name, o)}>{o[1]}</Chip>);
+  return ONE_OF[name].options.filter(o => !only || only.includes(o[0])).map(o => <Chip key={o[0]} on={on === o[0]} onClick={() => onPick(name, o)}>{o[1]}</Chip>);
 }
 /** The shop's own words, as it wrote them. */
 function Words({ list, chosen, onToggle }) {

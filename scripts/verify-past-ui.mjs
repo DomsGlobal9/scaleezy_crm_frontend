@@ -97,6 +97,7 @@ async function main() {
     await panel.waitFor();
     await panel.getByRole('button', { name: PATTU, exact: true }).waitFor({ timeout: 15000 });
     check('the kinds are the shop\'s own words', (await panel.getByRole('button', { name: PATTU, exact: true }).count()) === 1);
+    check('filters the shop has values for are offered', (await panel.getByText('Last visit', { exact: true }).count()) === 1 && (await panel.getByText('Has returned something').count()) === 1);
     check('no fixed list of any one shop\'s words', (await panel.getByRole('button', { name: 'Both', exact: true }).count()) === 0);
     await panel.getByRole('button', { name: PATTU, exact: true }).click();
     await page.waitForFunction(() => /Show 2 customers/.test(document.querySelector('[data-testid="filters-show"]')?.innerText ?? ''), null, { timeout: 15000 });
@@ -176,6 +177,20 @@ async function main() {
     check('and All customers too', (await rows().count()) >= 1 && new RegExp(`Pastnophone ${STAMP}`).test(await rows().first().innerText()));
     await page.screenshot({ path: path.join(shots, 'search-bill-list.png') });
     await page.getByLabel('Search customers').fill('');
+
+    // A filter that can only find nobody is not offered. The choices are the shop's, so they are stood in for here.
+    await page.route('**/api/v1/segments/choices', async (route) => {
+      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ success: true, data: { kinds: ['Pattu'], fabrics: ['Silk'], crafts: [], colours: [], sizes: [], groups: [], pays: ['CASH'], bands: [3000, 8000, 20000], has: { earlier: true, returned: true } } }) });
+    });
+    await page.goto(`${APP}/customers`);
+    await page.getByTestId('filters-open').click();
+    await panel.getByRole('button', { name: 'From earlier records' }).waitFor({ timeout: 15000 });
+    const shown = await panel.innerText();
+    check('a shop of old records only: no craft, colour, size, place, last visit, dates, points or offers', !/Craft|Colour and size|Place|Last visit|Birthday|Anniversary|Points|Store credit|Agreed to offers|In the shop|Customer group/.test(shown), shown.slice(0, 400));
+    check('and what it does have stays', /Budget for one piece/.test(shown) && /Pattu/.test(shown) && /Has returned something/.test(shown) && /From earlier records/.test(shown));
+    await page.screenshot({ path: path.join(shots, 'filters-old-records.png') });
+    await page.keyboard.press('Escape');
+    await page.unroute('**/api/v1/segments/choices');
 
     // Each shop sets its own price ranges.
     await page.goto(`${APP}/settings`);
