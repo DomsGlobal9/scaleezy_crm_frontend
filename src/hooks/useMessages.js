@@ -104,6 +104,16 @@ export function useSavePriceBands() {
     onSuccess: (data) => { qc.setQueryData(['shop', 'price-bands'], data); qc.invalidateQueries({ queryKey: ['segmentChoices'] }); qc.invalidateQueries({ queryKey: ['customers'] }); }
   });
 }
+export function useWinbackSettings(enabled = true) {
+  return useQuery({ queryKey: ['shop', 'winback'], queryFn: async () => (await api.get('/shop/winback')).data, enabled });
+}
+export function useSaveWinback() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (body) => (await api.put('/shop/winback', body)).data,
+    onSuccess: (data) => qc.setQueryData(['shop', 'winback'], data)
+  });
+}
 export function useReviewAskSettings(enabled = true) {
   return useQuery({ queryKey: ['shop', 'review-ask'], queryFn: async () => (await api.get('/shop/review-ask')).data, enabled });
 }

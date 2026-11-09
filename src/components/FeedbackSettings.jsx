@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import toast from 'react-hot-toast';
 import { Loader2 } from 'lucide-react';
-import { useArrivalsSettings, useFeedbackSettings, useReviewAskSettings, useSaveArrivals, useSaveFeedback, useSaveReviewAsk } from '../hooks/useMessages';
+import { useArrivalsSettings, useFeedbackSettings, useReviewAskSettings, useSaveArrivals, useSaveFeedback, useSaveReviewAsk, useSaveWinback, useWinbackSettings } from '../hooks/useMessages';
+import Select from './common/Select';
 import LoadFailed from './LoadFailed';
 
 /**
@@ -49,6 +50,7 @@ export default function FeedbackSettings() {
       {error && <p className="pe-err" role="alert" data-testid="feedback-error">{error}</p>}
       <ReviewAsk />
       <Arrivals />
+      <WinBack />
     </div>
   );
 }
@@ -101,6 +103,56 @@ function Arrivals() {
         <button type="button" role="switch" aria-checked={on} aria-labelledby="pe-arrivals" className={`pe-toggle${on ? ' on' : ''}`} disabled={save.isPending} onClick={flip} data-testid="arrivals-switch" />
       </div>
       {error && <p className="pe-err" role="alert" data-testid="arrivals-error">{error}</p>}
+    </>
+  );
+}
+
+/** A4: regulars not seen lately get the shop's own offer, once each; and the weekly limit for all of these. */
+function WinBack() {
+  const s = useWinbackSettings();
+  const save = useSaveWinback();
+  const [offer, setOffer] = useState(null);
+  const [error, setError] = useState(null);
+  if (s.isLoading || s.isError) return s.isError ? <LoadFailed what="the win-back setting" error={s.error} onRetry={() => s.refetch()} /> : null;
+  const d = s.data;
+  const typed = offer ?? d.offer;
+  const send = async (body, ok) => {
+    setError(null);
+    try { await save.mutateAsync(body); setOffer(null); toast.success(ok); }
+    catch (err) { setError(err?.message || 'The setting could not be saved. Try again.'); }
+  };
+  return (
+    <>
+      <div className="pe-sw-row">
+        <div>
+          <h3 id="pe-winback">Win back regulars</h3>
+          <p>{d.bills}+ bills, not seen for {d.days} days. Once each, until they come back. Only bills with a real date count.</p>
+        </div>
+        <button type="button" role="switch" aria-checked={d.on} aria-labelledby="pe-winback" className={`pe-toggle${d.on ? ' on' : ''}`} disabled={save.isPending}
+          onClick={() => send({ on: !d.on }, !d.on ? 'From tomorrow morning, regulars not seen lately get your offer.' : 'Regulars are no longer sent the offer.')} data-testid="winback-switch" />
+      </div>
+      <label className="pe-field">
+        <span>Their offer</span>
+        <div className="pe-link-row">
+          <input className="ms-input" value={typed} maxLength={120} onChange={(e) => setOffer(e.target.value)} aria-label="Their offer" data-testid="winback-offer" />
+          {offer !== null && offer.trim() !== d.offer && (
+            <button type="button" className="btn-primary ms-small" disabled={save.isPending} onClick={() => send({ offer }, 'The offer is saved.')} data-testid="winback-save">Save the offer</button>
+          )}
+        </div>
+      </label>
+      <p className="pe-hint" data-testid="winback-preview">They get: {d.text.replace('{name}', 'Meena').replace('{shop}', 'your shop')} Reply STOP to stop offers.</p>
+      <div className="pe-sw-row">
+        <div>
+          <h3 id="pe-limit">No more than</h3>
+          <p>Offers per customer per week, all of these together. "How was your visit?" doesn't count.</p>
+        </div>
+        <span style={{ minWidth: 150 }}>
+          <Select value={String(d.weeklyLimit)} onChange={(e) => send({ weeklyLimit: Number(e.target.value) }, 'The weekly limit is saved.')} aria-label="Offers per customer per week" data-testid="weekly-limit">
+            {[1, 2, 3, 4, 5, 6, 7].map(n => <option key={n} value={n}>{n} a week</option>)}
+          </Select>
+        </span>
+      </div>
+      {error && <p className="pe-err" role="alert" data-testid="winback-error">{error}</p>}
     </>
   );
 }

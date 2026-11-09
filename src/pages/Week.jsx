@@ -127,6 +127,12 @@ export default function Week() {
                 <Link to="/reviews">Open Reviews <ArrowRight size={13} /></Link>
               </section>
             )}
+            {d.winback?.sent > 0 && (
+              <section className="crm-card wk-mini" data-testid="winback">
+                <h3>Won back</h3>
+                <p>{`${plural(d.winback.sent, 'regular was', 'regulars were')} sent your offer. ${d.winback.cameBack} came back and bought.`}</p>
+              </section>
+            )}
             {d.feedback?.count > 0 && (
               <section className="crm-card wk-mini" data-testid="feedback">
                 <h3>How the visits went</h3>
