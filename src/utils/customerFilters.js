@@ -8,7 +8,7 @@ import { formatRupees } from './money';
 export const rangeWord = (key) => {
   const [from, to] = String(key).split('-');
   if (Number(from) === 0 && to) return `Under ${formatRupees(Number(to))}`;
-  return to ? `${formatRupees(Number(from))} to ${formatRupees(Number(to))}` : `${formatRupees(Number(from))} and above`;
+  return to ? `${formatRupees(Number(from))} to ${formatRupees(Number(to))}` : `${formatRupees(Number(from))} or more`;
 };
 export const rangesOf = (bands) => (bands ?? []).map((b, i) => `${i === 0 ? 0 : bands[i - 1]}-${b}`).concat(bands?.length ? [`${bands[bands.length - 1]}-`] : []);
 /** Which of the shop's ranges a typical piece falls in. Only a range: what counts as dear is the shop's to say. */
@@ -52,7 +52,7 @@ export function chipsOf(rules) {
   if (rules.budget) add('Budget', rules.budget.map(rangeWord).join(' or '), ['budget']);
   if (rules.spentAtLeast !== undefined) add('Spent from', formatRupees(rules.spentAtLeast), ['spentAtLeast']);
   if (rules.spentAtMost !== undefined) add('Spent to', formatRupees(rules.spentAtMost), ['spentAtMost']);
-  if (rules.boughtOver !== undefined) add('Bought a piece over', formatRupees(rules.boughtOver), ['boughtOver']);
+  if (rules.boughtOver !== undefined) add('Bought a piece of', `${formatRupees(rules.boughtOver)} or more`, ['boughtOver']);
   if (rules.boughtKinds) add('Buys', rules.boughtKinds.join(' or '), ['boughtKinds']);
   if (rules.fabrics) add('Fabric', rules.fabrics.join(' or '), ['fabrics']);
   if (rules.crafts) add('Craft', rules.crafts.join(' or '), ['crafts']);

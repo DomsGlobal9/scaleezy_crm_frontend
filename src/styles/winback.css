@@ -1,0 +1,18 @@
+/* A win-back offer on the customer's page: the counter checks the code on their phone and marks it given. */
+.wb-offer { border: 1.5px solid var(--brand-solid); background: color-mix(in srgb, var(--brand-solid) 9%, transparent); border-radius: 12px; padding: 12px 14px; min-width: 0; }
+.wb-top { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+.wb-top > div { min-width: 0; }
+.wb-label { display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; color: var(--brand-ink); }
+.wb-what { font-size: 15px; margin-top: 2px; overflow-wrap: anywhere; }
+.wb-when { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+.wb-side { text-align: right; }
+.wb-code { font-family: ui-monospace, Consolas, monospace; font-size: 18px; font-weight: 700; letter-spacing: 1px; }
+.wb-give { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border-light, rgba(127, 127, 127, .25)); display: grid; gap: 8px; max-width: 420px; }
+.wb-give p { margin: 0; font-size: 13px; color: var(--text-secondary); }
+.wb-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.wb-err { margin: 8px 0 0; font-size: 13px; color: var(--accent-danger); }
+.wb-today { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 12px; }
+.wb-today h2 { display: flex; align-items: center; gap: 6px; font-size: 14px; margin: 0; }
+.wb-today p { margin: 4px 0 0; font-size: 13px; color: var(--text-secondary); }
+.wb-today strong { font-size: 22px; }
+@media (max-width: 520px) { .wb-side { text-align: left; } }

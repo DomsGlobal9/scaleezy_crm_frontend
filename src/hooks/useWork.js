@@ -112,3 +112,19 @@ export function useSetLanguage() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ['today', 'list'] })
   });
 }
+
+/** A win-back offer the counter may give, and the bills it may go on (9 Nov, the owner's OK). */
+export function useWinbackOffer(customerId) {
+  return useQuery({ queryKey: ['customer', customerId, 'winback'], queryFn: async () => (await api.get(`/customers/${customerId}/winback`)).data, enabled: !!customerId });
+}
+export function useGiveWinback(customerId) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ offerId, billId }) => (await api.post(`/customers/${customerId}/winback/${offerId}/given`, { billId: billId || null })).data,
+    onSuccess: (data) => {
+      qc.setQueryData(['customer', customerId, 'winback'], data);
+      qc.invalidateQueries({ queryKey: ['customer', customerId] });
+      qc.invalidateQueries({ queryKey: ['today'] });
+    }
+  });
+}

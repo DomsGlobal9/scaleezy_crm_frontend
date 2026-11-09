@@ -8,6 +8,7 @@ import { formatRupees } from '../utils/money';
 import { formatDay } from '../utils/dates';
 import { LANGUAGES, messageFor, whatsappLink } from '../utils/messages';
 import LoadFailed from '../components/LoadFailed';
+import { WinbackToday } from '../components/WinbackOffer';
 
 /**
  * Today: who to talk to, why, and what to say -- one ranked list (the owner approved the mockup,
@@ -63,6 +64,7 @@ export default function Today() {
         <div className="crm-card"><LoadFailed what="today" error={list.error} onRetry={() => list.refetch()} /></div>
       ) : (
         <>
+          <WinbackToday winback={d.winback} />
           {(left > 0 || doneCount > 0) && (
             <div className="tk-progress" data-testid="progress">
               <div className="tk-bar"><i style={{ width: `${Math.round((100 * doneCount) / Math.max(1, doneCount + left))}%` }} /></div>

@@ -48,7 +48,7 @@ async function main() {
     check('and says the date is not known', /date not known/.test(await past.innerText()));
     check('spend, bills and about how many visits', /₹85,000/.test(await page.getByTestId('past-spend').innerText()) && /3 bills, about 2 visits/.test(await page.getByTestId('past-spend').innerText()), await page.getByTestId('past-spend').innerText());
     check('what they buy, with shares', new RegExp(`${PATTU}: 3 pieces, \\d+% of what they kept`).test(await page.getByTestId('past-buys').innerText()), await page.getByTestId('past-buys').innerText());
-    check('budget, as a range, with a typical and the dearest piece', /₹20,000 and above/.test(await page.getByTestId('past-budget').innerText()) && /Dearest piece: ₹30,000/.test(await page.getByTestId('past-budget').innerText()), await page.getByTestId('past-budget').innerText());
+    check('budget, as a range, with a typical and the dearest piece', /₹20,000 or more/.test(await page.getByTestId('past-budget').innerText()) && /Dearest piece: ₹30,000/.test(await page.getByTestId('past-budget').innerText()), await page.getByTestId('past-budget').innerText());
     check('returns and how they pay', /returned/.test(await page.getByTestId('past-returns').innerText()) && /Usually pays by Card/.test(await page.getByTestId('past-returns').innerText()), await page.getByTestId('past-returns').innerText());
     const nums = page.getByTestId('numbers');
     check('the numbers count the money and bills', /₹85,000/.test(await page.getByTestId('num-spend').innerText()) && /3 bills/.test(await page.getByTestId('num-spend').innerText()), await nums.innerText());
@@ -119,7 +119,7 @@ async function main() {
     // Budget narrows further; a chip comes off by itself.
     await page.getByTestId('filters-open').click();
     await panel.waitFor();
-    await panel.getByRole('button', { name: '₹20,000 and above' }).click();
+    await panel.getByRole('button', { name: '₹20,000 or more' }).click();
     await page.waitForFunction(() => /Show 1 customer$/.test(document.querySelector('[data-testid="filters-show"]')?.innerText ?? ''), null, { timeout: 15000 });
     await page.getByTestId('filters-show').click();
     await page.waitForFunction(() => /^1 customer matches/.test(document.querySelector('.cf-result')?.innerText ?? ''), null, { timeout: 15000 });
@@ -196,7 +196,7 @@ async function main() {
     await page.goto(`${APP}/settings`);
     const bands = page.getByTestId('price-bands');
     await bands.waitFor({ timeout: 20000 });
-    check('Shop settings has the price ranges, starting from sensible amounts', /Under ₹3,000 · ₹3,000 to ₹8,000 · ₹8,000 to ₹20,000 · ₹20,000 and above/.test(await page.getByTestId('band-words').innerText()), await page.getByTestId('band-words').innerText());
+    check('Shop settings has the price ranges, starting from sensible amounts', /Under ₹3,000 · ₹3,000 to ₹8,000 · ₹8,000 to ₹20,000 · ₹20,000 or more/.test(await page.getByTestId('band-words').innerText()), await page.getByTestId('band-words').innerText());
     await bands.getByRole('spinbutton', { name: 'Price 1' }).fill('1000');
     await bands.getByRole('spinbutton', { name: 'Price 2' }).fill('500');
     check('out of order: Save stays off', await page.getByTestId('band-save').isDisabled());

@@ -30,7 +30,7 @@ export const RULES = [
   { key: 'billsAtMost', label: 'Bought at most … times', input: 'count', start: 1, lead: 'bought at most', says: v => `bought at most ${v} ${v === 1 ? 'time' : 'times'}` },
   { key: 'budget', label: 'Budget for one piece…', input: 'pick', from: 'ranges', word: rangeWord, lead: 'have a budget of', start: [], says: v => `have a budget of ${list(v.map(rangeWord))}` },
   { key: 'fabrics', label: 'Bought a fabric…', input: 'pick', from: 'fabrics', lead: 'bought', start: [], says: v => `bought ${list(v)}` },
-  { key: 'boughtOver', label: 'Bought a piece over…', input: 'rupees', start: 10000, lead: 'bought a piece over', says: v => `bought a piece over ${formatRupees(v)}` },
+  { key: 'boughtOver', label: 'Bought a piece of … or more', input: 'rupees', start: 10000, lead: 'bought a piece of', after: 'or more', says: v => `bought a piece of ${formatRupees(v)} or more` },
   { key: 'crafts', label: 'Bought a craft…', input: 'pick', from: 'crafts', lead: 'bought', start: [], says: v => `bought ${list(v)}` },
   { key: 'colours', label: 'Bought a colour…', input: 'pick', from: 'colours', lead: 'bought in', start: [], says: v => `bought in ${list(v)}` },
   { key: 'sizes', label: 'Bought a size…', input: 'pick', from: 'sizes', lead: 'bought size', start: [], says: v => `bought size ${list(v)}` },

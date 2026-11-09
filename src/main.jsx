@@ -15,6 +15,7 @@ import './styles/festivals.css';
 import './styles/profile-edit.css';
 import './styles/messages.css';
 import './styles/reviews.css';
+import './styles/winback.css';
 import './styles/filters.css';
 import './styles/topbar.css';
 import './styles/customer-page.css';

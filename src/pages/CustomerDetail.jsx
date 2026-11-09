@@ -25,6 +25,7 @@ import { useCustomerReviews } from '../hooks/useReviews';
 import PastPurchases, { PastOnTimeline, usePast } from '../components/PastPurchases';
 import { useMediaQuery } from '../hooks/useMediaQuery';
 import { FeedbackCard, ReviewCard } from '../components/ReviewCards';
+import WinbackOffer from '../components/WinbackOffer';
 
 /**
  * One customer: who they are and their numbers in one header; below, what they wear, their
@@ -161,6 +162,7 @@ export default function CustomerDetail() {
       ) : (
         <>
           <Header profile={customer.data.profile} numbers={customer.data.numbers} />
+          <WinbackOffer customerId={id} />
           {reviews.data?.unhappy && <Unhappy unhappy={reviews.data.unhappy} profile={customer.data.profile} onFollowUp={askFollowUp} />}
           <section className={`cp-body${tab === 'work' ? ' on-work' : ''}`}>
             <div className="crm-card cp-main">

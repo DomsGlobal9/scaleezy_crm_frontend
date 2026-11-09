@@ -76,8 +76,11 @@ export default function CustomerFilters({ rules, search, onApply, onClose }) {
                 <input className="input-field cf-num" type="number" inputMode="numeric" min="1" placeholder="To ₹" aria-label="Total spent to" value={draft.spentAtMost ?? ''} onChange={money('spentAtMost')} />
               </span>
             </Row>
-            <Row label="Bought a piece over">
-              <input className="input-field cf-num" type="number" inputMode="numeric" min="1" placeholder="₹" aria-label="Bought a piece over" value={draft.boughtOver ?? ''} onChange={money('boughtOver')} />
+            <Row label="Bought one piece of">
+              <span className="cf-range">
+                <input className="input-field cf-num" type="number" inputMode="numeric" min="1" placeholder="₹" aria-label="Bought one piece of this much or more" value={draft.boughtOver ?? ''} onChange={money('boughtOver')} />
+                or more
+              </span>
             </Row>
           </Group>
 

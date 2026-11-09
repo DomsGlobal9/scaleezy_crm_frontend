@@ -171,6 +171,7 @@ function RuleInput({ rule, value, onChange, choices }) {
           <span className="sg-money"><span aria-hidden="true">₹</span>
             <input className="input-field" type="number" inputMode="numeric" min="1" step="1" value={value} onChange={(e) => onChange(number(e.target.value))} aria-label={rule.label.replace('…', ' (₹)')} />
           </span>
+          {rule.after && <span>{rule.after}</span>}
         </label>
       );
     case 'count':

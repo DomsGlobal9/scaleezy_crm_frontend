@@ -127,10 +127,10 @@ export default function Week() {
                 <Link to="/reviews">Open Reviews <ArrowRight size={13} /></Link>
               </section>
             )}
-            {d.winback?.sent > 0 && (
+            {(d.winback?.sent > 0 || d.winback?.used > 0) && (
               <section className="crm-card wk-mini" data-testid="winback">
                 <h3>Won back</h3>
-                <p>{`${plural(d.winback.sent, 'regular was', 'regulars were')} sent your offer. ${d.winback.cameBack} came back and bought.`}</p>
+                <p>{`${plural(d.winback.sent, 'regular was', 'regulars were')} sent your offer. ${d.winback.cameBack} came back and bought${d.winback.used ? `; ${d.winback.used} used the offer${d.winback.usedOnBills ? `, on ₹${Math.round(d.winback.usedOnBills).toLocaleString('en-IN')} of bills` : ''}` : ''}.`}</p>
               </section>
             )}
             {d.feedback?.count > 0 && (

@@ -140,7 +140,18 @@ function WinBack() {
           )}
         </div>
       </label>
-      <p className="pe-hint" data-testid="winback-preview">They get: {d.text.replace('{name}', 'Meena').replace('{shop}', 'your shop')} Reply STOP to stop offers.</p>
+      <p className="pe-hint" data-testid="winback-preview">They get: {d.text.replace('{name}', 'Meena').replace('{shop}', 'your shop').replace('{code}', 'MEENA4821').replace('{until}', `${d.validDays} days from sending`)} Reply STOP to stop offers.</p>
+      <div className="pe-sw-row">
+        <div>
+          <h3 id="pe-valid">Valid for</h3>
+          <p>Your staff see the offer and code on the customer's page, and mark it given with the bill.</p>
+        </div>
+        <span style={{ minWidth: 150 }}>
+          <Select value={String(d.validDays)} onChange={(e) => send({ validDays: Number(e.target.value) }, 'How long the offer lasts is saved.')} aria-label="How long the offer lasts">
+            {[15, 30, 45, 60].map(n => <option key={n} value={n}>{n} days</option>)}
+          </Select>
+        </span>
+      </div>
       <div className="pe-sw-row">
         <div>
           <h3 id="pe-limit">No more than</h3>
