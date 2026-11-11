@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { DoorOpen, QrCode, ExternalLink, Search, Loader2, ShieldOff, UserPlus, Users, MapPin, Hand } from 'lucide-react';
 import { usePermission } from '../hooks/usePermission';
+import { useAuth } from '../context/AuthContext';
 import { useArrivals, useLookup, useStores } from '../hooks/useCounter';
 import { formatPhone } from '../utils/phone';
 import Select from '../components/common/Select';
@@ -27,6 +28,9 @@ export function minutesAgo(iso, now = Date.now()) {
 
 export default function Counter() {
   const { can } = usePermission();
+  const { user } = useAuth();
+  // Team members → Stores names some stores for this person: "all" means all of theirs.
+  const someStores = (user?.locationIds?.length ?? 0) > 0 && !can('*');
   const navigate = useNavigate();
   const [storeId, setStoreId] = useState(readStore);
   const stores = useStores();
@@ -39,6 +43,7 @@ export default function Counter() {
 
   // The store this device is in, remembered: nobody re-picks the store they are standing in.
   useEffect(() => { try { storeId ? localStorage.setItem(STORE_KEY, storeId) : localStorage.removeItem(STORE_KEY); } catch { /* fine */ } }, [storeId]);
+  useEffect(() => { if (storeId && storeList.length && !storeList.some(s => s.id === storeId)) setStoreId(''); }, [storeList, storeId]);
   useEffect(() => { if (lookup.data?.found === 'one') open(lookup.data.people[0].id); }, [lookup.data]); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!can('crm:customer:view')) {
@@ -62,7 +67,7 @@ export default function Counter() {
           <div className="ct-store">
             <MapPin size={15} aria-hidden="true" />
             <Select value={storeId} onChange={(e) => setStoreId(e.target.value)} aria-label="Your store">
-              <option value="">All stores</option>
+              <option value="">{someStores ? 'All my stores' : 'All stores'}</option>
               {storeList.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
             </Select>
           </div>

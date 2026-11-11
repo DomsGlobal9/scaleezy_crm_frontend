@@ -30,6 +30,13 @@ export default function SalesDashboard() {
   const d = dash.data;
 
   useEffect(() => { try { storeId ? localStorage.setItem(STORE_KEY, storeId) : localStorage.removeItem(STORE_KEY); } catch { /* fine */ } }, [storeId]);
+  // Only one store to work in (the shop's only store, or the only one Team members gives them): that one.
+  // A remembered store that is not one of theirs any more is dropped.
+  useEffect(() => {
+    if (!storeList.length) return;
+    if (storeId && !storeList.some(s => s.id === storeId)) setStoreId(storeList.length === 1 ? storeList[0].id : '');
+    else if (!storeId && storeList.length === 1) setStoreId(storeList[0].id);
+  }, [storeList, storeId]);
 
   const serve = async (body) => {
     try {

@@ -1,6 +1,6 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { ExternalLink, ShieldCheck } from 'lucide-react';
+import { ExternalLink, MapPin, ShieldCheck } from 'lucide-react';
 import { api } from '../lib/api';
 import { INVENTORY_URL } from '../lib/config';
 import { formatDay } from '../utils/dates';
@@ -24,7 +24,7 @@ export default function TeamAccess() {
     <section className="crm-card pe-auto" data-testid="team-access" aria-labelledby="ta-h">
       <h2 id="ta-h"><ShieldCheck size={18} aria-hidden="true" /> Team and access</h2>
       <p className="crm-muted" style={{ marginTop: 0 }}>
-        Who can do what in CRM, as of each person's last sign-in. To change it, use Team members in Inventory: one place for every ScaleEzy module.{' '}
+        Who can do what in CRM, and in which stores, as of each person's last sign-in. To change it, use Team members in Inventory: one place for every ScaleEzy module.{' '}
         <a href={`${INVENTORY_URL}/settings?section=USERS`} target="_blank" rel="noreferrer" className="si-link" data-testid="team-change">Change in Team members <ExternalLink size={12} aria-hidden="true" /></a>
       </p>
       {team.isLoading ? <p className="crm-muted">Loading the team…</p>
@@ -39,6 +39,11 @@ export default function TeamAccess() {
                     <div className="ta-who">
                       <strong>{p.name}</strong>
                       <span className="crm-muted">{[p.email, `last in ${formatDay(p.lastSeenAt)}`].filter(Boolean).join(' · ')}</span>
+                      {!p.isOwner && p.access.length > 0 && (
+                        <span className="crm-muted ta-stores" data-testid="team-stores">
+                          <MapPin size={12} aria-hidden="true" /> {p.stores === null || p.stores === undefined ? 'All stores' : p.stores.length ? p.stores.join(', ') : 'No open store chosen'}
+                        </span>
+                      )}
                     </div>
                     <div className="ta-can">
                       {p.isOwner ? <span className="sd-tag good">Owner: everything</span>
