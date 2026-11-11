@@ -28,7 +28,7 @@ export default function MessageDetail() {
   const del = useDeleteDraft(id);
   const [confirm, setConfirm] = useState(null);
   const [error, setError] = useState(null);
-  const mayAct = can('campaign:send');
+  const mayAct = can('crm:messages:send');
 
   if (m.isLoading) return <main className="crm-page"><div className="crm-card crm-row crm-muted" aria-busy="true"><Loader2 size={16} className="animate-spin" /> Loading the message…</div></main>;
   if (m.isError) return <main className="crm-page"><Link to="/messages" className="cp-back"><ArrowLeft size={14} /> All messages</Link><div className="crm-card"><LoadFailed what="the message" error={m.error} onRetry={() => m.refetch()} /></div></main>;

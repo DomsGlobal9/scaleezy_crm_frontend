@@ -17,13 +17,13 @@ export default function Groups() {
   const { can } = usePermission();
   const navigate = useNavigate();
   const groups = useGroups();
-  const ratedLow = useRatedLow(can('customer:view'));
+  const ratedLow = useRatedLow(can('crm:customer:view'));
   const create = useCreateGroup();
-  const mayManage = can('customer:manage_groups');
+  const mayManage = can('crm:lists');
   const [name, setName] = useState('');
   const [problem, setProblem] = useState('');
 
-  if (!can('customer:view')) {
+  if (!can('crm:customer:view')) {
     return (
       <div className="crm-notice"><div className="crm-card">
         <ShieldOff size={28} style={{ color: 'var(--accent-warning)' }} />

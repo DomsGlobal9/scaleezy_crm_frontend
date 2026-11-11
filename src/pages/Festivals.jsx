@@ -16,9 +16,9 @@ const longDay = (day) => new Date(`${day}T12:00:00Z`).toLocaleDateString('en-IN'
 export default function Festivals() {
   const { can } = usePermission();
   const list = useFestivals();
-  const mayManage = can('crm:festivals:manage');
+  const mayManage = can('crm:shop');
 
-  if (!can('customer:view')) {
+  if (!can('crm:customer:view')) {
     return (
       <div className="crm-notice"><div className="crm-card">
         <ShieldOff size={28} style={{ color: 'var(--accent-warning)' }} />

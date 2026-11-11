@@ -21,7 +21,7 @@ export default function SegmentView() {
   const [confirming, setConfirming] = useState(false);
   const result = useSegment(id, page);
   const remove = useRemoveSegment();
-  const mayManage = can('crm:segment:manage');
+  const mayManage = can('crm:lists');
   const d = result.data;
 
   if (result.isLoading) {

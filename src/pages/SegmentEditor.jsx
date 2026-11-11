@@ -22,7 +22,7 @@ export default function SegmentEditor() {
   const [params] = useSearchParams();
   const navigate = useNavigate();
   const { can } = usePermission();
-  const mayManage = can('crm:segment:manage');
+  const mayManage = can('crm:lists');
   const existing = useSegment(id, 1);
   const choices = useSegmentChoices();
   const create = useCreateSegment();
@@ -72,7 +72,7 @@ export default function SegmentEditor() {
     }
   };
 
-  if (!can('customer:view')) {
+  if (!can('crm:customer:view')) {
     return (
       <div className="crm-notice"><div className="crm-card">
         <ShieldOff size={28} style={{ color: 'var(--accent-warning)' }} />

@@ -2,7 +2,7 @@ import { useAuth } from '../context/AuthContext';
 
 const WILDCARD = '*';
 
-// usePermission().can('customer:view') -> boolean
+// usePermission().can('crm:customer:view') -> boolean
 // This only decides what the screen shows. The service re-checks every permission on every request.
 export function usePermission() {
   const { permissions, roles } = useAuth();

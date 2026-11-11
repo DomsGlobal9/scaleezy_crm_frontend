@@ -109,7 +109,7 @@ export default function CustomerDetail() {
   // (?followup=1) opens Follow-ups on a phone; on a laptop they are always beside the tabs.
   const asked = params.get('tab');
   const tab = TABS.some(t => t.key === asked) ? asked : params.get('followup') ? 'work' : 'wear';
-  const reviews = useCustomerReviews(id, can('customer:view'));
+  const reviews = useCustomerReviews(id, can('crm:customer:view'));
   const waiting = (reviews.data?.reviews ?? []).filter(r => r.needsReply).length + (reviews.data?.feedback ?? []).filter(f => !f.handledAt).length;
   const narrow = useMediaQuery('(max-width: 860px)');
   // The warning's "Add follow-up": opens the box, each time; on a phone that is a tab of its own.
@@ -130,7 +130,7 @@ export default function CustomerDetail() {
   // "← All customers" goes back to the list as it was left (search and page are in its address).
   const back = () => (window.history.state?.idx > 0 ? navigate(-1) : navigate('/customers'));
 
-  if (!can('customer:view')) {
+  if (!can('crm:customer:view')) {
     return (
       <div className="crm-notice">
         <div className="crm-card">
@@ -195,7 +195,7 @@ export default function CustomerDetail() {
 function Unhappy({ unhappy: u, profile: p, onFollowUp }) {
   const { can } = usePermission();
   const [messaging, setMessaging] = useState(false);
-  const mayWrite = can('customer:update');
+  const mayWrite = can('crm:customer:update');
   const oneStatus = useOneStatus(mayWrite);
   const mayMessage = mayWrite && !!oneStatus.data?.available && !!p.phone && !!p.consent?.whatsappOffers && !p.consent?.stoppedAt;
   return (
@@ -291,15 +291,15 @@ function Header({ profile: p, numbers: n }) {
   const [messaging, setMessaging] = useState(false);
   // A note on WhatsApp: for whoever may change customers, once messages are sent from CRM, to a
   // customer who agreed and did not reply STOP (the service checks every rule again).
-  const oneStatus = useOneStatus(can('customer:update'));
-  const mayMessage = can('customer:update') && !!oneStatus.data?.available && !!p.phone && !!p.consent?.whatsappOffers && !p.consent?.stoppedAt;
+  const oneStatus = useOneStatus(can('crm:customer:update'));
+  const mayMessage = can('crm:customer:update') && !!oneStatus.data?.available && !!p.phone && !!p.consent?.whatsappOffers && !p.consent?.stoppedAt;
   const address = p.addresses[0]
     ? `${p.addresses[0].line}${p.addresses[0].pincode ? ` ${p.addresses[0].pincode}` : ''}`
     : (p.shippingAddress || p.billingAddress || null);
   const moreAddresses = Math.max(0, p.addresses.length - 1);
   const inventoryLink = (p.links ?? []).find(l => l.source === 'inventory');
   const inventoryHref = inventoryLink ? `${INVENTORY_URL}/customers/${encodeURIComponent(inventoryLink.externalId)}` : null;
-  const editable = !!inventoryLink && can('customer:update');
+  const editable = !!inventoryLink && can('crm:customer:update');
 
   return (
     <section className="crm-card cp-head" data-testid="profile">

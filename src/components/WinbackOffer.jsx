@@ -47,7 +47,7 @@ export default function WinbackOffer({ customerId }) {
         </div>
         <div className="wb-side">
           <div className="wb-code" data-testid="winback-code">{o.code}</div>
-          {can('customer:update') && !giving && (
+          {can('crm:customer:update') && !giving && (
             <button type="button" className="btn-primary cp-btn" style={{ marginTop: 6 }} onClick={() => { setGiving(true); setError(null); }} data-testid="winback-give">Mark as given</button>
           )}
         </div>

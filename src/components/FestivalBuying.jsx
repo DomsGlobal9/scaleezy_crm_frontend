@@ -36,7 +36,7 @@ function whatWords(f) {
 
 export default function FestivalBuying({ data }) {
   const { can } = usePermission();
-  const mayManage = can('crm:festivals:manage');
+  const mayManage = can('crm:shop');
   if (!data) return null;
   const { share, festivals, soon, notFor } = data;
 

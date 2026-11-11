@@ -30,7 +30,7 @@ export default function Today() {
   const list = useTalkList(scope);
   const d = list.data;
 
-  if (!can('customer:view')) {
+  if (!can('crm:customer:view')) {
     return (
       <div className="crm-notice"><div className="crm-card">
         <ShieldOff size={28} style={{ color: 'var(--accent-warning)' }} />
@@ -73,10 +73,10 @@ export default function Today() {
           )}
           {left === 0 && doneCount === 0 ? <FirstSteps /> : (
             <ol className="tk-list">
-              {d.items.map((item, i) => <Row key={item.key} item={item} rank={i + 1} shopName={d.shopName} today={d.today} mayAct={can('customer:update')} />)}
+              {d.items.map((item, i) => <Row key={item.key} item={item} rank={i + 1} shopName={d.shopName} today={d.today} mayAct={can('crm:customer:update')} />)}
             </ol>
           )}
-          {d.done.length > 0 && <DoneToday done={d.done} mayAct={can('customer:update')} />}
+          {d.done.length > 0 && <DoneToday done={d.done} mayAct={can('crm:customer:update')} />}
         </>
       )}
     </main>

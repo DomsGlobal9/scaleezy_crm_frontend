@@ -22,7 +22,7 @@ const WHEN = [
 export default function FollowUpsAndNotes({ customerId }) {
   const { user } = useAuth();
   const { can } = usePermission();
-  const canWrite = can('customer:update');
+  const canWrite = can('crm:customer:update');
   const followUps = useFollowUps(customerId);
   const notes = useNotes(customerId);
   const staff = useStaff();

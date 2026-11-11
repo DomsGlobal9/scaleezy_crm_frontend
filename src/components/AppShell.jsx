@@ -37,7 +37,7 @@ export default function AppShell() {
   const [searching, setSearching] = useState(false);
   const firstLink = useRef(null);
   const menuButton = useRef(null);
-  const seesCustomers = can('customer:view');
+  const seesCustomers = can('crm:customer:view');
   const due = useTodayCount(seesCustomers);
   const dueCount = due.data?.mine ?? 0;
   const reviewStats = useReviewStats(seesCustomers);
@@ -59,7 +59,7 @@ export default function AppShell() {
   }, [open]);
 
   const places = seesCustomers ? [
-    ...(seesCustomers ? [{ to: '/sales', label: 'Sales dashboard', icon: LayoutDashboard }] : []),
+    ...(can('crm:sales') ? [{ to: '/sales', label: 'Sales dashboard', icon: LayoutDashboard }] : []),
     { to: '/today', label: 'To do today', icon: CalendarCheck2, count: dueCount, countLabel: `${dueCount} due` },
     ...(can('crm:team:view') ? [{ to: '/week', label: 'This week', icon: TrendingUp }] : []),
     { to: '/counter', label: 'At the door', icon: DoorOpen },
@@ -67,7 +67,7 @@ export default function AppShell() {
     { to: '/reviews', label: 'Reviews', icon: Star, count: waiting, countLabel: `${waiting} waiting` },
     { to: '/groups', label: 'Customer groups', icon: Tags },
     { to: '/segments', label: 'Saved lists', icon: ListFilter },
-    ...(can('campaign:view') ? [{ to: '/messages', label: 'Messages', icon: Megaphone }] : []),
+    ...(can('crm:messages:view') ? [{ to: '/messages', label: 'Messages', icon: Megaphone }] : []),
   ] : [];
 
   const initials = (user?.name || user?.email || '?').split(/\s+/).map(w => w[0]).slice(0, 2).join('').toUpperCase();

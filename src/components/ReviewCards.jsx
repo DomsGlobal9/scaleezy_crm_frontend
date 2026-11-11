@@ -55,7 +55,7 @@ export function ReviewActions({ review: r, note }) {
   const closeHide = useCallback(() => setHiding(false), []);
 
   useEffect(() => { if (replying) box.current?.focus(); }, [replying]);
-  if (!can('customer:update')) return note ? <div className="rv-note">{note}</div> : null;
+  if (!can('crm:reviews')) return note ? <div className="rv-note">{note}</div> : null;
 
   const run = async (what, done) => {
     setError(null);
@@ -127,7 +127,7 @@ export function FeedbackActions({ feedback: f, note }) {
   const { can } = usePermission();
   const act = useReviewAct();
   const [error, setError] = useState(null);
-  if (!can('customer:update')) return note ? <div className="rv-note">{note}</div> : null;
+  if (!can('crm:reviews')) return note ? <div className="rv-note">{note}</div> : null;
   const open = !f.handledAt;
   const change = async () => {
     setError(null);

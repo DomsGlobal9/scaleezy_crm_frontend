@@ -79,7 +79,7 @@ export default function Customers() {
   const data = result.data;
   const rows = data?.customers ?? [];
 
-  if (!can('customer:view')) {
+  if (!can('crm:customer:view')) {
     return (
       <div className="crm-notice">
         <div className="crm-card">
@@ -167,7 +167,7 @@ export default function Customers() {
           {data && (
             <div className="cf-result">
               <span><strong>{total.toLocaleString('en-IN')}</strong> {total === 1 ? 'customer matches' : 'customers match'}</span>
-              {can('crm:segment:manage') && total > 0 && <Link className="si-link" to={`/segments/new?rules=${encodeURIComponent(JSON.stringify(rules))}`} data-testid="filters-save">Save as a list</Link>}
+              {can('crm:lists') && total > 0 && <Link className="si-link" to={`/segments/new?rules=${encodeURIComponent(JSON.stringify(rules))}`} data-testid="filters-save">Save as a list</Link>}
             </div>
           )}
         </>

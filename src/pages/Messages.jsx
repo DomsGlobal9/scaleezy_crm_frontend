@@ -166,9 +166,9 @@ export default function Messages() {
   const navigate = useNavigate();
   const [params, setParams] = useSearchParams();
   const tab = params.get('tab') === 'automatic' ? 'automatic' : 'shop';
-  const overview = useMessagesOverview(can('campaign:view'));
+  const overview = useMessagesOverview(can('crm:messages:view'));
 
-  if (!can('campaign:view')) {
+  if (!can('crm:messages:view')) {
     return (
       <div className="crm-notice">
         <div className="crm-card">
@@ -187,7 +187,7 @@ export default function Messages() {
           <h1><Megaphone size={24} aria-hidden="true" /> Messages</h1>
           <p>Send an offer or news to your customers on WhatsApp, from your shop's own number.</p>
         </div>
-        {can('campaign:send') && <Link to="/messages/new" className="btn-primary ms-new"><Plus size={16} /> New message</Link>}
+        {can('crm:messages:send') && <Link to="/messages/new" className="btn-primary ms-new"><Plus size={16} /> New message</Link>}
       </div>
 
       {overview.isError ? <div className="crm-card"><LoadFailed what="the facts about your WhatsApp" error={overview.error} onRetry={() => overview.refetch()} /></div> : <Facts o={o} />}
@@ -204,7 +204,7 @@ export default function Messages() {
             onClick={() => setParams(key === 'shop' ? {} : { tab: key }, { replace: true })}>{label}</button>
         ))}
       </div>
-      {tab === 'automatic' && <Wishes mayChange={can('campaign:send')} />}
+      {tab === 'automatic' && <Wishes mayChange={can('crm:messages:send')} />}
       <List tab={tab} navigate={navigate} />
     </main>
   );

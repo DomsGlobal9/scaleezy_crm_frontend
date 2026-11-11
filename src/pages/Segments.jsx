@@ -17,9 +17,9 @@ export default function Segments() {
   const { can } = usePermission();
   const navigate = useNavigate();
   const segments = useSegments();
-  const mayManage = can('crm:segment:manage');
+  const mayManage = can('crm:lists');
 
-  if (!can('customer:view')) {
+  if (!can('crm:customer:view')) {
     return (
       <div className="crm-notice"><div className="crm-card">
         <ShieldOff size={28} style={{ color: 'var(--accent-warning)' }} />

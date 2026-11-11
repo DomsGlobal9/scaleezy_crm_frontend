@@ -38,7 +38,7 @@ export default function SalesDashboard() {
     } catch (err) { toast.error(err?.message || 'Could not start serving this customer.'); }
   };
 
-  if (!can('customer:view')) {
+  if (!can('crm:sales')) {
     return (
       <div className="crm-notice"><div className="crm-card">
         <ShieldOff size={28} style={{ color: 'var(--accent-warning)' }} />
@@ -76,7 +76,7 @@ export default function SalesDashboard() {
         </div>
       )}
 
-      <FindCustomer onServe={serve} busy={start.isPending} mayAdd={can('customer:create')} needsStore={!store && storeList.length > 0} />
+      <FindCustomer onServe={serve} busy={start.isPending} mayAdd={can('crm:customer:create')} needsStore={!store && storeList.length > 0} />
 
       <section aria-labelledby="sd-in-h">
         <div className="td-sec-head"><h2 id="sd-in-h"><DoorOpen size={17} aria-hidden="true" /> In the shop now</h2><span className="crm-muted">From the door QR, and customers started here</span></div>

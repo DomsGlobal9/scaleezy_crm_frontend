@@ -41,7 +41,7 @@ export default function Counter() {
   useEffect(() => { try { storeId ? localStorage.setItem(STORE_KEY, storeId) : localStorage.removeItem(STORE_KEY); } catch { /* fine */ } }, [storeId]);
   useEffect(() => { if (lookup.data?.found === 'one') open(lookup.data.people[0].id); }, [lookup.data]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  if (!can('customer:view')) {
+  if (!can('crm:customer:view')) {
     return (
       <div className="crm-notice"><div className="crm-card">
         <ShieldOff size={28} style={{ color: 'var(--accent-warning)' }} />

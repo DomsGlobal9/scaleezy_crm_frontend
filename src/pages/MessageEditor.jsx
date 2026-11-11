@@ -98,7 +98,7 @@ export default function MessageEditor() {
   const willGet = preview.data?.willGet ?? 0;
   const days = Math.max(1, Math.ceil(willGet / perDay));
 
-  if (!can('campaign:send')) {
+  if (!can('crm:messages:send')) {
     return <div className="crm-notice"><div className="crm-card"><ShieldOff size={28} style={{ color: 'var(--accent-warning)' }} /><h2>Writing messages is not part of your role</h2><p>Ask the owner if you need to send WhatsApp messages to many customers.</p></div></div>;
   }
   if (id && existing.isLoading) return <main className="crm-page"><div className="crm-card crm-row crm-muted"><Loader2 size={16} className="animate-spin" /> Loading the message…</div></main>;

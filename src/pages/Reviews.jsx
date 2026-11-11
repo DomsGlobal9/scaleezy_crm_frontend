@@ -20,7 +20,7 @@ export default function Reviews() {
   const { can } = usePermission();
   const list = useReviewList();
 
-  if (!can('customer:view')) {
+  if (!can('crm:customer:view')) {
     return (
       <div className="crm-notice"><div className="crm-card">
         <ShieldOff size={28} style={{ color: 'var(--accent-warning)' }} />

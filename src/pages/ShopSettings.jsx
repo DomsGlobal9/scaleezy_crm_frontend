@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import TeamAccess from '../components/TeamAccess';
 import toast from 'react-hot-toast';
 import { Loader2, ShieldOff } from 'lucide-react';
 import { usePermission } from '../hooks/usePermission';
@@ -94,6 +95,7 @@ export default function ShopSettings() {
             <p className="pe-hint">Birthday gift points and the "points lapsing" reminder stay in Inventory: they are about points.</p>
             <FeedbackSettings />
             <PriceBands />
+            <TeamAccess />
           </>
         )}
       </section>

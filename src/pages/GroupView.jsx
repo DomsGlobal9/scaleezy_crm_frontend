@@ -20,8 +20,8 @@ export default function GroupView() {
   const { can } = usePermission();
   const group = useGroup(key);
   const all = useGroups();
-  const mayManage = can('customer:manage_groups');
-  const mayEdit = can('customer:update');
+  const mayManage = can('crm:lists');
+  const mayEdit = can('crm:customer:update');
   const info = (all.data ?? []).find(g => g.key === key);
 
   if (group.isLoading) return <main className="crm-page"><div className="crm-card crm-row crm-muted" aria-busy="true"><Loader2 size={16} className="animate-spin" /> Loading the group…</div></main>;
