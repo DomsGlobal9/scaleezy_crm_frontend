@@ -57,7 +57,7 @@ async function main() {
     check('who walked in: Anitha Reddy by name, "Came in 3 min ago"', texts.some(t => /Anitha Reddy[\s\S]*Came in [34] min ago/.test(t)), texts);
     check('...and the number nobody has, "Not a customer yet"', texts.some(t => /Not a customer yet/.test(t)));
     check('nobody can take a customer here (no "I\'ll take them")', (await page.getByRole('button', { name: /take them/i }).count()) === 0);
-    check('not taken yet: says it happens at Inventory\'s counter', /at Inventory's counter/.test(await arrivals.filter({ hasText: 'Anitha Reddy' }).first().innerText()));
+    check('not taken yet: says nobody has taken them', /Nobody has taken them yet/.test(await arrivals.filter({ hasText: 'Anitha Reddy' }).first().innerText()));
 
     door('take', anithaScan, 'Priya');
     await page.waitForFunction(() => [...document.querySelectorAll('[data-testid="arrival"]')].some(a => /Anitha Reddy/.test(a.textContent) && /Priya is looking after them/.test(a.textContent)), null, { timeout: 25000 }).catch(() => {});
@@ -90,7 +90,7 @@ async function main() {
     await phone.fill(UNKNOWN);
     await page.getByRole('button', { name: 'Open' }).click();
     await page.getByTestId('lookup-none').waitFor({ timeout: 10000 });
-    check('a new number: "New customer", add them at the till', /New customer/.test(await page.getByTestId('lookup-none').innerText()));
+    check('a new number: "New customer", add them on the Sales dashboard', /New customer/.test(await page.getByTestId('lookup-none').innerText()) && /Sales dashboard/.test(await page.getByTestId('lookup-none').innerText()));
     await phone.fill('98480 22307');
     await page.getByRole('button', { name: 'Open' }).click();
     await page.waitForURL(/\/customers\/[0-9a-f-]{36}$/, { timeout: 15000 });

@@ -56,7 +56,7 @@ export default function Counter() {
       <div className="crm-head">
         <div style={{ minWidth: 0 }}>
           <h1><DoorOpen size={24} aria-hidden="true" /> At the door</h1>
-          <p>Who walked in through the door QR, and who is looking after them. Staff take customers at Inventory's counter.</p>
+          <p>Who walked in through the door QR, and who is looking after them. Take a customer on the Sales dashboard.</p>
         </div>
         {storeList.length > 0 && (
           <div className="ct-store">
@@ -87,7 +87,7 @@ export default function Counter() {
         {lookup.data?.found === 'none' && (
           <div className="ct-none" data-testid="lookup-none">
             <UserPlus size={18} aria-hidden="true" />
-            <span><strong>New customer.</strong> Nobody has {formatPhone(lookup.data.phone)} yet. Add them at the till as you bill; they come here by themselves.</span>
+            <span><strong>New customer.</strong> Nobody has {formatPhone(lookup.data.phone)} yet. Add them on the Sales dashboard.</span>
           </div>
         )}
         {lookup.data?.found === 'several' && (
@@ -141,7 +141,7 @@ function Arrivals({ store, storeId, onOpen }) {
               <div className="ct-taken">
                 <span data-testid="who-has-them">{a.taken
                   ? <><Hand size={13} aria-hidden="true" /> {a.taken.byName || 'Someone'} is looking after them</>
-                  : 'Nobody has taken them yet (at Inventory\'s counter)'}</span>
+                  : 'Nobody has taken them yet'}</span>
                 {a.customerId && <button type="button" className="btn-secondary" onClick={() => onOpen(a.customerId)}>Full story</button>}
               </div>
             </li>

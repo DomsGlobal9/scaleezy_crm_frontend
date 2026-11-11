@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom';
-import { CalendarCheck2, TrendingUp, DoorOpen, Users, Tags, ListFilter, Megaphone, Moon, Sun, LogOut, Menu, X, Search, Star } from 'lucide-react';
+import { LayoutDashboard, CalendarCheck2, TrendingUp, DoorOpen, Users, Tags, ListFilter, Megaphone, Moon, Sun, LogOut, Menu, X, Search, Star } from 'lucide-react';
 import CustomerSearch from './CustomerSearch';
 import NotificationsBell from './NotificationsBell';
 import { useAuth } from '../context/AuthContext';
@@ -59,6 +59,7 @@ export default function AppShell() {
   }, [open]);
 
   const places = seesCustomers ? [
+    ...(seesCustomers ? [{ to: '/sales', label: 'Sales dashboard', icon: LayoutDashboard }] : []),
     { to: '/today', label: 'To do today', icon: CalendarCheck2, count: dueCount, countLabel: `${dueCount} due` },
     ...(can('crm:team:view') ? [{ to: '/week', label: 'This week', icon: TrendingUp }] : []),
     { to: '/counter', label: 'At the door', icon: DoorOpen },

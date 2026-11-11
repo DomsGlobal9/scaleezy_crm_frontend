@@ -166,6 +166,7 @@ function personWords(p) {
 const HOW = { whatsapp: 'on WhatsApp', call: 'on a call', in_person: 'in person' };
 function howWords(c) {
   const by = c.byName || 'Someone';
+  if (c.how === 'served') return `${by} served them in the shop`;
   if (c.how === 'promise') return `${by} kept a promise${c.what ? `: “${c.what}”` : ''}`;
   if (c.what === 'stock') return `${by} told them what they asked about${HOW[c.how] ? ` ${HOW[c.how]}` : ''}`;
   return `${by} got in touch${HOW[c.how] ? ` ${HOW[c.how]}` : ''}`;
