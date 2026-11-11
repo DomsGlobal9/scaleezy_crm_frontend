@@ -42,6 +42,9 @@ async function main() {
     check('a salesperson shows "Sales dashboard" and not "Send messages"', (await page.getByTestId('team-person').filter({ hasText: 'Sales dashboard' }).filter({ hasNotText: 'Owner' }).count()) >= 1);
     const link = await page.getByTestId('team-change').getAttribute('href');
     check('changes are made in Inventory\'s Team members', /\/settings\?section=USERS$/.test(link ?? ''), link);
+    const pending = await page.getByTestId('team-pending').count();
+    const blank = execFileSync('docker', ['exec', 'inventory-local-db', 'psql', '-U', 'postgres', '-d', 'inventory', '-tAc', "select count(*) from crm.staff where client_id = 'verify-suites-tenant' and not is_owner and can_see_customers and cardinality(crm_access) = 0"], { encoding: 'utf8' }).trim();
+    check('someone not signed in since the update: "Shown after their next sign-in", never "No CRM access"', String(pending) === blank, { pending, blank });
     check('it is read only: nothing to tick or choose', (await box.locator('input, select, [role="combobox"], [role="switch"]').count()) === 0);
     await box.screenshot({ path: path.join(shots, 'team-access.png') });
   } finally { await browser.close(); }

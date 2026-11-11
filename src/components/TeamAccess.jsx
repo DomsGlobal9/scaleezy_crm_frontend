@@ -42,6 +42,7 @@ export default function TeamAccess() {
                     </div>
                     <div className="ta-can">
                       {p.isOwner ? <span className="sd-tag good">Owner: everything</span>
+                        : has === 0 && p.seesCustomers ? <span className="sd-tag" data-testid="team-pending">Shown after their next sign-in</span>
                         : has === 0 ? <span className="sd-tag">No CRM access</span>
                           : team.data.permissions.filter(x => p.access.includes(x.key)).map(x => <span key={x.key} className="ta-chip" title={x.label}>{SHORT[x.key] ?? x.label}</span>)}
                     </div>
