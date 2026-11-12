@@ -65,13 +65,20 @@ export default function SalesDashboard() {
           <p>{hello}{first ? `, ${first}` : ''}. The customer in front of you first.</p>
         </div>
         {storeList.length > 0 && (
-          <div className="ct-store">
-            <MapPin size={15} aria-hidden="true" />
-            {store && <Link className="ct-qr" to={`/door-qr?locationId=${encodeURIComponent(store.id)}`} data-testid="sd-door-qr"><QrCode size={13} aria-hidden="true" /> Door QR</Link>}
-            <Select value={storeId} onChange={(e) => setStoreId(e.target.value)} aria-label="Your store">
-              <option value="">Choose your store</option>
-              {storeList.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
-            </Select>
+          <div className="sd-head-tools">
+            <div className="ct-store">
+              <MapPin size={15} aria-hidden="true" />
+              <Select value={storeId} onChange={(e) => setStoreId(e.target.value)} aria-label="Your store">
+                <option value="">Choose your store</option>
+                {storeList.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+              </Select>
+            </div>
+            {/* The standee for the store chosen: a button of its own, never squeezed into the picker. */}
+            {store && (
+              <Link className="btn-secondary sd-qr-btn" to={`/door-qr?locationId=${encodeURIComponent(store.id)}`} data-testid="sd-door-qr" title={`Print the door QR for ${store.name}`}>
+                <QrCode size={16} aria-hidden="true" /> Door QR
+              </Link>
+            )}
           </div>
         )}
       </div>

@@ -108,3 +108,8 @@ body.sv-her-open { overflow: hidden; }
 .sd-close-choice.danger b { color: var(--accent-danger); }
 .sd-undo { display: inline-flex; align-items: center; gap: 12px; }
 .sd-undo .si-link { font-weight: 700; color: var(--brand-ink, var(--accent-primary)); text-decoration: underline; }
+
+/* Shop floor header (12 Nov): the store picker, then the Door QR as its own button, on one line. */
+.sd-head-tools { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; justify-content: flex-end; }
+.sd-qr-btn { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; text-decoration: none; }
+@media (max-width: 560px) { .sd-head-tools { width: 100%; justify-content: stretch; } .sd-head-tools .ct-store { flex: 1 1 auto; min-width: 0; } }
