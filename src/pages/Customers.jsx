@@ -5,7 +5,7 @@ import { useShop } from '../hooks/useShop';
 import { useCustomerOverview, useCustomers } from '../hooks/useCustomers';
 import CustomerFilters from '../components/CustomerFilters';
 import Select from '../components/common/Select';
-import { chipsOf, rangeWord, readRules } from '../utils/customerFilters';
+import { chipsOf, rangeWord, readRules, shareWord } from '../utils/customerFilters';
 import { useMerges } from '../hooks/useWork';
 import { usePermission } from '../hooks/usePermission';
 import LoadFailed from '../components/LoadFailed';
@@ -250,12 +250,13 @@ function Overview({ data, onPick }) {
   const repeat = data.repeat ?? [];
   const bought = repeat.reduce((n, r) => n + r.count, 0);
   const again = repeat.filter(r => r.key !== '1').reduce((n, r) => n + r.count, 0);
+  const shareWords = shareWord(again, bought);
   return (
     <div className="cf-overview" data-testid="customer-overview">
-      {bars(data.budget, rangeWord, r => ({ budget: [r.key] }), 'By budget')}
+      {data.budget.some(b => b.count > 0) && bars(data.budget, rangeWord, r => ({ budget: [r.key] }), 'By budget')}
       {data.kinds.length > 0 && bars(data.kinds, null, r => ({ boughtKinds: [r.key] }), 'By what they buy')}
       {bought > 0 && bars(repeat, k => REPEAT_WORDS[k] ?? k, r => r.rules, 'Repeat customers',
-        `${Math.round((again / bought) * 100)}% bought more than once (${again.toLocaleString('en-IN')} of ${bought.toLocaleString('en-IN')}).`, 'overview-repeat')}
+        `${shareWords} bought more than once (${again.toLocaleString('en-IN')} of ${bought.toLocaleString('en-IN')}).`, 'overview-repeat')}
     </div>
   );
 }

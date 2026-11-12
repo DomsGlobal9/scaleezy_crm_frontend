@@ -17,6 +17,11 @@ export const budgetOf = (price, bands) => {
   const key = rangesOf(bands).find(k => { const [from, to] = k.split('-'); return price >= Number(from) && (!to || price < Number(to)); });
   return key ? rangeWord(key) : null;
 };
+/** "N%" of a whole, in honest words: never "0%" when some, never "100%" when not all. */
+export const shareWord = (part, whole) => {
+  const share = whole ? Math.round((part / whole) * 100) : 0;
+  return part > 0 && share === 0 ? 'Under 1%' : part < whole && share === 100 ? '99%' : `${share}%`;
+};
 const WAYS = { UPI: 'UPI', CASH: 'Cash', CARD: 'Card', PAYTM: 'Paytm', CREDIT: 'Credit', STORE_CREDIT: 'Store credit', BANK_TRANSFER: 'Bank transfer', CHEQUE: 'Cheque', WALLET: 'Wallet', OTHER: 'Other' };
 export const payWord = (key) => WAYS[String(key ?? '').toUpperCase()] ?? String(key ?? '').replace(/_/g, ' ').toLowerCase().replace(/^./, c => c.toUpperCase());
 

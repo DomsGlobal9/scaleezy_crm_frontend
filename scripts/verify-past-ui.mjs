@@ -98,9 +98,11 @@ async function main() {
     check('Repeat customers: once, 2 to 4 times, 5 or more, and how many bought again', ['Repeat customers', 'Once', '2 to 4 times', '5 times or more'].every(w => repText.includes(w)) && /\d+% bought more than once \([\d,]+ of [\d,]+\)/.test(repText), repText);
     await rep.screenshot({ path: path.join(shots, 'overview-repeat.png') });
     const want = Number((await page.getByTestId('overview-2-4').locator('b').innerText()).replace(/,/g, ''));
-    await page.getByTestId('overview-2-4').click();
+    // The filtered answer itself, not the list still on screen from before the tap.
+    const [res] = await Promise.all([page.waitForResponse(r => r.url().includes('/api/v1/customers?') && r.url().includes('rules=') && r.request().method() === 'GET', { timeout: 20000 }), page.getByTestId('overview-2-4').click()]);
+    const total = (await res.json()).data.total;
     await applied();
-    await rows().first().waitFor({ timeout: 15000 }).catch(() => {});
+    await page.waitForFunction((n) => { const i = document.querySelector('[data-testid="page-info"]'); return i ? i.textContent.includes(`of ${n.toLocaleString('en-IN')}`) : document.querySelectorAll('[data-testid="customer-row"]').length === n; }, total, { timeout: 15000 }).catch(() => {});
     const info = page.getByTestId('page-info');
     const got = (await info.count()) ? Number((await info.innerText()).match(/of ([\d,]+)/)[1].replace(/,/g, '')) : await rows().count();
     check('tapping "2 to 4 times" shows exactly those customers, as the filter "2 to 4"', got === want && /2 to 4/.test(await page.getByTestId('filters-on').innerText()), { want, got });
