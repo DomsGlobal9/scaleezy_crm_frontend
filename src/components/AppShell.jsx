@@ -6,6 +6,7 @@ import NotificationsBell from './NotificationsBell';
 import { useAuth } from '../context/AuthContext';
 import { usePermission } from '../hooks/usePermission';
 import { useTodayCount } from '../hooks/useWork';
+import { useLiveUpdates } from '../hooks/useLiveUpdates';
 import { useReviewStats } from '../hooks/useReviews';
 import CrmLogo from './CrmLogo';
 
@@ -39,6 +40,8 @@ export default function AppShell() {
   const menuButton = useRef(null);
   const seesCustomers = can('crm:customer:view');
   const due = useTodayCount(seesCustomers);
+  // Every screen of this tab updates at once when something changes in the shop (12 Nov): one line, here.
+  useLiveUpdates(!!user);
   const dueCount = due.data?.mine ?? 0;
   const reviewStats = useReviewStats(seesCustomers);
   const waiting = (reviewStats.data?.needsReply ?? 0) + (reviewStats.data?.feedbackOpen ?? 0);
