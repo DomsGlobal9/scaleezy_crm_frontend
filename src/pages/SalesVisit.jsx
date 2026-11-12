@@ -46,7 +46,7 @@ export default function SalesVisit() {
   if (v.endedAt) {
     return (
       <main className="crm-page sv-page">
-        <Link to="/sales" className="cp-back"><ArrowLeft size={14} /> Sales dashboard</Link>
+        <Link to="/sales" className="cp-back"><ArrowLeft size={14} /> Shop floor</Link>
         <div className="crm-card"><h2>{who}: finished</h2><p className="crm-muted">This visit is saved{v.customer ? ' on her timeline' : ''}.</p></div>
       </main>
     );
@@ -55,7 +55,7 @@ export default function SalesVisit() {
 
   return (
     <main className="crm-page sv-page">
-      <Link to="/sales" className="cp-back"><ArrowLeft size={14} /> Sales dashboard</Link>
+      <Link to="/sales" className="cp-back"><ArrowLeft size={14} /> Shop floor</Link>
       <div className="crm-card sv-who">
         <div className="sd-person-top"><div><h1 className="sv-name">{who}</h1><span className="crm-muted">with {v.staffName ?? 'you'}{v.storeName ? ` · ${v.storeName}` : ''}</span></div>
           {v.customer && <Link className="btn-secondary" to={`/customers/${v.customer.id}`}>Full story</Link>}</div>

@@ -1,13 +1,13 @@
 /**
- * The Sales dashboard in a real browser (installed Edge), signed in for real, on a phone-sized screen,
+ * The Shop floor in a real browser (installed Edge), signed in for real, on a phone-sized screen,
  * local database and local Inventory only:
  *
  *   - the dashboard: its name, the numbers, a walk-in with what to know, "I'll take her"
  *   - a customer who did not scan: type her number, add her (she said yes to offers), and Inventory has her
  *   - what she wants: chips and a live count; "Show her" fills the screen with the shop's name and the
- *     pieces only (no menu, no "Sales dashboard", no tags or stock counts)
+ *     pieces only (no menu, no "Shop floor", no tags or stock counts)
  *   - she picks 2; bring them (by photo and price tag); bought one, the other not her colour; finish
- *   - her timeline says so; Warehouse has no Sales dashboard; nothing runs off a phone screen
+ *   - her timeline says so; Warehouse has no Shop floor; nothing runs off a phone screen
  *
  *   node scripts/verify-sales-ui.mjs      (CRM on 4008, the app on 5176, local Inventory on 4016)
  */
@@ -51,9 +51,9 @@ async function main() {
     page.on('pageerror', e => { console.log('      page error:', e.message); failures += 1; });
 
     await page.goto(`${APP}/sales`);
-    await page.getByRole('heading', { name: 'Sales dashboard' }).waitFor({ timeout: 20000 });
+    await page.getByRole('heading', { name: 'Shop floor' }).waitFor({ timeout: 20000 });
     await page.getByTestId('sd-stats').waitFor({ timeout: 20000 });
-    check('the page is called "Sales dashboard", with the three numbers', /in the shop/.test(await page.getByTestId('sd-stats').innerText()) && /brought back this week/.test(await page.getByTestId('sd-stats').innerText()));
+    check('the page is called "Shop floor", with the three numbers', /in the shop/.test(await page.getByTestId('sd-stats').innerText()) && /brought back this week/.test(await page.getByTestId('sd-stats').innerText()));
     const card = page.getByTestId('sd-person').filter({ hasText: regular[1] }).first();
     await card.waitFor({ timeout: 20000 });
     const cardText = await card.innerText();
@@ -91,7 +91,7 @@ async function main() {
     await her.waitFor({ timeout: 15000 });
     const herText = await her.innerText();
     check('her view: "Picked for you, Sowmya" with the shop\'s name', /Picked for you, Sowmya/.test(herText));
-    check('...and nothing of the staff app: no "Sales dashboard", no tags or stock counts', !/Sales dashboard|Tag |in this store|Full story/.test(herText), herText.slice(0, 300));
+    check('...and nothing of the staff app: no "Shop floor", no tags or stock counts', !/Shop floor|Tag |in this store|Full story/.test(herText), herText.slice(0, 300));
     await page.waitForTimeout(600);
     check('...and no staff message is left showing on her screen', !(await page.locator('[role="status"]').filter({ hasText: /added|till/ }).isVisible().catch(() => false)));
     const covered = await page.evaluate(() => { const el = document.elementFromPoint(20, 400); return !!el?.closest('[data-testid="sv-her"]'); });
@@ -142,13 +142,13 @@ async function main() {
     check('back on the dashboard: "With you", with Continue', /With you/.test(await mine.innerText()) && (await mine.getByRole('link', { name: 'Continue' }).count()) === 1);
     check('At the door knows who has her', sql(`select taken_in from crm.door_arrivals where id = '${arrivalId}'`) === 'crm');
 
-    // Warehouse: no Sales dashboard.
+    // Warehouse: no Shop floor.
     const wctx = await browser.newContext({ viewport: { width: 1366, height: 900 } });
     await wctx.addCookies([{ name: 'token', value: tokenFor('warehouse'), domain: 'localhost', path: '/', httpOnly: true, sameSite: 'Lax' }]);
     const wp = await wctx.newPage();
     await wp.goto(`${APP}/today`);
     await wp.waitForLoadState('networkidle');
-    check('Warehouse has no Sales dashboard in the menu', (await wp.getByRole('link', { name: 'Sales dashboard' }).count()) === 0);
+    check('Warehouse has no Shop floor in the menu', (await wp.getByRole('link', { name: 'Shop floor' }).count()) === 0);
 
     // ── More scenarios ──
     // A number already known: she is found, no form.

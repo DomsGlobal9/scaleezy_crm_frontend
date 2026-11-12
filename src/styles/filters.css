@@ -91,4 +91,7 @@
 .cp-visits { margin-top: 12px; padding: 10px 12px; border-radius: 10px; background: var(--bg-hover); display: grid; gap: 8px; }
 .cp-visits p { margin: 0; }
 .cp-visits .vt-gap i { width: 40px; }
+/* A phone: the dots wrap onto the next line, never a sideways scroll. */
+.cp-visits .vt-dots { flex-wrap: wrap; row-gap: 8px; }
+@media (max-width: 480px) { .cp-visits .vt-gap i { width: 22px; } .cp-visits .vt-v { min-width: 44px; } }
 .cp-visits .vt-v { min-width: 52px; }

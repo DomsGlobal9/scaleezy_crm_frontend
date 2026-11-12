@@ -8,7 +8,7 @@ import LoadFailed from './LoadFailed';
 
 /** Short words for each CRM permission, for one line per person. */
 const SHORT = {
-  'crm:sales': 'Sales dashboard', 'crm:customer:create': 'Add customers', 'crm:customer:view': 'See customers', 'crm:customer:phone': 'Full phone numbers',
+  'crm:sales': 'Shop floor', 'crm:customer:create': 'Add customers', 'crm:customer:view': 'See customers', 'crm:customer:phone': 'Full phone numbers',
   'crm:customer:update': 'Notes and follow-ups', 'crm:customer:merge': 'Merge duplicates', 'crm:lists': 'Lists and groups', 'crm:messages:view': 'See messages',
   'crm:messages:send': 'Send messages', 'crm:reviews': 'Reviews', 'crm:team:view': 'This week', 'crm:shop': 'Festivals and prices'
 };

@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { LayoutDashboard, Loader2, MapPin, Search, ShieldOff, UserPlus, DoorOpen, ListChecks, Hand } from 'lucide-react';
+import { LayoutDashboard, Loader2, MapPin, Search, ShieldOff, UserPlus, DoorOpen, ListChecks, Hand, X, ChevronDown } from 'lucide-react';
 import { usePermission } from '../hooks/usePermission';
 import { useStores } from '../hooks/useCounter';
-import { useAddCustomer, useFindCustomer, useSalesDashboard, useStartVisit } from '../hooks/useSales';
+import { useAddCustomer, useCloseVisit, useFindCustomer, useNotHere, useSalesDashboard, useStartVisit } from '../hooks/useSales';
 import { readStore, STORE_KEY } from '../components/WhatTheyWear';
 import { formatPhone } from '../utils/phone';
 import { formatRupees } from '../utils/money';
@@ -14,12 +14,12 @@ import LoadFailed from '../components/LoadFailed';
 import SalesCues from '../components/SalesCues';
 
 /**
- * Sales dashboard (the owner's OK, 11 Nov): the salesperson's own screen. The customer in front of them
+ * Shop floor (the owner's OK, 11 Nov): the salesperson's own screen. The customer in front of them
  * comes first: who is in the shop (door QR, or started here by phone), what to know before saying hello,
  * and one tap to look after them. Then who to talk to today, and their own week.
  */
 export default function SalesDashboard() {
-  const { can } = usePermission();
+  const { can, isOwner } = usePermission();
   const navigate = useNavigate();
   const [storeId, setStoreId] = useState(readStore);
   const stores = useStores();
@@ -61,7 +61,7 @@ export default function SalesDashboard() {
     <main className="crm-page sd-page">
       <div className="crm-head">
         <div style={{ minWidth: 0 }}>
-          <h1><LayoutDashboard size={24} aria-hidden="true" /> Sales dashboard</h1>
+          <h1><LayoutDashboard size={24} aria-hidden="true" /> Shop floor</h1>
           <p>{hello}{first ? `, ${first}` : ''}. The customer in front of you first.</p>
         </div>
         {storeList.length > 0 && (
@@ -90,7 +90,7 @@ export default function SalesDashboard() {
         {dash.isLoading ? (
           <div className="crm-card crm-row crm-muted" aria-busy="true"><Loader2 size={16} className="animate-spin" /> Checking the shop…</div>
         ) : dash.isError ? (
-          <div className="crm-card"><LoadFailed what="the Sales dashboard" error={dash.error} onRetry={() => dash.refetch()} /></div>
+          <div className="crm-card"><LoadFailed what="the Shop floor" error={dash.error} onRetry={() => dash.refetch()} /></div>
         ) : d.inShop.length === 0 ? (
           <div className="crm-card ct-quiet" data-testid="sd-nobody">Nobody in the shop yet. When a customer comes to you, type their number above.</div>
         ) : (
@@ -111,6 +111,7 @@ export default function SalesDashboard() {
                   {p.taken?.byMe && p.taken.visitId && <Link className="btn-primary" to={`/sales/visit/${p.taken.visitId}`}>Continue</Link>}
                   {!p.taken && <button type="button" className="btn-primary" disabled={start.isPending} onClick={() => serve({ arrivalId: p.arrivalId, customerId: p.customerId })} data-testid="sd-take">I'll take her</button>}
                   {p.customerId && <Link className="btn-secondary" to={`/customers/${p.customerId}`}>Full story</Link>}
+                  <CloseCard person={p} isOwner={isOwner} />
                 </div>
               </li>
             ))}
@@ -176,6 +177,53 @@ const DAYS = Array.from({ length: 31 }, (_, i) => String(i + 1).padStart(2, '0')
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
 /** A new customer: their name, their answer about WhatsApp offers (asked, never assumed), a birthday if they like. */
+/**
+ * Closing a card (the owner, 12 Nov). A walk-in nobody took: "Not here". A visit: "She left" (ends it as
+ * Finish does, no sale) or "Started by mistake" (deleted, nothing saved). Visits only for the person
+ * serving them and the owner. The choice itself is the confirm; "Keep" backs out.
+ */
+function CloseCard({ person: p, isOwner }) {
+  const [open, setOpen] = useState(false);
+  const close = useCloseVisit();
+  const notHere = useNotHere();
+  const who = (p.name ?? '').trim().split(/\s+/)[0] || 'them';
+  const visitId = p.taken?.visitId;
+  const mayClose = !!visitId && (p.taken.byMe || isOwner);
+  const mayNotHere = !!p.arrivalId && !visitId;
+  if (!mayClose && !mayNotHere) return null;
+  const run = async (fn, done) => { try { await fn(); toast.success(done); setOpen(false); } catch (err) { toast.error(err?.message || 'That could not be done just now. Try again.'); } };
+  return (
+    <>
+      <button type="button" className="si-link sd-close" onClick={() => setOpen(o => !o)} aria-expanded={open} data-testid="sd-close">
+        {mayNotHere ? <><X size={13} aria-hidden="true" /> Not here</> : <>Close <ChevronDown size={13} aria-hidden="true" /></>}
+      </button>
+      {open && (
+        <div className="sd-close-box" role="group" aria-label={`Close ${who}'s card`} data-testid="sd-close-box">
+          {mayNotHere ? (
+            <>
+              <p className="sd-small">Not here? Their card goes. The door scan stays on their timeline.</p>
+              <div className="sd-actions">
+                <button type="button" className="btn-primary" disabled={notHere.isPending} onClick={() => run(() => notHere.mutateAsync(p.arrivalId), 'Taken off the list.')} data-testid="sd-not-here">Yes, not here</button>
+                <button type="button" className="btn-secondary" onClick={() => setOpen(false)}>Keep</button>
+              </div>
+            </>
+          ) : (
+            <>
+              <button type="button" className="sd-close-choice" disabled={close.isPending} onClick={() => run(() => close.mutateAsync({ visitId, how: 'left' }), `Visit closed. Saved on ${p.customerId ? `${who}'s` : 'the'} timeline.`)} data-testid="sd-close-left">
+                <b>{p.customerId ? `${who[0].toUpperCase()}${who.slice(1)} left` : 'They left'}</b><span>Ends the visit with no sale. What they tried is saved on their timeline.</span>
+              </button>
+              <button type="button" className="sd-close-choice danger" disabled={close.isPending} onClick={() => run(() => close.mutateAsync({ visitId, how: 'mistake' }), 'Visit removed.')} data-testid="sd-close-mistake">
+                <b>Remove: started by mistake</b><span>Deletes this visit. Nothing is saved{p.arrivalId ? ', and the walk-in is back to "Nobody yet"' : ''}.</span>
+              </button>
+              <button type="button" className="btn-secondary" onClick={() => setOpen(false)}>Keep</button>
+            </>
+          )}
+        </div>
+      )}
+    </>
+  );
+}
+
 function AddCustomer({ phone, near, onServe, busy }) {
   const add = useAddCustomer();
   const [name, setName] = useState('');

@@ -90,7 +90,7 @@ async function main() {
     await phone.fill(UNKNOWN);
     await page.getByRole('button', { name: 'Open' }).click();
     await page.getByTestId('lookup-none').waitFor({ timeout: 10000 });
-    check('a new number: "New customer", add them on the Sales dashboard', /New customer/.test(await page.getByTestId('lookup-none').innerText()) && /Sales dashboard/.test(await page.getByTestId('lookup-none').innerText()));
+    check('a new number: "New customer", add them on the Shop floor', /New customer/.test(await page.getByTestId('lookup-none').innerText()) && /Shop floor/.test(await page.getByTestId('lookup-none').innerText()));
     await phone.fill('98480 22307');
     await page.getByRole('button', { name: 'Open' }).click();
     await page.waitForURL(/\/customers\/[0-9a-f-]{36}$/, { timeout: 15000 });

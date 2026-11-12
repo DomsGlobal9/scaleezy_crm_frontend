@@ -1,4 +1,4 @@
-/* Sales dashboard and serving a customer (the owner's OK, 11 Nov). Phone first; the same blocks on a laptop. */
+/* Shop floor and serving a customer (the owner's OK, 11 Nov). Phone first; the same blocks on a laptop. */
 .sd-page, .sv-page { display: grid; gap: 14px; }
 .sd-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
 .sd-stat { padding: 12px 14px; display: grid; gap: 2px; }
@@ -98,3 +98,11 @@ body.sv-her-open { overflow: hidden; }
 .ta-can { display: flex; flex-wrap: wrap; gap: 5px; }
 .ta-chip { font-size: 12px; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--border-light, rgba(127,127,127,.3)); }
 @media (max-width: 640px) { .ta-person { grid-template-columns: 1fr; } }
+
+/* Closing a card (12 Nov): quiet at the end of the actions; the choice is the confirm. */
+.sd-close { margin-left: auto; display: inline-flex; align-items: center; gap: 4px; color: var(--text-muted); font-size: 13px; }
+.sd-close-box { display: grid; gap: 6px; padding: 8px; border-radius: 10px; border: 1px solid var(--border-light); background: var(--bg-hover); }
+.sd-close-choice { display: grid; gap: 2px; text-align: left; padding: 8px 10px; border-radius: 8px; color: var(--text-primary); }
+.sd-close-choice:hover, .sd-close-choice:focus-visible { background: var(--bg-card); }
+.sd-close-choice span { color: var(--text-muted); font-size: 12px; }
+.sd-close-choice.danger b { color: var(--accent-danger); }

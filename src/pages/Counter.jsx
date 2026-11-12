@@ -61,7 +61,7 @@ export default function Counter() {
       <div className="crm-head">
         <div style={{ minWidth: 0 }}>
           <h1><DoorOpen size={24} aria-hidden="true" /> At the door</h1>
-          <p>Who walked in through the door QR, and who is looking after them. Take a customer on the Sales dashboard.</p>
+          <p>Who walked in through the door QR, and who is looking after them. Take a customer on the Shop floor.</p>
         </div>
         {storeList.length > 0 && (
           <div className="ct-store">
@@ -92,7 +92,7 @@ export default function Counter() {
         {lookup.data?.found === 'none' && (
           <div className="ct-none" data-testid="lookup-none">
             <UserPlus size={18} aria-hidden="true" />
-            <span><strong>New customer.</strong> Nobody has {formatPhone(lookup.data.phone)} yet. Add them on the Sales dashboard.</span>
+            <span><strong>New customer.</strong> Nobody has {formatPhone(lookup.data.phone)} yet. Add them on the Shop floor.</span>
           </div>
         )}
         {lookup.data?.found === 'several' && (

@@ -59,7 +59,7 @@ export default function AppShell() {
   }, [open]);
 
   const places = seesCustomers ? [
-    ...(can('crm:sales') ? [{ to: '/sales', label: 'Sales dashboard', icon: LayoutDashboard }] : []),
+    ...(can('crm:sales') ? [{ to: '/sales', label: 'Shop floor', icon: LayoutDashboard }] : []),
     { to: '/today', label: 'To do today', icon: CalendarCheck2, count: dueCount, countLabel: `${dueCount} due` },
     ...(can('crm:team:view') ? [{ to: '/week', label: 'This week', icon: TrendingUp }] : []),
     { to: '/counter', label: 'At the door', icon: DoorOpen },

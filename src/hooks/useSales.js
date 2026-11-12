@@ -1,7 +1,7 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '../lib/api';
 
-/** The Sales dashboard (the owner's OK, 11 Nov): who is in the shop, finding and adding a customer, serving them. */
+/** The Shop floor (the owner's OK, 11 Nov): who is in the shop, finding and adding a customer, serving them. */
 export function useSalesDashboard(store) {
   return useQuery({
     queryKey: ['sales', 'dashboard', store || ''],
@@ -58,3 +58,20 @@ function useVisitWrite(fn) {
 export const useSetPicks = (id) => useVisitWrite(async (variantIds) => (await api.put(`/sales/visits/${id}/picks`, { variantIds })).data);
 export const useSetItem = (id) => useVisitWrite(async ({ itemId, ...body }) => (await api.patch(`/sales/visits/${id}/items/${itemId}`, body)).data);
 export const useFinishVisit = (id) => useVisitWrite(async () => (await api.post(`/sales/visits/${id}/finish`)).data);
+
+/** Closing a card in In the shop now (the owner, 12 Nov): "She left", or "Started by mistake". */
+export function useCloseVisit() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ visitId, how }) => (await api.post(`/sales/visits/${visitId}/close`, { how })).data,
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['sales', 'dashboard'] }); qc.invalidateQueries({ queryKey: ['customers'] }); }
+  });
+}
+/** "Not here": a walk-in nobody has taken left, or the scan was a mistake. */
+export function useNotHere() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (arrivalId) => (await api.post(`/sales/arrivals/${arrivalId}/not-here`)).data,
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['sales', 'dashboard'] })
+  });
+}

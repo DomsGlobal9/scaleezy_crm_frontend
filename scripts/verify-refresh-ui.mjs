@@ -1,7 +1,7 @@
 /**
  * All customers keeps itself up to date (the owner, 12 Nov: "only after refreshing it shows"), in a real
  * browser (installed Edge), signed in for real, local only. A customer arriving from elsewhere (the till,
- * Inventory, another person's Sales dashboard) appears without pressing refresh:
+ * Inventory, another person's Shop floor) appears without pressing refresh:
  *   1. while the page is open (it asks again every minute)
  *   2. when going back to All customers from another screen (it asks again on opening)
  *   3. when the window comes back into view

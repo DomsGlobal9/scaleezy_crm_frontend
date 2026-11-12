@@ -27,7 +27,7 @@ async function main() {
     await sp.goto(`${APP}/settings`);
     await sp.waitForLoadState('networkidle');
     check('Sales: no Team and access', (await sp.getByTestId('team-access').count()) === 0);
-    check('Sales: the Sales dashboard is in the menu, Messages is not', (await sp.getByRole('link', { name: 'Sales dashboard' }).count()) === 1 && (await sp.getByRole('link', { name: 'Messages' }).count()) === 0);
+    check('Sales: the Shop floor is in the menu, Messages is not', (await sp.getByRole('link', { name: 'Shop floor' }).count()) === 1 && (await sp.getByRole('link', { name: 'Messages' }).count()) === 0);
 
     const ctx = await browser.newContext({ viewport: { width: 1366, height: 900 } });
     await ctx.addCookies([{ name: 'token', value: tokenFor('owner'), domain: 'localhost', path: '/', httpOnly: true, sameSite: 'Lax' }]);
@@ -39,7 +39,7 @@ async function main() {
     await page.getByTestId('team-person').first().waitFor({ timeout: 20000 });
     const text = await box.innerText();
     check('the owner sees Team and access, with themselves as Owner', /Team and access/.test(text) && /Owner: everything/.test(text), text.slice(0, 300));
-    check('a salesperson shows "Sales dashboard" and not "Send messages"', (await page.getByTestId('team-person').filter({ hasText: 'Sales dashboard' }).filter({ hasNotText: 'Owner' }).count()) >= 1);
+    check('a salesperson shows "Shop floor" and not "Send messages"', (await page.getByTestId('team-person').filter({ hasText: 'Shop floor' }).filter({ hasNotText: 'Owner' }).count()) >= 1);
     const link = await page.getByTestId('team-change').getAttribute('href');
     check('changes are made in Inventory\'s Team members', /\/settings\?section=USERS$/.test(link ?? ''), link);
     const pending = await page.getByTestId('team-pending').count();
@@ -67,7 +67,7 @@ async function main() {
       await pick.click();
       const opts = (await p1.getByRole('option').allInnerTexts()).map(t => t.trim());
       await p1.keyboard.press('Escape');
-      check('Sales dashboard: only their store, already chosen', chosen === 'Main Store' && opts.filter(o => o !== 'Choose your store').join() === 'Main Store', { chosen, opts });
+      check('Shop floor: only their store, already chosen', chosen === 'Main Store' && opts.filter(o => o !== 'Choose your store').join() === 'Main Store', { chosen, opts });
       await p1.screenshot({ path: path.join(shots, 'sales-one-store.png') });
       await p1.goto(`${APP}/counter`);
       const doorPick = p1.getByRole('combobox', { name: 'Your store' });

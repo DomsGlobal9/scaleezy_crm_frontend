@@ -13,7 +13,7 @@ export function useCustomers({ search = '', page = 1, pageSize = PAGE_SIZE, rule
     queryKey: ['customers', { search, page, pageSize, filters, sort }],
     queryFn: async () => (await api.get('/customers', { params: { search, page, pageSize, ...(filters ? { rules: filters } : {}), ...(sort !== 'newest' ? { sort } : {}) } })).data,
     placeholderData: keepPreviousData,
-    // Customers arrive from elsewhere (the till, Inventory, the Sales dashboard): the list is asked again
+    // Customers arrive from elsewhere (the till, Inventory, the Shop floor): the list is asked again
     // whenever it is opened or the window comes back into view, and every minute while it is on screen.
     // While the shop's first copy from Inventory is on its way, sooner (refetchInterval).
     staleTime: 0,
