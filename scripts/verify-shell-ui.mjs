@@ -48,7 +48,7 @@ async function main() {
       check('desktop: the sidebar is on screen', await side.isVisible());
       check('desktop: no phone bar', !(await page.locator('.crm-mobilebar').isVisible()));
       const places = await side.locator('.crm-tab .crm-tab-label').allInnerTexts();
-      check('desktop (owner): the places in shop words: Shop floor, To do today, This week, At the door, All customers, Reviews, Customer groups, Saved lists, Messages (duplicates live on All customers)', JSON.stringify(places) === JSON.stringify(['Shop floor', 'To do today', 'This week', 'At the door', 'All customers', 'Reviews', 'Customer groups', 'Saved lists', 'Messages']), places);
+      check('desktop (owner): the places in shop words: Shop floor, To do today, This week, At the door, All customers, Reviews, Customer groups, Saved lists, Messages, and Settings for the owner (duplicates live on All customers)', JSON.stringify(places) === JSON.stringify(['Shop floor', 'To do today', 'This week', 'At the door', 'All customers', 'Reviews', 'Customer groups', 'Saved lists', 'Messages', 'Settings']), places);
       check('desktop: Today is marked as where you are', /\bon\b/.test(await side.locator('.crm-tab', { hasText: 'Today' }).getAttribute('class')));
       const width = await side.evaluate(el => el.getBoundingClientRect().width);
       check('desktop: 240px wide, like Inventory\'s', Math.round(width) === 240, width);

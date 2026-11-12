@@ -176,8 +176,9 @@ async function main() {
     await page.keyboard.press('Escape');
 
     console.log('\n5. Shop settings');
-    await page.getByRole('link', { name: /Shop settings/ }).click();
+    await page.getByTestId('nav-settings').click();
     await page.waitForURL(/\/settings$/);
+    await page.getByTestId('st-go-changes').click();
     const sw = page.getByTestId('profile-switch');
     await sw.waitFor({ timeout: 15000 });
     const startOn = (await sw.getAttribute('aria-checked')) === 'true';

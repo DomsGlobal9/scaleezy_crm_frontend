@@ -193,7 +193,7 @@ export default function Messages() {
       {overview.isError ? <div className="crm-card"><LoadFailed what="the facts about your WhatsApp" error={overview.error} onRetry={() => overview.refetch()} /></div> : <Facts o={o} />}
       {o && !o.moved?.campaigns && (
         <p className="ms-note" data-testid="not-moved">
-          Campaigns are still sent from Inventory. Messages can be written and saved here, and start once the owner moves campaigns to CRM{isOwner ? <> in <Link to="/settings">Shop settings</Link></> : ' in Shop settings'}.
+          Campaigns are still sent from Inventory. Messages can be written and saved here, and start once the owner moves campaigns to CRM{isOwner ? <> in <Link to="/settings?section=messages">Settings</Link></> : ' in Settings'}.
         </p>
       )}
       {o && !o.sendingSetUp && <p className="ms-note">WhatsApp sending is not set up for CRM yet. Messages can be written and saved, and go out once it is.</p>}

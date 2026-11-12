@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom';
-import { LayoutDashboard, CalendarCheck2, TrendingUp, DoorOpen, Users, Tags, ListFilter, Megaphone, Moon, Sun, LogOut, Menu, X, Search, Star } from 'lucide-react';
+import { LayoutDashboard, CalendarCheck2, TrendingUp, DoorOpen, Users, Tags, ListFilter, Megaphone, Moon, Sun, LogOut, Menu, X, Search, Star, Settings as SettingsIcon } from 'lucide-react';
 import CustomerSearch from './CustomerSearch';
 import NotificationsBell from './NotificationsBell';
 import { useAuth } from '../context/AuthContext';
@@ -128,16 +128,26 @@ export default function AppShell() {
               </NavLink>
             );
           })}
+          {/* Settings, the owner's (12 Nov): in the menu, no longer only behind their name. */}
+          {isOwner && (
+            <>
+              <div className="crm-nav-sep" role="separator" />
+              <NavLink to="/settings" className={({ isActive }) => `crm-tab${isActive ? ' on' : ''}`} data-testid="nav-settings">
+                <SettingsIcon size={19} aria-hidden="true" />
+                <span className="crm-tab-label">Settings</span>
+              </NavLink>
+            </>
+          )}
         </nav>
 
         <div className="crm-sidebar-foot">
-          {/* The owner's name opens Shop settings (theirs alone); for everyone else it is just who is signed in. */}
+          {/* The owner's name opens Settings too (theirs alone); for everyone else it is just who is signed in. */}
           {isOwner ? (
-            <Link to="/settings" className="crm-me crm-me-link" title="Shop settings" onClick={() => setOpen(false)}>
+            <Link to="/settings" className="crm-me crm-me-link" title="Settings" onClick={() => setOpen(false)}>
               <span className="crm-me-initials" aria-hidden="true">{initials}</span>
               <span className="crm-me-who">
                 <span className="crm-me-name">{user?.name || 'Signed in'}</span>
-                <span className="crm-me-email">Shop settings</span>
+                <span className="crm-me-email">Owner</span>
               </span>
             </Link>
           ) : (

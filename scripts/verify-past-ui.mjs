@@ -210,7 +210,7 @@ async function main() {
     await page.unroute('**/api/v1/segments/choices');
 
     // Each shop sets its own price ranges.
-    await page.goto(`${APP}/settings`);
+    await page.goto(`${APP}/settings?section=prices`);
     const bands = page.getByTestId('price-bands');
     await bands.waitFor({ timeout: 20000 });
     check('Shop settings has the price ranges, starting from sensible amounts', /Under ₹3,000 · ₹3,000 to ₹8,000 · ₹8,000 to ₹20,000 · ₹20,000 or more/.test(await page.getByTestId('band-words').innerText()), await page.getByTestId('band-words').innerText());
@@ -227,7 +227,7 @@ async function main() {
     await panel.getByRole('button', { name: 'Under ₹1,000' }).waitFor({ timeout: 15000 });
     check("and the filter offers the shop's own ranges", (await panel.getByRole('button', { name: '₹1,000 to ₹5,000' }).count()) === 1);
     await page.keyboard.press('Escape');
-    await page.goto(`${APP}/settings`);
+    await page.goto(`${APP}/settings?section=prices`);
     await bands.getByRole('spinbutton', { name: 'Price 1' }).fill('3000');
     await bands.getByRole('spinbutton', { name: 'Price 2' }).fill('8000');
     await page.getByTestId('band-save').click();

@@ -43,7 +43,7 @@ async function main() {
     const page = await ctx.newPage();
     page.on('pageerror', e => { console.log('      page error:', e.message); failures += 1; });
 
-    await page.goto(`${APP}/settings`);
+    await page.goto(`${APP}/settings?section=automatic`);
     const box = page.getByTestId('automatic-messages');
     await box.waitFor({ timeout: 20000 });
     check('Shop settings has Automatic messages: "Ask how the visit was"', /Ask how the visit was/.test(await box.innerText()));
@@ -88,7 +88,7 @@ async function main() {
     const pctx = await browser.newContext({ viewport: { width: 390, height: 844 } });
     await pctx.addCookies([{ name: 'token', value: tokenFor('owner'), domain: 'localhost', path: '/', httpOnly: true, sameSite: 'Lax' }]);
     const pp = await pctx.newPage();
-    await pp.goto(`${APP}/settings`);
+    await pp.goto(`${APP}/settings?section=automatic`);
     await pp.getByTestId('automatic-messages').waitFor({ timeout: 20000 });
     check('on a phone, Shop settings fit', await noOverflow(pp));
     await pctx.close();

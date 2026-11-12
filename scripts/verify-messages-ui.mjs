@@ -38,7 +38,11 @@ const tokenFor = (who) => execFileSync('npm', ['run', '--silent', 'login:test', 
 const noOverflow = (page) => page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth);
 const sql = (q) => execFileSync('docker', ['exec', 'inventory-local-db', 'psql', '-U', 'postgres', '-d', 'inventory', '-tAc', q], { encoding: 'utf8' }).trim();
 const ts = (script, args = []) => execFileSync('npx', ['ts-node', '--transpile-only', script, ...args], { cwd: backend, encoding: 'utf8', shell: true });
-const stub = async (p, body) => (await fetch(`${STUB}/_stub/${p}`, { method: body ? 'POST' : 'GET', headers: { 'content-type': 'application/json' }, body: body ? JSON.stringify(body) : undefined })).json();
+// One retry on a dropped connection: the stand-in closes idle connections, and a reused one can reset.
+const stub = async (p, body, again = true) => {
+  try { return (await fetch(`${STUB}/_stub/${p}`, { method: body ? 'POST' : 'GET', headers: { 'content-type': 'application/json' }, body: body ? JSON.stringify(body) : undefined })).json(); }
+  catch (e) { if (again && e?.cause?.code === 'ECONNRESET') return stub(p, body, false); throw e; }
+};
 
 const made = [];
 const phone = (n) => `+919004${STAMP}${n}`;
@@ -98,7 +102,7 @@ async function main() {
     check('"still sent from Inventory", with the way to Shop settings', /still sent from Inventory/.test(await page.getByTestId('not-moved').innerText()));
 
     console.log('\n2. Shop settings');
-    await page.getByTestId('not-moved').getByRole('link', { name: 'Shop settings' }).click();
+    await page.getByTestId('not-moved').getByRole('link', { name: 'Settings' }).click();
     const sw = page.getByTestId('campaigns-switch');
     await sw.waitFor({ timeout: 15000 });
     await sw.click();

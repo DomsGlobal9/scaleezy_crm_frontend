@@ -25,7 +25,8 @@ const initialBadge = (shop) => `data:image/svg+xml,${encodeURIComponent(`<svg xm
 export default function DoorQr() {
   const [params] = useSearchParams();
   const locationId = params.get('locationId') || '';
-  const back = params.get('from') === 'counter' ? { to: '/counter', label: 'At the door' } : { to: '/sales', label: 'Shop floor' };
+  const from = params.get('from');
+  const back = from === 'counter' ? { to: '/counter', label: 'At the door' } : from === 'settings' ? { to: '/settings?section=shop', label: 'Settings' } : { to: '/sales', label: 'Shop floor' };
   const stores = useStores();
   const store = (stores.data ?? []).find(s => s.id === locationId) ?? null;
   const unknownStore = !!locationId && stores.isSuccess && !store;

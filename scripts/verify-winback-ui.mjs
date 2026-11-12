@@ -60,7 +60,7 @@ async function main() {
     const page = await ctx.newPage();
     page.on('pageerror', e => { console.log('      page error:', e.message); failures += 1; });
 
-    await page.goto(`${APP}/settings`);
+    await page.goto(`${APP}/settings?section=automatic`);
     const box = page.getByTestId('automatic-messages');
     await box.waitFor({ timeout: 20000 });
     await page.getByTestId('winback-switch').waitFor({ timeout: 20000 });

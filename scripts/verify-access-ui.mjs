@@ -33,7 +33,7 @@ async function main() {
     await ctx.addCookies([{ name: 'token', value: tokenFor('owner'), domain: 'localhost', path: '/', httpOnly: true, sameSite: 'Lax' }]);
     const page = await ctx.newPage();
     page.on('pageerror', e => { console.log('      page error:', e.message); failures += 1; });
-    await page.goto(`${APP}/settings`);
+    await page.goto(`${APP}/settings?section=team`);
     const box = page.getByTestId('team-access');
     await box.waitFor({ timeout: 20000 });
     await page.getByTestId('team-person').first().waitFor({ timeout: 20000 });

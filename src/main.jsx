@@ -19,6 +19,7 @@ import './styles/winback.css';
 import './styles/sales.css';
 import './styles/filters.css';
 import './styles/door-qr.css';
+import './styles/settings.css';
 import './styles/topbar.css';
 import './styles/customer-page.css';
 import './styles/sign-in.css';
