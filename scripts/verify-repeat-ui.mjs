@@ -64,7 +64,54 @@ async function main() {
     await page.getByTestId('overview-5-').focus();
     await page.keyboard.press('Enter');
     check('keyboard: Enter on a row opens it too', /5 or more/.test(await page.getByTestId('filters-on').innerText().catch(() => '')));
+
+    // ── When they came: the list's Visits, the "came back lately" lines, the customer page ──
+    await page.goto(`${APP}/customers`);
+    await card.waitFor({ timeout: 20000 });
+    const [res2] = await Promise.all([page.waitForResponse(r => r.url().includes('/api/v1/customers?') && r.url().includes('rules='), { timeout: 20000 }), page.getByTestId('overview-2-4').click()]);
+    const repeaters = (await res2.json()).data.customers;
+    await page.getByTestId('customer-row').first().waitFor({ timeout: 15000 });
+    check('the list of repeat customers says "Visits" over the dates', (await page.locator('th', { hasText: 'Visits' }).count()) === 1);
+    const trails = await page.getByTestId('visit-trail').count();
+    const dated = repeaters.filter(c => c.visits && c.visits.total >= 2).length;
+    check('each repeat customer shows their visits', trails === dated && dated === repeaters.length, { trails, dated, rows: repeaters.length });
+    const firstTrail = repeaters.find(c => c.visits?.datedCount >= 2);
+    if (firstTrail) {
+      const row = page.getByTestId('customer-row').filter({ hasText: firstTrail.name }).first();
+      const t = await row.getByTestId('visit-trail').innerText();
+      check('a trail shows the dates and the days between ("27d")', /\d+d/.test(t) && /(Came back after|About every|earlier)/.test(t), t);
+    }
+    const noDates = repeaters.find(c => c.visits?.datedCount === 0);
+    if (noDates) check('earlier records with no dates read "N earlier", never a made-up day', /earlier/.test(await page.getByTestId('customer-row').filter({ hasText: noDates.name }).first().getByTestId('visit-trail').innerText()));
+    const back = repeaters.find(c => c.visits?.datedCount >= 1) ?? repeaters[0];
+    await page.goto(`${APP}/customers/${back.id}`);
+    const line = page.getByTestId('visits-line');
+    await line.waitFor({ timeout: 20000 });
+    const lt = await line.innerText();
+    check('the customer page says it in words ("has been here N times" or "Today is … visit")', /(has been here \d+ times|Today is .+ visit|before CRM)/.test(lt), lt);
+    check('...with the dots when there are dates', back.visits.datedCount === 0 || (await line.getByTestId('visit-trail').count()) === 1);
+    await page.getByTestId('profile').screenshot({ path: path.join(shots, 'visits-customer-page.png') });
+
+    await page.goto(`${APP}/customers`);
+    await card.waitFor({ timeout: 20000 });
+    for (const key of ['back30', 'firstBack30']) {
+      const b = page.getByTestId(`overview-${key}`);
+      if (!(await b.count())) { console.log(`      (no "${key}" line: nobody in it on this shop)`); continue; }
+      const want = num(await b.locator('b').innerText());
+      const [r] = await Promise.all([page.waitForResponse(x => x.url().includes('/api/v1/customers?') && x.url().includes('rules='), { timeout: 20000 }), b.click()]);
+      check(`"${key}": the tap lists the same ${want}`, (await r.json()).data.total === want);
+      await page.goto(`${APP}/customers`);
+      await card.waitFor({ timeout: 20000 });
+    }
     await ctx.close();
+
+    // ── A shop where people came back lately (made up in the browser): the lines show and read right ──
+    const fake = await open(browser, {}, async route => { const res = await route.fetch(); const body = await res.json(); body.data.lately = [{ key: 'back30', rules: { visitsAtLeast: 2, seenWithinDays: 30 }, count: 4 }, { key: 'firstBack30', rules: { visitsAtLeast: 2, visitsAtMost: 2, seenWithinDays: 30 }, count: 0 }]; await route.fulfill({ response: res, json: body }); });
+    await fake.page.getByTestId('overview-lately').waitFor({ timeout: 20000 });
+    const lat = await fake.page.getByTestId('overview-lately').innerText();
+    check('"4 came back in the last 30 days"; a 0 line is left out', /4\s*came back in the last 30 days/.test(lat) && !/first time/.test(lat), lat);
+    await fake.page.getByTestId('overview-repeat').screenshot({ path: path.join(shots, 'overview-repeat-lately.png') });
+    await fake.ctx.close();
 
     // ── On a phone ──
     const phone = await open(browser, { viewport: { width: 375, height: 812 }, mobile: true });
@@ -74,6 +121,14 @@ async function main() {
     const box = await phone.page.getByTestId('overview-repeat').boundingBox();
     check('phone: the card fits the screen', !!box && box.x >= 0 && box.x + box.width <= 375, box);
     await phone.page.getByTestId('overview-repeat').screenshot({ path: path.join(shots, 'overview-repeat-phone.png') });
+    const [pres] = await Promise.all([phone.page.waitForResponse(r => r.url().includes('/api/v1/customers?') && r.url().includes('rules='), { timeout: 20000 }), phone.page.getByTestId('overview-2-4').click()]);
+    const firstName = (await pres.json()).data.customers[0]?.name;
+    const prow = phone.page.getByTestId('customer-row').filter({ hasText: firstName }).first();
+    await prow.waitFor({ timeout: 15000 });
+    const foot = await prow.getByTestId('customer-visits').innerText();
+    check('phone: each repeat customer card says "N visits"', /\d+ visits/.test(foot), foot);
+    const wide2 = await phone.page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+    check('phone: the repeat customers list does not scroll sideways', wide2 <= 1, wide2);
     await phone.ctx.close();
 
     // ── Light theme ──

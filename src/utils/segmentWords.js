@@ -27,6 +27,8 @@ export const RULES = [
   { key: 'whatsapp', label: 'WhatsApp offers…', input: 'whatsapp', start: 'agreed', says: v => (v === 'agreed' ? 'agreed to WhatsApp offers' : 'have not agreed to WhatsApp offers') },
   { key: 'hasPoints', label: 'Have loyalty points', input: 'flag', start: true, says: () => 'have loyalty points' },
   { key: 'hasCredit', label: 'Have store credit', input: 'flag', start: true, says: () => 'have store credit' },
+  { key: 'visitsAtLeast', label: 'Came on at least … different days', input: 'count', start: 2, lead: 'came on at least', after: 'different days', says: v => `came on at least ${v} different ${v === 1 ? 'day' : 'days'}` },
+  { key: 'visitsAtMost', label: 'Came on at most … different days', input: 'count', start: 1, lead: 'came on at most', after: 'different days', says: v => `came on at most ${v} different ${v === 1 ? 'day' : 'days'}` },
   { key: 'billsAtMost', label: 'Bought at most … times', input: 'count', start: 1, lead: 'bought at most', says: v => `bought at most ${v} ${v === 1 ? 'time' : 'times'}` },
   { key: 'budget', label: 'Budget for one piece…', input: 'pick', from: 'ranges', word: rangeWord, lead: 'have a budget of', start: [], says: v => `have a budget of ${list(v.map(rangeWord))}` },
   { key: 'fabrics', label: 'Bought a fabric…', input: 'pick', from: 'fabrics', lead: 'bought', start: [], says: v => `bought ${list(v)}` },

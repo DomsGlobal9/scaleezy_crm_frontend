@@ -101,6 +101,7 @@ export default function CustomerFilters({ rules, search, onApply, onClose }) {
 
           <Group title="How often">
             <Row label="Bills"><OneOf name="bills" rules={draft} onPick={oneOf} /></Row>
+            <Row label="Came" note="Visits: the days they bought on. Two bills on the same day are one visit."><OneOf name="visits" rules={draft} onPick={oneOf} /></Row>
             {f.visits && <Row label="Last visit" note="Only bills with a real date count. Someone with only past purchases has no known last visit, so they don't appear under any of these."><OneOf name="visit" rules={draft} onPick={oneOf} /></Row>}
             {f.earlier && <Row label="Past or new"><OneOf name="earlier" rules={draft} onPick={oneOf} /></Row>}
           </Group>

@@ -5,6 +5,7 @@ import { useMediaQuery } from '../hooks/useMediaQuery';
 import { formatPhone } from '../utils/phone';
 import { formatRupees } from '../utils/money';
 import { formatDay, since } from '../utils/dates';
+import { isRepeat, VisitTrail, visitsNote, awayWord } from './Visits';
 
 /**
  * A list of customers as the Customers screen shows them: a table on a laptop, a card each on a
@@ -32,7 +33,7 @@ export default function CustomerList({ rows, onOpen }) {
             <th>Groups</th>
             {anyBuys && <th>Buys</th>}
             <th className="num">Total spent</th>
-            <th>Last visit</th>
+            <th>{rows.some(c => isRepeat(c.visits)) ? 'Visits' : 'Last visit'}</th>
           </tr>
         </thead>
         <tbody>
@@ -50,8 +51,8 @@ export default function CustomerList({ rows, onOpen }) {
                 <div style={{ fontWeight: 600 }}>{formatRupees(c.totalSpent)}</div>
                 {c.orders > 0 && <div className="crm-sub">{c.orders} {c.orders === 1 ? 'bill' : 'bills'}</div>}
               </td>
-              <td style={{ whiteSpace: 'nowrap' }}>
-                {c.lastVisit ? <><div>{formatDay(c.lastVisit)}</div><div className="crm-sub">{since(c.lastVisit)}</div></> : c.hasPast ? <><div>Not known</div><div className="crm-sub">past purchases</div></> : <span className="crm-muted">Not yet</span>}
+              <td style={{ whiteSpace: 'nowrap' }} data-testid="customer-visits">
+                {isRepeat(c.visits) ? <VisitTrail v={c.visits} /> : c.lastVisit ? <><div>{formatDay(c.lastVisit)}</div><div className="crm-sub">{since(c.lastVisit)}</div></> : c.hasPast ? <><div>Not known</div><div className="crm-sub">past purchases</div></> : <span className="crm-muted">Not yet</span>}
               </td>
             </tr>
           ))}
@@ -91,7 +92,9 @@ function CustomerCard({ customer: c, onOpen }) {
       )}
       <div className="crm-cust-foot">
         <Tags tags={c.tags} />
-        <span className="crm-muted">{c.lastVisit ? `Last visit ${formatDay(c.lastVisit)} · ${since(c.lastVisit)}` : c.hasPast ? 'Last visit not known' : 'No visit yet'}</span>
+        <span className="crm-muted" data-testid="customer-visits">{isRepeat(c.visits)
+          ? <>{c.visits.total} visits{c.visits.lastDay ? ` · last ${formatDay(`${c.visits.lastDay}T12:00:00`)}` : ''}{visitsNote(c.visits) && !c.visits.notBack ? ` · ${visitsNote(c.visits).replace(/ · last .*$/, '')}` : ''}{c.visits.notBack && <span className="vt-away"> · not back in {awayWord(c.visits.daysSince)}</span>}</>
+          : c.lastVisit ? `Last visit ${formatDay(c.lastVisit)} · ${since(c.lastVisit)}` : c.hasPast ? 'Last visit not known' : 'No visit yet'}</span>
       </div>
     </article>
   );

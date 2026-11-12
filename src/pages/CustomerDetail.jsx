@@ -1,3 +1,4 @@
+import { VisitTrail, visitStory } from '../components/Visits';
 import React, { useMemo, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import {
@@ -332,6 +333,7 @@ function Header({ profile: p, numbers: n }) {
       {editingDates && <DatesEditor customerId={p.id} birthday={p.birthday} anniversary={p.anniversary} onClose={() => setEditingDates(false)} />}
       {deleting && <DeleteCustomer customerId={p.id} onClose={() => setDeleting(false)} />}
       {messaging && <SendOne customerId={p.id} name={p.name} onClose={() => setMessaging(false)} />}
+      <VisitsLine v={n.visits} name={p.name} />
       <div className="cp-nums" data-testid="numbers">
         <Num testid="num-spend" value={formatRupees(n.lifetimeSpend)}
           note={`${n.bills === 1 ? '1 bill' : `${n.bills} bills`}${n.online > 0 ? ` · ${n.online} online` : ''}`} />
@@ -342,6 +344,18 @@ function Header({ profile: p, numbers: n }) {
         {n.returns > 0 && <Num testid="num-returns" value={n.returns.toLocaleString('en-IN')} note={`${n.returns === 1 ? 'return' : 'returns'}, ${formatRupees(n.refunded)} refunded`} />}
       </div>
     </section>
+  );
+}
+
+/** When she came, in words, with the dots: so whoever serves her knows (the owner, 12 Nov). */
+function VisitsLine({ v, name }) {
+  const story = visitStory(v, name);
+  if (!story) return null;
+  return (
+    <div className="cp-visits" data-testid="visits-line">
+      <p>{story.text}{story.away && <span className="vt-away" data-testid="visit-away"> {story.away}</span>}</p>
+      {v.total >= 2 && v.datedCount > 0 && <VisitTrail v={v} show={6} note={false} />}
+    </div>
   );
 }
 

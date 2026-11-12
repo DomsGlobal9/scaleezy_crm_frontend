@@ -71,3 +71,24 @@
 .pp-line { display: flex; justify-content: space-between; gap: 12px; color: var(--text-secondary); }
 .pp-line.back { color: var(--accent-danger); }
 .pp-timeline { margin-top: 14px; padding: 12px 14px; border: 1px dashed var(--border-light); border-radius: 12px; font-size: 14px; display: grid; gap: 3px; }
+
+/* Visits (the owner, 12 Nov): each visit's date and the days between; "earlier" for bills from before CRM. */
+.vt { display: grid; gap: 4px; }
+.vt-dots { display: flex; align-items: flex-start; flex-wrap: nowrap; }
+.vt-v { display: flex; flex-direction: column; align-items: center; min-width: 44px; font-size: 12px; }
+.vt-v > span { margin-top: 3px; white-space: nowrap; }
+.vt-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--accent-primary, #A6D92B); }
+.vt-dot.old { background: transparent; border: 2px dashed var(--text-muted, #888); width: 9px; height: 9px; }
+.vt-gap { display: flex; flex-direction: column; align-items: center; margin: 3px -4px 0; }
+.vt-gap i { display: block; width: 24px; height: 2px; background: var(--border-light); }
+.vt-gap em { font-style: normal; font-size: 10px; color: var(--text-muted, #888); margin-top: 1px; min-height: 12px; }
+.vt-note { font-size: 12px; color: var(--text-muted, #888); white-space: normal; max-width: 260px; }
+.vt-away { color: var(--accent-warning, #e8b44a); }
+.cf-lately { margin-top: 10px; padding-top: 8px; border-top: 1px solid var(--border-light); display: grid; gap: 2px; }
+.cf-lately button { display: flex; gap: 8px; align-items: baseline; text-align: left; font-size: 13px; padding: 4px; border-radius: 8px; color: var(--text-primary); }
+.cf-lately button:hover { background: var(--bg-hover); }
+.cf-lately b { color: var(--accent-primary); min-width: 2ch; }
+.cp-visits { margin-top: 12px; padding: 10px 12px; border-radius: 10px; background: var(--bg-hover); display: grid; gap: 8px; }
+.cp-visits p { margin: 0; }
+.cp-visits .vt-gap i { width: 40px; }
+.cp-visits .vt-v { min-width: 52px; }

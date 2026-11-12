@@ -231,7 +231,7 @@ export default function Customers() {
 /** The small overview: how many customers at each budget, by what they buy and how often. A number opens that filter. */
 const REPEAT_WORDS = { '1': 'Once', '2-4': '2 to 4 times', '5-': '5 times or more' };
 function Overview({ data, onPick }) {
-  const bars = (rows, words, rulesOf, title, note, id) => {
+  const bars = (rows, words, rulesOf, title, note, id, extra) => {
     const most = Math.max(1, ...rows.map(r => r.count));
     return (
       <section className="crm-card" aria-label={title} data-testid={id}>
@@ -244,9 +244,12 @@ function Overview({ data, onPick }) {
             <b>{r.count.toLocaleString('en-IN')}</b>
           </button>
         ))}
+        {extra}
       </section>
     );
   };
+  const LATELY_WORDS = { back30: 'came back in the last 30 days', firstBack30: 'came back for the first time in the last 30 days' };
+  const lately = (data.lately ?? []).filter(r => r.count > 0);
   const repeat = data.repeat ?? [];
   const bought = repeat.reduce((n, r) => n + r.count, 0);
   const again = repeat.filter(r => r.key !== '1').reduce((n, r) => n + r.count, 0);
@@ -256,7 +259,16 @@ function Overview({ data, onPick }) {
       {data.budget.some(b => b.count > 0) && bars(data.budget, rangeWord, r => ({ budget: [r.key] }), 'By budget')}
       {data.kinds.length > 0 && bars(data.kinds, null, r => ({ boughtKinds: [r.key] }), 'By what they buy')}
       {bought > 0 && bars(repeat, k => REPEAT_WORDS[k] ?? k, r => r.rules, 'Repeat customers',
-        `${shareWords} bought more than once (${again.toLocaleString('en-IN')} of ${bought.toLocaleString('en-IN')}).`, 'overview-repeat')}
+        `${shareWords} bought more than once (${again.toLocaleString('en-IN')} of ${bought.toLocaleString('en-IN')}).`, 'overview-repeat',
+        lately.length > 0 && (
+          <div className="cf-lately" data-testid="overview-lately">
+            {lately.map(r => (
+              <button key={r.key} type="button" onClick={() => onPick(r.rules)} data-testid={`overview-${r.key}`}>
+                <b>{r.count.toLocaleString('en-IN')}</b><span>{LATELY_WORDS[r.key] ?? r.key}</span>
+              </button>
+            ))}
+          </div>
+        ))}
     </div>
   );
 }

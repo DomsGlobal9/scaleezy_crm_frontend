@@ -25,12 +25,15 @@ export const shareWord = (part, whole) => {
 const WAYS = { UPI: 'UPI', CASH: 'Cash', CARD: 'Card', PAYTM: 'Paytm', CREDIT: 'Credit', STORE_CREDIT: 'Store credit', BANK_TRANSFER: 'Bank transfer', CHEQUE: 'Cheque', WALLET: 'Wallet', OTHER: 'Other' };
 export const payWord = (key) => WAYS[String(key ?? '').toUpperCase()] ?? String(key ?? '').replace(/_/g, ' ').toLowerCase().replace(/^./, c => c.toUpperCase());
 
-const BILLS = [['1', '1 bill', { billsAtLeast: 1, billsAtMost: 1 }], ['2', '2 or more', { billsAtLeast: 2 }], ['2to4', '2 to 4', { billsAtLeast: 2, billsAtMost: 4 }], ['5', '5 or more', { billsAtLeast: 5 }]];
+const BILLS = [['1', '1 bill', { billsAtLeast: 1, billsAtMost: 1 }], ['2', '2 or more', { billsAtLeast: 2 }], ['5', '5 or more', { billsAtLeast: 5 }]];
+/** Visits: the days they came and bought on (two bills on one day are one visit). Repeat customers counts these. */
+const VISITS = [['v1', 'Once', { visitsAtLeast: 1, visitsAtMost: 1 }], ['v2', 'Twice', { visitsAtLeast: 2, visitsAtMost: 2 }], ['v2up', '2 or more times', { visitsAtLeast: 2 }], ['v2to4', '2 to 4 times', { visitsAtLeast: 2, visitsAtMost: 4 }], ['v5', '5 or more times', { visitsAtLeast: 5 }]];
 const VISIT = [['in30', 'In the last 30 days', { seenWithinDays: 30 }], ['in90', 'In the last 3 months', { seenWithinDays: 90 }], ['out90', 'Not back in 3 months', { notSeenForDays: 90 }], ['out180', 'Not back in 6 months', { notSeenForDays: 180 }]];
 
 /** Choices where one tap sets one or two rules: which is on, and what they set. */
 export const ONE_OF = {
   bills: { keys: ['billsAtLeast', 'billsAtMost'], options: BILLS },
+  visits: { keys: ['visitsAtLeast', 'visitsAtMost'], options: VISITS },
   visit: { keys: ['seenWithinDays', 'notSeenForDays'], options: VISIT },
   earlier: { keys: ['earlier'], options: [['earlier', 'From earlier records', { earlier: 'earlier' }], ['new', 'New since joining', { earlier: 'new' }]] },
   channel: { keys: ['channel'], options: [['in_store', 'In the shop', { channel: 'in_store' }], ['online', 'Online', { channel: 'online' }]] },
@@ -63,7 +66,7 @@ export function chipsOf(rules) {
   if (rules.crafts) add('Craft', rules.crafts.join(' or '), ['crafts']);
   if (rules.colours) add('Colour', rules.colours.join(' or '), ['colours']);
   if (rules.sizes) add('Size', rules.sizes.join(' or '), ['sizes']);
-  for (const [name, group] of [['bills', 'Bills'], ['visit', 'Last visit'], ['earlier', 'Past or new'], ['channel', 'Bought'], ['birthday', 'Birthday'], ['anniversary', 'Anniversary'], ['whatsapp', 'Offers']]) {
+  for (const [name, group] of [['bills', 'Bills'], ['visits', 'Came'], ['visit', 'Last visit'], ['earlier', 'Past or new'], ['channel', 'Bought'], ['birthday', 'Birthday'], ['anniversary', 'Anniversary'], ['whatsapp', 'Offers']]) {
     const on = oneOfOn(rules, name);
     if (on) add(group, ONE_OF[name].options.find(o => o[0] === on)[1], ONE_OF[name].keys);
   }
