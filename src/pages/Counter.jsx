@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { DoorOpen, QrCode, ExternalLink, Search, Loader2, ShieldOff, UserPlus, Users, MapPin, Hand } from 'lucide-react';
 import { usePermission } from '../hooks/usePermission';
 import { useAuth } from '../context/AuthContext';
@@ -118,12 +118,12 @@ function Arrivals({ store, storeId, onOpen }) {
         <h2 id="ct-door-h">Walked in</h2>
         <span className="ct-door-sub">
           <span className="crm-muted">From the door QR, the last two hours{store ? ` · ${store}` : ''}</span>
-          {/* Printing the standee is one-time setup, in Inventory, for THIS store: a standee printed for
-              another store would send this store's customers to the wrong list. */}
+          {/* Printing the standee is one-time setup, for THIS store: a standee printed for another store
+              would send this store's customers to the wrong list. In CRM since 12 Nov (Inventory's screen is gone). */}
           {storeId && (
-            <a className="ct-qr" href={`${INVENTORY_URL}/customers/door-qr?locationId=${encodeURIComponent(storeId)}`} target="_blank" rel="noreferrer" data-testid="door-qr">
-              <QrCode size={13} aria-hidden="true" /> Door QR for {store} <ExternalLink size={11} aria-hidden="true" />
-            </a>
+            <Link className="ct-qr" to={`/door-qr?locationId=${encodeURIComponent(storeId)}&from=counter`} data-testid="door-qr">
+              <QrCode size={13} aria-hidden="true" /> Door QR for {store}
+            </Link>
           )}
         </span>
       </div>

@@ -75,3 +75,13 @@ export function useNotHere() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ['sales', 'dashboard'] })
   });
 }
+/** Undo "Not here" (2 minutes). */
+export function useNotHereUndo() {
+  const qc = useQueryClient();
+  return useMutation({ mutationFn: async (arrivalId) => (await api.post(`/sales/arrivals/${arrivalId}/back`)).data, onSuccess: () => qc.invalidateQueries({ queryKey: ['sales', 'dashboard'] }) });
+}
+/** Undo "Left the shop" (2 minutes): the visit is open again. */
+export function useReopenVisit() {
+  const qc = useQueryClient();
+  return useMutation({ mutationFn: async (visitId) => (await api.post(`/sales/visits/${visitId}/reopen`)).data, onSuccess: () => qc.invalidateQueries({ queryKey: ['sales', 'dashboard'] }) });
+}

@@ -18,6 +18,7 @@ import SegmentView from './pages/SegmentView';
 import CustomerFrom from './pages/CustomerFrom';
 import Counter from './pages/Counter';
 import SalesDashboard from './pages/SalesDashboard';
+import DoorQr from './pages/DoorQr';
 import SalesVisit from './pages/SalesVisit';
 import Week from './pages/Week';
 import Festivals from './pages/Festivals';
@@ -61,6 +62,7 @@ export default function App() {
           <Route path="/counter" element={<Counter />} />
           <Route path="/sales" element={<SalesDashboard />} />
           <Route path="/sales/visit/:id" element={<SalesVisit />} />
+          <Route path="/door-qr" element={<DoorQr />} />
           <Route path="/customers" element={<Customers />} />
           <Route path="/duplicates" element={<Duplicates />} />
           <Route path="/customers/from/:source/:externalId" element={<CustomerFrom />} />

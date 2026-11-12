@@ -65,7 +65,7 @@ async function main() {
 
     const storeId = sql("select id from inventory_locations where client_id='verify-suites-tenant' and name='Main Store' limit 1");
     const qr = await page.getByTestId('door-qr').getAttribute('href');
-    check('the Door QR link carries this store (?locationId=), in a new tab', qr?.endsWith(`/customers/door-qr?locationId=${storeId}`) && (await page.getByTestId('door-qr').getAttribute('target')) === '_blank', qr);
+    check('the Door QR link carries this store (?locationId=), in CRM itself (the Inventory screen is gone, 12 Nov)', qr === `/door-qr?locationId=${storeId}&from=counter` && !(await page.getByTestId('door-qr').getAttribute('target')), qr);
     await page.screenshot({ path: path.join(shots, 'counter-door.png') });
 
     await arrivals.filter({ hasText: 'Anitha Reddy' }).first().getByRole('button', { name: 'Full story' }).click();

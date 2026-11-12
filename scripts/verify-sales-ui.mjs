@@ -2,7 +2,7 @@
  * The Shop floor in a real browser (installed Edge), signed in for real, on a phone-sized screen,
  * local database and local Inventory only:
  *
- *   - the dashboard: its name, the numbers, a walk-in with what to know, "I'll take her"
+ *   - the dashboard: its name, the numbers, a walk-in with what to know, "I'll take this"
  *   - a customer who did not scan: type her number, add her (she said yes to offers), and Inventory has her
  *   - what she wants: chips and a live count; "Show her" fills the screen with the shop's name and the
  *     pieces only (no menu, no "Shop floor", no tags or stock counts)
@@ -128,14 +128,14 @@ async function main() {
     await page.getByTestId('sv-finish').click();
     await page.waitForURL(/\/sales$/, { timeout: 20000 });
     const line = sql(`select title || '|' || coalesce(detail, '') from crm.timeline_events where ref = 'visit:${visitId}'`);
-    check('her timeline: served, shown 2, tried 2, bought one; the other not her colour', /^Served by .+ · shown 2 · tried 2 · bought /.test(line) && /not her colour/.test(line), line);
+    check('their timeline: served, shown 2, tried 2, bought one; the other not their colour', /^Served by .+ · shown 2 · tried 2 · bought /.test(line) && /not their colour/.test(line), line);
 
-    // The walk-in: I'll take her.
+    // The walk-in: I'll take this.
     const card2 = page.getByTestId('sd-person').filter({ hasText: regular[1] }).first();
     await card2.getByTestId('sd-take').click();
     await page.waitForURL(/\/sales\/visit\//, { timeout: 20000 });
     const served = await page.getByRole('heading', { level: 1, name: regular[1] }).waitFor({ timeout: 20000 }).then(() => true).catch(() => false);
-    check('"I\'ll take her" from the door: serving her', served, await page.locator('h1').allInnerTexts());
+    check('"I\'ll take her" from the door: serving them', served, await page.locator('h1').allInnerTexts());
     await page.goto(`${APP}/sales`);
     const mine = page.getByTestId('sd-person').filter({ hasText: regular[1] }).first();
     await mine.waitFor({ timeout: 20000 });

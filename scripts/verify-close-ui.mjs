@@ -57,18 +57,21 @@ async function main() {
     check('the menu says Shop floor', (await page.getByRole('link', { name: 'Shop floor' }).count()) === 1);
     check('nothing on the page says "Sales dashboard"', !/Sales dashboard/.test(await page.locator('body').innerText()));
 
-    // Not here, with Keep.
+    // Not here: at once, with Undo (no confirm box: a mis-tap is undone instead).
     const a = card(page, aName);
     await a.waitFor({ timeout: 20000 });
-    await a.getByTestId('sd-close').click();
-    check('Not here asks first, in plain words', /Their card goes\. The door scan stays on their timeline\./.test(await a.getByTestId('sd-close-box').innerText()));
-    await a.getByRole('button', { name: 'Keep' }).click();
-    check('Keep backs out: the card stays', (await a.getByTestId('sd-close-box').count()) === 0 && (await card(page, aName).count()) === 1);
-    await a.getByTestId('sd-close').click();
+    check('"I will take this" in neutral words (not "take her")', (await a.getByTestId('sd-take').innerText()).trim() === "I'll take this");
     await a.getByTestId('sd-not-here').click();
     const gone = await card(page, aName).waitFor({ state: 'detached', timeout: 10000 }).then(() => true).catch(() => false);
-    check('Yes, not here: the card goes', gone);
-    check('...and the door scan is kept, marked not here', sql(`select count(*) from crm.door_arrivals where id = '${arrivals[0]}' and left_at is not null`) === '1');
+    check('Not here: the card goes at once', gone);
+    await page.getByTestId('sd-undo').waitFor({ timeout: 5000 });
+    await page.getByTestId('sd-undo-toast').screenshot({ path: path.join(shots, 'not-here-undo.png') });
+    await page.getByTestId('sd-undo').click();
+    const back = await card(page, aName).waitFor({ timeout: 10000 }).then(() => true).catch(() => false);
+    check('Undo: the card is back', back);
+    await card(page, aName).getByTestId('sd-not-here').click();
+    await card(page, aName).waitFor({ state: 'detached', timeout: 10000 }).catch(() => {});
+    check('...Not here again: the door scan is kept, marked not here, with who did it on the timeline', sql(`select count(*) from crm.door_arrivals where id = '${arrivals[0]}' and left_at is not null`) === '1' && sql(`select count(*) from crm.timeline_events where ref = 'door-left:${arrivals[0]}' and title like '%marked by%'`) === '1');
 
     // Take B, then Close: started by mistake.
     const b = card(page, bName);
@@ -79,9 +82,11 @@ async function main() {
     await card(page, bName).waitFor({ timeout: 20000 });
     await card(page, bName).getByTestId('sd-close').click();
     const box = card(page, bName).getByTestId('sd-close-box');
-    check('Close offers "left" and "started by mistake"', (await box.getByTestId('sd-close-left').count()) === 1 && (await box.getByTestId('sd-close-mistake').count()) === 1);
+    check('Close offers "Left the shop" and "Remove: started by mistake"', /Left the shop/.test(await box.innerText()) && (await box.getByTestId('sd-close-mistake').count()) === 1);
     await box.screenshot({ path: path.join(shots, 'close-card.png') });
     await box.getByTestId('sd-close-mistake').click();
+    check('Remove asks once more (it cannot be undone)', /Remove this visit\? It cannot be undone\./.test(await box.innerText()));
+    await box.getByTestId('sd-remove-yes').click();
     await page.waitForFunction((n) => [...document.querySelectorAll('[data-testid="sd-person"]')].some(el => el.textContent.includes(n) && el.textContent.includes('Nobody yet')), bName, { timeout: 10000 }).catch(() => {});
     check('Started by mistake: the walk-in is back to "Nobody yet"', /Nobody yet/.test(await card(page, bName).innerText()));
     check('...and the visit is gone', sql(`select count(*) from crm.sales_visits where customer_id = '${bId}' and started_at > now() - interval '10 minutes'`) === '0');
@@ -103,7 +108,33 @@ async function main() {
     await card(page, bName).getByTestId('sd-close').click();
     await card(page, bName).getByTestId('sd-close-left').click();
     const left = await card(page, bName).waitFor({ state: 'detached', timeout: 10000 }).then(() => true).catch(() => false);
-    check('She left: the card goes, the visit ends', left && sql(`select count(*) from crm.sales_visits where customer_id = '${bId}' and ended_at is not null and started_at > now() - interval '10 minutes'`) === '1');
+    check('Left the shop: the card goes, the visit ends', left && sql(`select count(*) from crm.sales_visits where customer_id = '${bId}' and ended_at is not null and started_at > now() - interval '10 minutes'`) === '1');
+    await page.getByTestId('sd-undo').click();
+    const undone = await card(page, bName).waitFor({ timeout: 10000 }).then(() => true).catch(() => false);
+    check('Undo: the visit is open again, with them', undone && /With you/.test(await card(page, bName).innerText()) && sql(`select count(*) from crm.sales_visits where customer_id = '${bId}' and ended_at is null and started_at > now() - interval '10 minutes'`) === '1');
+    await card(page, bName).getByTestId('sd-close').click();
+    await card(page, bName).getByTestId('sd-close-left').click();
+    await card(page, bName).waitFor({ state: 'detached', timeout: 10000 }).catch(() => {});
+
+    // The door QR on Shop floor (Inventory's screen is gone): shown and printable; made up here, as local WhatsApp is not linked.
+    await page.route('**/api/v1/counter/door-qr**', route => route.fulfill({ json: { success: true, data: { shop: 'Sri Lakshmi Silks', store: 'Main Store', logo: null, code: 'IN-TEST01', text: 'Hi', number: '919000000001', link: 'https://wa.me/919000000001?text=Hi', fix: null, reason: null } } }));
+    const pick = page.getByRole('combobox', { name: 'Your store' });
+    if ((await pick.innerText()).includes('Choose')) { await pick.click(); await page.getByRole('option').nth(1).click(); }
+    await page.getByTestId('sd-door-qr').click();
+    await page.getByTestId('dq-standee').waitFor({ timeout: 15000 });
+    const standee = await page.getByTestId('dq-standee').innerText();
+    check('Door QR: the standee with the shop, the store, the code and the number', /Sri Lakshmi Silks/.test(standee) && /Main Store/i.test(standee) && /IN-TEST01/.test(standee) && /\+91 90000 00001/.test(standee) && (await page.locator('[data-testid="dq-standee"] svg').count()) >= 1, standee);
+    check('...and Print', (await page.getByTestId('dq-print').count()) === 1);
+    await page.getByTestId('dq-standee').screenshot({ path: path.join(shots, 'door-qr.png') });
+    await page.emulateMedia({ media: 'print' });
+    const printed = await page.evaluate(() => ({ standee: getComputedStyle(document.querySelector('[data-testid="dq-standee"]')).visibility, menu: getComputedStyle(document.querySelector('nav') || document.body).visibility }));
+    check('printing shows only the standee', printed.standee === 'visible' && printed.menu === 'hidden', printed);
+    await page.emulateMedia({ media: 'screen' });
+    await page.unroute('**/api/v1/counter/door-qr**');
+    await page.route('**/api/v1/counter/door-qr**', route => route.fulfill({ json: { success: true, data: { shop: 'Sri Lakshmi Silks', store: 'Main Store', code: 'IN-TEST01', link: null, fix: 'WHATSAPP', reason: "Link the shop's WhatsApp number in Settings first. The QR opens a chat with that number." } } }));
+    await page.reload();
+    await page.getByTestId('dq-fix').waitFor({ timeout: 15000 });
+    check('WhatsApp not linked yet: says so, with the way to fix it, and no Print', /Link the shop's WhatsApp number/.test(await page.getByTestId('dq-fix').innerText()) && (await page.getByTestId('dq-print').count()) === 0);
     void bArrival;
     await ctx.close();
   } finally {

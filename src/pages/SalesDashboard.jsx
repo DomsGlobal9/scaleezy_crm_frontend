@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { LayoutDashboard, Loader2, MapPin, Search, ShieldOff, UserPlus, DoorOpen, ListChecks, Hand, X, ChevronDown } from 'lucide-react';
+import { LayoutDashboard, Loader2, MapPin, Search, ShieldOff, UserPlus, DoorOpen, ListChecks, Hand, X, ChevronDown, QrCode } from 'lucide-react';
 import { usePermission } from '../hooks/usePermission';
 import { useStores } from '../hooks/useCounter';
-import { useAddCustomer, useCloseVisit, useFindCustomer, useNotHere, useSalesDashboard, useStartVisit } from '../hooks/useSales';
+import { useAddCustomer, useCloseVisit, useFindCustomer, useNotHere, useNotHereUndo, useReopenVisit, useSalesDashboard, useStartVisit } from '../hooks/useSales';
 import { readStore, STORE_KEY } from '../components/WhatTheyWear';
 import { formatPhone } from '../utils/phone';
 import { formatRupees } from '../utils/money';
@@ -67,6 +67,7 @@ export default function SalesDashboard() {
         {storeList.length > 0 && (
           <div className="ct-store">
             <MapPin size={15} aria-hidden="true" />
+            {store && <Link className="ct-qr" to={`/door-qr?locationId=${encodeURIComponent(store.id)}`} data-testid="sd-door-qr"><QrCode size={13} aria-hidden="true" /> Door QR</Link>}
             <Select value={storeId} onChange={(e) => setStoreId(e.target.value)} aria-label="Your store">
               <option value="">Choose your store</option>
               {storeList.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
@@ -109,7 +110,7 @@ export default function SalesDashboard() {
                 {p.customerId ? <SalesCues cues={p.cues} max={4} /> : <p className="crm-muted sd-small">Not a customer yet. Add their name when you take them.</p>}
                 <div className="sd-actions">
                   {p.taken?.byMe && p.taken.visitId && <Link className="btn-primary" to={`/sales/visit/${p.taken.visitId}`}>Continue</Link>}
-                  {!p.taken && <button type="button" className="btn-primary" disabled={start.isPending} onClick={() => serve({ arrivalId: p.arrivalId, customerId: p.customerId })} data-testid="sd-take">I'll take her</button>}
+                  {!p.taken && <button type="button" className="btn-primary" disabled={start.isPending} onClick={() => serve({ arrivalId: p.arrivalId, customerId: p.customerId })} data-testid="sd-take">I'll take this</button>}
                   {p.customerId && <Link className="btn-secondary" to={`/customers/${p.customerId}`}>Full story</Link>}
                   <CloseCard person={p} isOwner={isOwner} />
                 </div>
@@ -158,7 +159,7 @@ function FindCustomer({ onServe, busy, mayAdd, needsStore }) {
           {f.people.map(p => (
             <li key={p.id}>
               <div style={{ minWidth: 0 }}><strong>{p.name}</strong> <span className="crm-muted">{p.phone ? formatPhone(p.phone) : ''}{p.matched ? ` · ${p.matched}` : ''}</span></div>
-              <button type="button" className="btn-primary" disabled={busy} onClick={() => onServe({ customerId: p.id })} data-testid="sd-serve">I'll take her</button>
+              <button type="button" className="btn-primary" disabled={busy} onClick={() => onServe({ customerId: p.id })} data-testid="sd-serve">I'll take this</button>
             </li>
           ))}
         </ul>
@@ -178,44 +179,84 @@ const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', '
 
 /** A new customer: their name, their answer about WhatsApp offers (asked, never assumed), a birthday if they like. */
 /**
- * Closing a card (the owner, 12 Nov). A walk-in nobody took: "Not here". A visit: "She left" (ends it as
- * Finish does, no sale) or "Started by mistake" (deleted, nothing saved). Visits only for the person
- * serving them and the owner. The choice itself is the confirm; "Keep" backs out.
+ * Closing a card (the owner, 12 Nov; the sales session's review). A walk-in nobody is serving: "Not here",
+ * at once, with Undo for 10 seconds (a mis-tap would otherwise hide someone still waiting). A visit:
+ * "Left the shop" (ends it as Finish does, no sale; Undo for 10 seconds) or "Remove: started by mistake"
+ * (deletes it, so it asks once more). Visits only for the person serving them and the owner.
  */
+const UNDO_SHOWN_MS = 10_000;
+function undoToast(text, onUndo) {
+  toast((t) => (
+    <span className="sd-undo" data-testid="sd-undo-toast">
+      {text}
+      <button type="button" className="si-link" onClick={() => { toast.dismiss(t.id); onUndo(); }} data-testid="sd-undo">Undo</button>
+    </span>
+  ), { duration: UNDO_SHOWN_MS });
+}
+
 function CloseCard({ person: p, isOwner }) {
   const [open, setOpen] = useState(false);
+  const [confirmRemove, setConfirmRemove] = useState(false);
   const close = useCloseVisit();
   const notHere = useNotHere();
+  const notHereUndo = useNotHereUndo();
+  const reopen = useReopenVisit();
   const who = (p.name ?? '').trim().split(/\s+/)[0] || 'them';
   const visitId = p.taken?.visitId;
   const mayClose = !!visitId && (p.taken.byMe || isOwner);
   const mayNotHere = !!p.arrivalId && !visitId;
   if (!mayClose && !mayNotHere) return null;
-  const run = async (fn, done) => { try { await fn(); toast.success(done); setOpen(false); } catch (err) { toast.error(err?.message || 'That could not be done just now. Try again.'); } };
+  const failed = (err) => toast.error(err?.message || 'That could not be done just now. Try again.');
+  const undo = async (fn) => { try { await fn(); toast.success('Back on the list.'); } catch (err) { failed(err); } };
+
+  const goneNow = async () => {
+    try {
+      await notHere.mutateAsync(p.arrivalId);
+      undoToast(`${p.name ? who : 'The walk-in'} is off the list.`, () => undo(() => notHereUndo.mutateAsync(p.arrivalId)));
+    } catch (err) { failed(err); }
+  };
+  const leftShop = async () => {
+    try {
+      await close.mutateAsync({ visitId, how: 'left' });
+      setOpen(false);
+      undoToast(`Visit closed${p.customerId ? `, saved on ${who}'s timeline` : ''}.`, () => undo(() => reopen.mutateAsync(visitId)));
+    } catch (err) { failed(err); }
+  };
+  const remove = async () => {
+    try { await close.mutateAsync({ visitId, how: 'mistake' }); setOpen(false); toast.success('Visit removed.'); } catch (err) { failed(err); }
+  };
+
+  if (mayNotHere) {
+    return (
+      <button type="button" className="si-link sd-close" disabled={notHere.isPending} onClick={goneNow} data-testid="sd-not-here">
+        <X size={13} aria-hidden="true" /> Not here
+      </button>
+    );
+  }
   return (
     <>
-      <button type="button" className="si-link sd-close" onClick={() => setOpen(o => !o)} aria-expanded={open} data-testid="sd-close">
-        {mayNotHere ? <><X size={13} aria-hidden="true" /> Not here</> : <>Close <ChevronDown size={13} aria-hidden="true" /></>}
+      <button type="button" className="si-link sd-close" onClick={() => { setOpen(o => !o); setConfirmRemove(false); }} aria-expanded={open} data-testid="sd-close">
+        Close <ChevronDown size={13} aria-hidden="true" />
       </button>
       {open && (
-        <div className="sd-close-box" role="group" aria-label={`Close ${who}'s card`} data-testid="sd-close-box">
-          {mayNotHere ? (
+        <div className="sd-close-box" role="group" aria-label={`Close the card for ${who}`} data-testid="sd-close-box">
+          {!confirmRemove ? (
             <>
-              <p className="sd-small">Not here? Their card goes. The door scan stays on their timeline.</p>
-              <div className="sd-actions">
-                <button type="button" className="btn-primary" disabled={notHere.isPending} onClick={() => run(() => notHere.mutateAsync(p.arrivalId), 'Taken off the list.')} data-testid="sd-not-here">Yes, not here</button>
-                <button type="button" className="btn-secondary" onClick={() => setOpen(false)}>Keep</button>
-              </div>
-            </>
-          ) : (
-            <>
-              <button type="button" className="sd-close-choice" disabled={close.isPending} onClick={() => run(() => close.mutateAsync({ visitId, how: 'left' }), `Visit closed. Saved on ${p.customerId ? `${who}'s` : 'the'} timeline.`)} data-testid="sd-close-left">
-                <b>{p.customerId ? `${who[0].toUpperCase()}${who.slice(1)} left` : 'They left'}</b><span>Ends the visit with no sale. What they tried is saved on their timeline.</span>
+              <button type="button" className="sd-close-choice" disabled={close.isPending} onClick={leftShop} data-testid="sd-close-left">
+                <b>Left the shop</b><span>Ends the visit with no sale. What they tried is saved on their timeline. You can undo it for a few seconds.</span>
               </button>
-              <button type="button" className="sd-close-choice danger" disabled={close.isPending} onClick={() => run(() => close.mutateAsync({ visitId, how: 'mistake' }), 'Visit removed.')} data-testid="sd-close-mistake">
+              <button type="button" className="sd-close-choice danger" disabled={close.isPending} onClick={() => setConfirmRemove(true)} data-testid="sd-close-mistake">
                 <b>Remove: started by mistake</b><span>Deletes this visit. Nothing is saved{p.arrivalId ? ', and the walk-in is back to "Nobody yet"' : ''}.</span>
               </button>
               <button type="button" className="btn-secondary" onClick={() => setOpen(false)}>Keep</button>
+            </>
+          ) : (
+            <>
+              <p className="sd-small" style={{ margin: 0 }}>Remove this visit? It cannot be undone.</p>
+              <div className="sd-actions">
+                <button type="button" className="btn-danger" disabled={close.isPending} onClick={remove} data-testid="sd-remove-yes">Yes, remove it</button>
+                <button type="button" className="btn-secondary" onClick={() => setConfirmRemove(false)}>Keep</button>
+              </div>
             </>
           )}
         </div>
@@ -270,7 +311,7 @@ function AddCustomer({ phone, near, onServe, busy }) {
       </div>
       {error && <p className="si-error" role="alert" data-testid="sd-add-error">{error}</p>}
       <div className="sd-actions">
-        <button type="button" className="btn-primary" disabled={add.isPending || busy || !name.trim()} onClick={() => save(false)} data-testid="sd-add-save">{add.isPending ? <Loader2 size={14} className="animate-spin" /> : `Add ${name.trim().split(/\s+/)[0] || 'her'} and take her`}</button>
+        <button type="button" className="btn-primary" disabled={add.isPending || busy || !name.trim()} onClick={() => save(false)} data-testid="sd-add-save">{add.isPending ? <Loader2 size={14} className="animate-spin" /> : `Add ${name.trim().split(/\s+/)[0] || 'them'} and start`}</button>
         {suggest.length > 0 && <button type="button" className="btn-secondary" disabled={add.isPending || !name.trim()} onClick={() => save(true)} data-testid="sd-add-anyway">Add as new anyway</button>}
       </div>
     </div>

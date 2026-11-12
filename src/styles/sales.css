@@ -106,3 +106,5 @@ body.sv-her-open { overflow: hidden; }
 .sd-close-choice:hover, .sd-close-choice:focus-visible { background: var(--bg-card); }
 .sd-close-choice span { color: var(--text-muted); font-size: 12px; }
 .sd-close-choice.danger b { color: var(--accent-danger); }
+.sd-undo { display: inline-flex; align-items: center; gap: 12px; }
+.sd-undo .si-link { font-weight: 700; color: var(--brand-ink, var(--accent-primary)); text-decoration: underline; }

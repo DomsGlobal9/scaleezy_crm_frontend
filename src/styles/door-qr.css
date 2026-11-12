@@ -1,0 +1,39 @@
+/* Door QR (12 Nov, from Inventory's standee): the page, and only the standee when printing. */
+.dq-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr)); gap: 32px; align-items: start; }
+.dq-chrome h1 { margin: 10px 0 6px; font-size: 28px; }
+.dq-steps { list-style: none; padding: 0; margin: 16px 0 24px; display: grid; gap: 14px; }
+.dq-steps li { display: flex; gap: 12px; align-items: flex-start; }
+.dq-steps li > span:last-child { display: grid; gap: 2px; }
+.dq-steps .crm-muted { font-size: 13px; }
+.dq-step-icon { flex: 0 0 36px; height: 36px; border-radius: 10px; background: var(--brand-solid); color: var(--brand-on-solid); display: grid; place-items: center; }
+.dq-chrome .btn-primary { display: inline-flex; align-items: center; gap: 6px; }
+
+.dq-paper { display: flex; justify-content: center; }
+.dq-card { width: 340px; max-width: 100%; box-sizing: border-box; background: #fff; color: #111; border-radius: 20px; overflow: hidden; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12); border: 1px solid #e5e5e5; text-align: center; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+.dq-top { background: #164B1E; color: #fff; padding: 20px 20px 18px; }
+.dq-shop { font-size: 28px; font-weight: 800; letter-spacing: 0.5px; line-height: 1.1; overflow-wrap: anywhere; }
+.dq-store { font-size: 13px; color: #A6D92B; margin-top: 4px; text-transform: uppercase; letter-spacing: 2px; }
+.dq-mid { padding: 18px 22px 16px; }
+.dq-lead { font-size: 20px; font-weight: 800; line-height: 1.25; }
+.dq-sub { font-size: 13px; color: #555; margin: 2px 0 14px; }
+.dq-code { position: relative; display: inline-block; padding: 18px; }
+.dq-corner { position: absolute; width: 26px; height: 26px; border: 0 solid #A6D92B; }
+.dq-corner.tl { top: 0; left: 0; border-top-width: 4px; border-left-width: 4px; border-top-left-radius: 8px; }
+.dq-corner.tr { top: 0; right: 0; border-top-width: 4px; border-right-width: 4px; border-top-right-radius: 8px; }
+.dq-corner.bl { bottom: 0; left: 0; border-bottom-width: 4px; border-left-width: 4px; border-bottom-left-radius: 8px; }
+.dq-corner.br { bottom: 0; right: 0; border-bottom-width: 4px; border-right-width: 4px; border-bottom-right-radius: 8px; }
+.dq-how { display: flex; justify-content: center; flex-wrap: wrap; gap: 6px; margin: 14px 0 0; font-size: 12px; font-weight: 600; }
+.dq-how > span:not(.dq-arrow) { display: inline-flex; align-items: center; gap: 4px; }
+.dq-how i { font-style: normal; width: 18px; height: 18px; border-radius: 50%; background: #A6D92B; color: #164B1E; display: inline-grid; place-items: center; font-size: 11px; }
+.dq-arrow { color: #bbb; }
+.dq-foot { border-top: 1px dashed #ddd; padding: 10px 16px 14px; font-size: 12px; color: #555; }
+.dq-foot b { color: #164B1E; }
+.dq-num { white-space: nowrap; }
+
+@media print {
+  @page { margin: 12mm; }
+  body * { visibility: hidden !important; }
+  .dq-paper, .dq-paper * { visibility: visible !important; }
+  .dq-paper { position: absolute; left: 0; top: 0; width: 100%; }
+  .dq-card { box-shadow: none; }
+}
