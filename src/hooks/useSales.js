@@ -20,7 +20,12 @@ export function useFindCustomer(q) {
   });
 }
 export function useAddCustomer() {
-  return useMutation({ mutationFn: async (body) => (await api.post('/sales/customers', body)).data });
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (body) => (await api.post('/sales/customers', body)).data,
+    // A new customer is on All customers (and its counts) straight away, not after a refresh.
+    onSuccess: (r) => { if (r?.customerId) qc.invalidateQueries({ queryKey: ['customers'] }); }
+  });
 }
 export function useStartVisit() {
   const qc = useQueryClient();
