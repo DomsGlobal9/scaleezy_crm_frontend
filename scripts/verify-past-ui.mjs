@@ -92,6 +92,21 @@ async function main() {
     const rows = () => page.getByTestId('customer-row');
     const applied = async () => page.getByTestId('filters-on').waitFor({ timeout: 10000 });
 
+    // Repeat customers (the owner, 12 Nov): once, 2 to 4 times, 5 or more; a tap opens that filter.
+    const rep = page.getByTestId('overview-repeat');
+    const repText = await rep.innerText();
+    check('Repeat customers: once, 2 to 4 times, 5 or more, and how many bought again', ['Repeat customers', 'Once', '2 to 4 times', '5 times or more'].every(w => repText.includes(w)) && /\d+% bought more than once \([\d,]+ of [\d,]+\)/.test(repText), repText);
+    await rep.screenshot({ path: path.join(shots, 'overview-repeat.png') });
+    const want = Number((await page.getByTestId('overview-2-4').locator('b').innerText()).replace(/,/g, ''));
+    await page.getByTestId('overview-2-4').click();
+    await applied();
+    await rows().first().waitFor({ timeout: 15000 }).catch(() => {});
+    const info = page.getByTestId('page-info');
+    const got = (await info.count()) ? Number((await info.innerText()).match(/of ([\d,]+)/)[1].replace(/,/g, '')) : await rows().count();
+    check('tapping "2 to 4 times" shows exactly those customers, as the filter "2 to 4"', got === want && /2 to 4/.test(await page.getByTestId('filters-on').innerText()), { want, got });
+    await page.goto(`${APP}/customers`);
+    await overview.waitFor({ timeout: 20000 });
+
     await page.getByTestId('filters-open').click();
     const panel = page.getByTestId('filters-panel');
     await panel.waitFor();

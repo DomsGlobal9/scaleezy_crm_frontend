@@ -20,7 +20,7 @@ export const budgetOf = (price, bands) => {
 const WAYS = { UPI: 'UPI', CASH: 'Cash', CARD: 'Card', PAYTM: 'Paytm', CREDIT: 'Credit', STORE_CREDIT: 'Store credit', BANK_TRANSFER: 'Bank transfer', CHEQUE: 'Cheque', WALLET: 'Wallet', OTHER: 'Other' };
 export const payWord = (key) => WAYS[String(key ?? '').toUpperCase()] ?? String(key ?? '').replace(/_/g, ' ').toLowerCase().replace(/^./, c => c.toUpperCase());
 
-const BILLS = [['1', '1 bill', { billsAtLeast: 1, billsAtMost: 1 }], ['2', '2 or more', { billsAtLeast: 2 }], ['5', '5 or more', { billsAtLeast: 5 }]];
+const BILLS = [['1', '1 bill', { billsAtLeast: 1, billsAtMost: 1 }], ['2', '2 or more', { billsAtLeast: 2 }], ['2to4', '2 to 4', { billsAtLeast: 2, billsAtMost: 4 }], ['5', '5 or more', { billsAtLeast: 5 }]];
 const VISIT = [['in30', 'In the last 30 days', { seenWithinDays: 30 }], ['in90', 'In the last 3 months', { seenWithinDays: 90 }], ['out90', 'Not back in 3 months', { notSeenForDays: 90 }], ['out180', 'Not back in 6 months', { notSeenForDays: 180 }]];
 
 /** Choices where one tap sets one or two rules: which is on, and what they set. */

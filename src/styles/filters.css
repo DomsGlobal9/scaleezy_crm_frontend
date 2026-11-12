@@ -44,6 +44,7 @@
 /* The small overview above the list. */
 .cf-overview { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr)); gap: 12px; margin-bottom: 12px; }
 .cf-overview h2 { margin: 0 0 8px; font-size: 15px; }
+.cf-overview .cf-note { margin: -4px 0 8px; font-size: 12px; }
 .cf-bar-row { display: grid; grid-template-columns: minmax(96px, 150px) minmax(0, 1fr) 54px; gap: 10px; align-items: center; font-size: 14px; padding: 5px 4px; width: 100%; text-align: left; border-radius: 8px; color: var(--text-primary); }
 .cf-bar-row:hover { background: var(--bg-input); }
 .cf-bar-row b { text-align: right; font-weight: 600; }

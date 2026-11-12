@@ -228,15 +228,17 @@ export default function Customers() {
   );
 }
 
-/** The small overview: how many customers at each budget and by what they buy. A number opens that filter. */
+/** The small overview: how many customers at each budget, by what they buy and how often. A number opens that filter. */
+const REPEAT_WORDS = { '1': 'Once', '2-4': '2 to 4 times', '5-': '5 times or more' };
 function Overview({ data, onPick }) {
-  const bars = (rows, words, ruleKey, title) => {
+  const bars = (rows, words, rulesOf, title, note, id) => {
     const most = Math.max(1, ...rows.map(r => r.count));
     return (
-      <section className="crm-card" aria-label={title}>
+      <section className="crm-card" aria-label={title} data-testid={id}>
         <h2>{title}</h2>
+        {note && <p className="crm-muted cf-note">{note}</p>}
         {rows.map(r => (
-          <button key={r.key} type="button" className="cf-bar-row" onClick={() => onPick({ [ruleKey]: [r.key] })} data-testid={`overview-${r.key}`}>
+          <button key={r.key} type="button" className="cf-bar-row" onClick={() => onPick(rulesOf(r))} data-testid={`overview-${r.key}`}>
             <span>{words ? words(r.key) : r.key}</span>
             <span className="cf-track" aria-hidden="true"><i style={{ width: `${Math.max(r.count ? 2 : 0, (r.count / most) * 100)}%` }} /></span>
             <b>{r.count.toLocaleString('en-IN')}</b>
@@ -245,10 +247,15 @@ function Overview({ data, onPick }) {
       </section>
     );
   };
+  const repeat = data.repeat ?? [];
+  const bought = repeat.reduce((n, r) => n + r.count, 0);
+  const again = repeat.filter(r => r.key !== '1').reduce((n, r) => n + r.count, 0);
   return (
     <div className="cf-overview" data-testid="customer-overview">
-      {bars(data.budget, rangeWord, 'budget', 'By budget')}
-      {data.kinds.length > 0 && bars(data.kinds, null, 'boughtKinds', 'By what they buy')}
+      {bars(data.budget, rangeWord, r => ({ budget: [r.key] }), 'By budget')}
+      {data.kinds.length > 0 && bars(data.kinds, null, r => ({ boughtKinds: [r.key] }), 'By what they buy')}
+      {bought > 0 && bars(repeat, k => REPEAT_WORDS[k] ?? k, r => r.rules, 'Repeat customers',
+        `${Math.round((again / bought) * 100)}% bought more than once (${again.toLocaleString('en-IN')} of ${bought.toLocaleString('en-IN')}).`, 'overview-repeat')}
     </div>
   );
 }
