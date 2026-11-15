@@ -49,8 +49,8 @@ export default function SalesDashboard() {
     return (
       <div className="crm-notice"><div className="crm-card">
         <ShieldOff size={28} style={{ color: 'var(--accent-warning)' }} />
-        <h2>You cannot see customers</h2>
-        <p>Your role does not include seeing customers. Ask whoever manages your team if you need this.</p>
+        <h2>Shop floor is not part of your role</h2>
+        <p>Serving customers on Shop floor needs the Sales access in CRM. Ask whoever manages your team if you need it.</p>
       </div></div>
     );
   }
@@ -156,7 +156,7 @@ function FindCustomer({ onServe, busy, mayAdd, needsStore }) {
       <h2 id="sd-find-h">Customer with you?</h2>
       <div className="ct-phone">
         <Search size={18} aria-hidden="true" />
-        <input className="input-field" type="search" autoComplete="off" placeholder="Their mobile number, name or a bill number" aria-label="Their mobile number, name or a bill number"
+        <input className="input-field" type="search" autoComplete="off" placeholder="Mobile, name or bill no." aria-label="Their mobile number, name or a bill number"
           value={typed} onChange={(e) => setTyped(e.target.value)} data-testid="sd-find" />
       </div>
       {needsStore && <p className="sd-small sd-warn">Choose your store at the top first: the pieces you show are the ones in stock there.</p>}
@@ -286,10 +286,10 @@ function AddCustomer({ phone, near, onServe, busy }) {
     try {
       const r = await add.mutateAsync({ name, phone, offers: offers === 'yes' ? true : offers === 'no' ? false : undefined, birthday: day && month ? `${month}-${day}` : undefined, confirmNew });
       if (!r.customerId && r.near?.length) { setSuggest(r.near); return; }
-      if (typeof r.offers === 'string' && !['saved', 'not_asked'].includes(r.offers)) toast(`${r.name} is added. Her answer about offers was not saved: ${r.offers}`);
-      else toast.success(r.existing ? `${r.name} already has this number: opening her.` : `${r.name} is added. The till finds her by this number.`);
+      if (offers && !r.existing && r.offers !== 'saved' && r.offers !== 'not_asked') toast(`${r.name} is added. Their answer about offers was not saved: ask again on their page.`);
+      else toast.success(r.existing ? `${r.name} already has this number: opening their page.` : `${r.name} is added. The till finds them by this number.`);
       onServe({ customerId: r.customerId });
-    } catch (err) { setError(err?.message || 'She could not be added just now. Try again.'); }
+    } catch (err) { setError(err?.message || 'The customer could not be added just now. Try again.'); }
   };
   return (
     <div className="sd-add" data-testid="sd-add">
@@ -298,14 +298,14 @@ function AddCustomer({ phone, near, onServe, busy }) {
         <div className="sd-near" role="status" data-testid="sd-near">
           {suggest.map(n => (
             <div key={n.id} className="sd-near-row"><span><b>Is this {n.name}?</b> {formatPhone(n.phone)} differs by one digit.</span>
-              <button type="button" className="btn-secondary" disabled={busy} onClick={() => onServe({ customerId: n.id })}>Yes, it's her</button></div>
+              <button type="button" className="btn-secondary" disabled={busy} onClick={() => onServe({ customerId: n.id })}>Yes, that's them</button></div>
           ))}
         </div>
       )}
-      <label className="sd-field"><span>Name</span><input className="input-field" value={name} maxLength={80} onChange={(e) => setName(e.target.value)} aria-label="Her name" data-testid="sd-name" /></label>
-      <div className="sd-field"><span>May we send her offers on WhatsApp? Ask her.</span>
+      <label className="sd-field"><span>Name</span><input className="input-field" value={name} maxLength={80} onChange={(e) => setName(e.target.value)} aria-label="Their name" data-testid="sd-name" /></label>
+      <div className="sd-field"><span>May we send them offers on WhatsApp? Ask them.</span>
         <div className="sd-chips" role="radiogroup" aria-label="Offers on WhatsApp">
-          {[['yes', 'She said yes'], ['no', 'She said no'], [null, "Didn't ask"]].map(([k, l]) => (
+          {[['yes', 'Said yes'], ['no', 'Said no'], [null, "Didn't ask"]].map(([k, l]) => (
             <button key={l} type="button" role="radio" aria-checked={offers === k} className={`sd-chip${offers === k ? ' on' : ''}`} onClick={() => setOffers(k)}>{l}</button>
           ))}
         </div>

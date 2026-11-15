@@ -75,6 +75,7 @@
 /* Visits (the owner, 12 Nov): each visit's date and the days between; "earlier" for bills from before CRM. */
 .vt { display: grid; gap: 4px; }
 .vt-dots { display: flex; align-items: flex-start; flex-wrap: nowrap; }
+.vt-step { display: flex; align-items: flex-start; }
 .vt-v { display: flex; flex-direction: column; align-items: center; min-width: 44px; font-size: 12px; }
 .vt-v > span { margin-top: 3px; white-space: nowrap; }
 .vt-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--accent-primary, #A6D92B); }

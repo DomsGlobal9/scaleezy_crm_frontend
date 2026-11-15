@@ -9,7 +9,7 @@ const shortDay = (day) => new Date(`${day}T12:00:00Z`).toLocaleDateString('en-IN
 export default function SalesCues({ cues, max = 6 }) {
   if (!cues) return null;
   const lines = [];
-  if (cues.firstVisit) lines.push({ icon: Sparkles, text: 'First visit: ask what she is looking for.' });
+  if (cues.firstVisit) lines.push({ icon: Sparkles, text: 'First visit: ask what they are looking for.' });
   if (cues.unhappy) lines.push({ icon: AlertTriangle, text: `Rated ${cues.unhappy.rating} of 5 on ${shortDay(cues.unhappy.on)}. Say sorry first.`, tone: 'bad' });
   if (cues.offer) lines.push({ icon: Gift, text: `Win-back offer open · ${cues.offer.code} · till ${shortDay(cues.offer.validUntil)}`, tone: 'good' });
   const wear = [cues.sizes?.length ? `Wears ${cues.sizes.join(', ')}` : null, cues.colours?.length ? `likes ${cues.colours.join(', ').toLowerCase()}` : null, cues.fabric].filter(Boolean);

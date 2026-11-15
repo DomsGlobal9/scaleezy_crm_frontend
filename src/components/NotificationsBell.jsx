@@ -51,7 +51,7 @@ export default function NotificationsBell() {
                   </Link>
                 )}
                 {d.waiting.count > 0 && (
-                  <Link to="/counter" className="tb-note" onClick={close}>
+                  <Link to="/sales" className="tb-note" onClick={close}>
                     <span className="tb-i" aria-hidden="true"><DoorOpen size={16} /></span>
                     <span><b>{plural(d.waiting.count, 'waiting', 'waiting')} at the door</b>
                       <small>{d.waiting.items.map(w => `${w.name}${w.store ? `, ${w.store}` : ''}, waiting ${w.minutes} ${w.minutes === 1 ? 'minute' : 'minutes'}`).join(' · ')}</small></span>

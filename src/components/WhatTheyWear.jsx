@@ -36,7 +36,7 @@ export default function WhatTheyWear({ customerId, onFestivals }) {
   const card = useCounterCard(customerId, locationId);
   const [allPicks, setAllPicks] = useState(false);
   if (card.isLoading) return <div className="crm-row crm-muted" aria-busy="true"><Loader2 size={16} className="animate-spin" /> Reading what they wear…</div>;
-  if (card.isError) return <p className="crm-muted">What they wear could not be read just now.</p>;
+  if (card.isError) return <p className="crm-muted" role="alert">What they wear could not be read just now. <button type="button" className="si-link" onClick={() => card.refetch()}>Try again</button></p>;
   const { dna, suggestions: s, festivals: fb } = card.data;
   const looked = s.connected && Array.isArray(s.lookedAtOnline) ? s.lookedAtOnline : card.data.lookedAtOnline;
   const picks = s.connected && locationId ? s.picks : [];

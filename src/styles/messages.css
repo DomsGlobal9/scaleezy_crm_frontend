@@ -33,6 +33,7 @@
 .ms-status.sending { background: rgba(166, 217, 43, .22); color: var(--brand-ink); }
 .ms-status.done { background: var(--bg-input); color: var(--text-secondary); }
 .ms-status.draft { background: rgba(245, 158, 11, .16); color: #b45309; }
+[data-theme='dark'] .ms-status.draft { background: rgba(245, 158, 11, .2); color: #fcd34d; }
 .ms-bar { height: 8px; border-radius: 999px; background: var(--bg-input); overflow: hidden; display: flex; }
 .ms-bar i { display: block; height: 100%; background: var(--brand-solid); opacity: .55; }
 .ms-bar i.read { background: #15803d; opacity: 1; }

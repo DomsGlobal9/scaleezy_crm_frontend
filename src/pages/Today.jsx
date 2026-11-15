@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import toast from 'react-hot-toast';
 import { Loader2, ShieldOff, Phone, Check, Clock, MessageCircle, Undo2 } from 'lucide-react';
 import { usePermission } from '../hooks/usePermission';
 import { useFollowUpDone, useSetLanguage, useTalkList, useTodayAct } from '../hooks/useWork';
@@ -90,7 +91,7 @@ function FirstSteps() {
       <h2>Nobody to talk to yet. Three things fill this list:</h2>
       <ol>
         <li><strong>Promise a call, then add a follow-up.</strong> On the customer's page, when you say "I'll call you when it comes in".</li>
-        <li><strong>Ask their birthday at the till.</strong> Birthdays and anniversaries come here a week ahead.</li>
+        <li><strong>Bill customers by their number.</strong> Regulars who have not been back in a while come here, so you can get in touch.</li>
         <li><strong>Ask if they want offers on WhatsApp.</strong> With their yes, you can wish them and tell them about new stock from here.</li>
       </ol>
     </section>
@@ -129,9 +130,16 @@ function Row({ item, rank, shopName, today, mayAct }) {
   const body = { customerId: item.customer.id, kind: item.kind, ref: item.ref, followUpId: item.followUpId };
   const busy = act.isPending || followUpDone.isPending;
 
-  const chooseLanguage = (l) => { setLang(l); if (mayAct) setLanguage.mutate({ customerId: item.customer.id, language: l }); };
+  const chooseLanguage = (l) => { setLang(l); if (mayAct) setLanguage.mutate({ customerId: item.customer.id, language: l }, { onError: (e) => toast.error(e?.message || 'Their language was not saved; the message below is still in it.') }); };
   const done = () => act.mutate({ ...body, status: 'done', how });
   const later = (when) => { setLaterOpen(false); act.mutate({ ...body, status: 'later', later: when }); };
+  // Escape closes the Later choices.
+  useEffect(() => {
+    if (!laterOpen) return undefined;
+    const onKey = (e) => { if (e.key === 'Escape') setLaterOpen(false); };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [laterOpen]);
 
   return (
     <li className={`tk-row ${item.kind}`} data-testid="talk-row" data-kind={item.kind}>

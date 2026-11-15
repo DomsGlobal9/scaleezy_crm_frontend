@@ -1,6 +1,7 @@
 import { VisitTrail, visitStory } from '../components/Visits';
 import React, { useMemo, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { backWords } from '../utils/backTo';
 import {
   ArrowLeft, Loader2, IndianRupee, Undo2, Star, Wallet, DoorOpen, Eye, MessageCircle, NotebookPen,
   CircleCheck, CircleAlert, CircleSlash, ExternalLink, UserX, ShieldOff, CalendarClock, ShieldCheck, ChevronRight,
@@ -130,6 +131,8 @@ export default function CustomerDetail() {
 
   // "← All customers" goes back to the list as it was left (search and page are in its address).
   const back = () => (window.history.state?.idx > 0 ? navigate(-1) : navigate('/customers'));
+  // Named for where it goes: "← Shop floor" from Shop floor, "← To do today" from Today.
+  const [backLabel] = React.useState(() => (window.history.state?.idx > 0 ? backWords(window.location.pathname, 'Back') : 'All customers'));
 
   if (!can('crm:customer:view')) {
     return (
@@ -145,7 +148,7 @@ export default function CustomerDetail() {
 
   return (
     <main className="crm-page cp-page">
-      <button type="button" className="cp-back" onClick={back}><ArrowLeft size={14} /> All customers</button>
+      <button type="button" className="cp-back" onClick={back} data-testid="cp-back"><ArrowLeft size={14} /> {backLabel}</button>
 
       {customer.isLoading || movedTo ? (
         <div className="crm-card crm-row crm-muted" aria-busy="true"><Loader2 size={16} className="animate-spin" /> Loading the customer…</div>

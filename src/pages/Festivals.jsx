@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import toast from 'react-hot-toast';
+import { cameFrom } from '../utils/backTo';
 import { ArrowLeft, Loader2, ShieldOff } from 'lucide-react';
 import { usePermission } from '../hooks/usePermission';
 import { useFestivals, useSetFestivalOn, useSetFestivalDate } from '../hooks/useFestivals';
@@ -16,6 +18,7 @@ const longDay = (day) => new Date(`${day}T12:00:00Z`).toLocaleDateString('en-IN'
 export default function Festivals() {
   const { can } = usePermission();
   const list = useFestivals();
+  const [fromSettings] = useState(() => /^\/settings/.test(cameFrom('/festivals') ?? ''));
   const mayManage = can('crm:shop');
 
   if (!can('crm:customer:view')) {
@@ -30,7 +33,7 @@ export default function Festivals() {
 
   return (
     <main className="crm-page fs-page">
-      <Link to="/customers" className="fs-back"><ArrowLeft size={15} aria-hidden="true" /> All customers</Link>
+      <Link to={fromSettings ? '/settings?section=festivals' : '/customers'} className="fs-back" data-testid="fs-back"><ArrowLeft size={15} aria-hidden="true" /> {fromSettings ? 'Settings' : 'All customers'}</Link>
       <div className="crm-head">
         <div style={{ minWidth: 0 }}>
           <h1>The shop's festivals</h1>
@@ -61,13 +64,13 @@ function FestivalRow({ f, mayManage }) {
   const [day, setDay] = useState(f.next?.date ?? '');
   const save = (e) => {
     e.preventDefault();
-    setDate.mutate({ key: f.key, year: f.next.year, date: day }, { onSuccess: () => setEditing(false) });
+    setDate.mutate({ key: f.key, year: f.next.year, date: day }, { onSuccess: () => setEditing(false), onError: (e) => toast.error(e?.message || 'The date was not saved. Try again.') });
   };
 
   return (
     <li className="fs-row" data-testid="festival-row">
       <label className="fs-on">
-        <input type="checkbox" checked={f.on} disabled={!mayManage || setOn.isPending} onChange={(e) => setOn.mutate({ key: f.key, on: e.target.checked })} aria-label={`${f.name} counts`} />
+        <input type="checkbox" checked={f.on} disabled={!mayManage || setOn.isPending} onChange={(e) => setOn.mutate({ key: f.key, on: e.target.checked }, { onError: (err) => toast.error(err?.message || `${f.name} was not changed. Try again.`) })} aria-label={`${f.name} counts`} />
         <span>
           <span className="fs-name">{f.name}</span>
           {f.note && <small>{f.note}</small>}
@@ -86,7 +89,7 @@ function FestivalRow({ f, mayManage }) {
           {mayManage && (
             <span className="fs-links">
               <button type="button" className="si-link" onClick={() => setEditing(true)}>Change date</button>
-              {f.next.corrected && <button type="button" className="si-link" disabled={setDate.isPending} onClick={() => setDate.mutate({ key: f.key, year: f.next.year, date: null })}>Use the built-in date</button>}
+              {f.next.corrected && <button type="button" className="si-link" disabled={setDate.isPending} onClick={() => setDate.mutate({ key: f.key, year: f.next.year, date: null }, { onError: (e) => toast.error(e?.message || 'The date was not changed. Try again.') })}>Use the built-in date</button>}
             </span>
           )}
         </div>

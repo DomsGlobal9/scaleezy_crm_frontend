@@ -44,7 +44,9 @@ export default function FollowUpsAndNotes({ customerId }) {
           <h2 id="fu-h">Follow-ups{followUps.data && open.length > 0 ? <span className="wk-count">{open.length}</span> : null}</h2>
           {canWrite && !adding && <button type="button" className="si-link wk-add" onClick={() => setAdding(true)} aria-label="New follow-up"><Plus size={14} aria-hidden="true" /> Add</button>}
         </div>
-        {followUps.isLoading ? <p className="crm-muted"><Loader2 size={14} className="animate-spin" /> Loading…</p> : (
+        {followUps.isLoading ? <p className="crm-muted"><Loader2 size={14} className="animate-spin" /> Loading…</p> : followUps.isError ? (
+          <p className="crm-muted wk-none" role="alert" data-testid="fu-error">Follow-ups could not be loaded. <button type="button" className="si-link" onClick={() => followUps.refetch()}>Try again</button></p>
+        ) : (
           <>
             {open.length === 0 && !adding && <p className="crm-muted wk-none">Nothing to do for them.</p>}
             {open.length > 0 && (
@@ -78,6 +80,8 @@ export default function FollowUpsAndNotes({ customerId }) {
         </div>
         {canWrite && writing && <AddNote customerId={customerId} onClose={() => setWriting(false)} />}
         <div className="wk-notes" data-testid="notes">
+          {notes.isLoading && <p className="crm-muted"><Loader2 size={14} className="animate-spin" /> Loading…</p>}
+          {notes.isError && <p className="crm-muted wk-none" role="alert" data-testid="notes-error">Notes could not be loaded. <button type="button" className="si-link" onClick={() => notes.refetch()}>Try again</button></p>}
           {(notes.data ?? []).slice(0, 5).map(n => (
             <div key={n.id} className="wk-note" data-testid="note">
               <p>{n.body}</p>

@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Loader2 } from 'lucide-react';
+import { ArrowLeft, Loader2, ShieldOff } from 'lucide-react';
+import { usePermission } from '../hooks/usePermission';
 import { useRatedLow } from '../hooks/useReviews';
 import CustomerList from '../components/CustomerList';
 import LoadFailed from '../components/LoadFailed';
@@ -11,8 +12,19 @@ import LoadFailed from '../components/LoadFailed';
  */
 export default function RatedLow() {
   const navigate = useNavigate();
-  const low = useRatedLow(true);
+  const { can } = usePermission();
+  const allowed = can('crm:customer:view');
+  const low = useRatedLow(allowed);
   const rows = low.data?.customers ?? [];
+  if (!allowed) {
+    return (
+      <div className="crm-notice"><div className="crm-card">
+        <ShieldOff size={28} style={{ color: 'var(--accent-warning)' }} />
+        <h2>You cannot see customers</h2>
+        <p>Your role does not include seeing customers. Ask whoever manages your team if you need this.</p>
+      </div></div>
+    );
+  }
   return (
     <main className="crm-page gr-page">
       <Link to="/groups" className="sg-back"><ArrowLeft size={16} /> Customer groups</Link>

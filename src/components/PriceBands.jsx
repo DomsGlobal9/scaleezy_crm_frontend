@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import toast from 'react-hot-toast';
-import { Plus, X } from 'lucide-react';
+import { Loader2, Plus, X } from 'lucide-react';
 import { usePriceBands, useSavePriceBands } from '../hooks/useMessages';
 import { rangeWord, rangesOf } from '../utils/customerFilters';
 import LoadFailed from './LoadFailed';
@@ -14,7 +14,7 @@ export default function PriceBands() {
   const save = useSavePriceBands();
   const [typed, setTyped] = useState(null);
   const [error, setError] = useState(null);
-  if (s.isLoading) return null;
+  if (s.isLoading) return <p className="crm-muted" aria-busy="true"><Loader2 size={14} className="animate-spin" /> Loading the price ranges…</p>;
   if (s.isError) return <LoadFailed what="the price ranges" error={s.error} onRetry={() => s.refetch()} />;
   const bands = typed ?? s.data.bands;
   const numbers = bands.map(Number);

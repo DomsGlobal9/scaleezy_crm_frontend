@@ -7,6 +7,7 @@ import { useAuth } from '../context/AuthContext';
 import { usePermission } from '../hooks/usePermission';
 import { useTodayCount } from '../hooks/useWork';
 import { useLiveUpdates } from '../hooks/useLiveUpdates';
+import { notePage } from '../utils/backTo';
 import { useReviewStats } from '../hooks/useReviews';
 import CrmLogo from './CrmLogo';
 
@@ -53,6 +54,8 @@ export default function AppShell() {
 
   // A slid-in menu gets out of the way by itself: on every new page, and on Escape.
   useEffect(() => { setOpen(false); setSearching(false); }, [location.pathname]);
+  // For back links: "← Shop floor" when that is where you came from.
+  useEffect(() => { notePage(`${location.pathname}${location.search}`); }, [location.pathname, location.search]);
   useEffect(() => {
     if (!open) return undefined;
     firstLink.current?.focus();

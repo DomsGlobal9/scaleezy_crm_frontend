@@ -45,7 +45,8 @@ export function VisitTrail({ v, show = 3, note = true }) {
           </span>
         )}
         {dated.map((d, i) => (
-          <React.Fragment key={d.day}>
+          // A visit and the gap before it stay together, so a wrapped line never starts or ends on a loose gap.
+          <span className="vt-step" key={d.day}>
             {(i > 0 || hidden > 0) && (
               <span className="vt-gap" aria-hidden="true"><i /><em>{i > 0 ? `${Math.round((Date.parse(dayIso(d.day)) - Date.parse(dayIso(dated[i - 1].day))) / 86_400_000)}d` : ''}</em></span>
             )}
@@ -53,7 +54,7 @@ export function VisitTrail({ v, show = 3, note = true }) {
               <i className="vt-dot" aria-hidden="true" />
               <span>{formatDay(dayIso(d.day))}{d.bills > 1 ? ` ×${d.bills}` : ''}</span>
             </span>
-          </React.Fragment>
+          </span>
         ))}
       </div>
       {note && <div className="vt-note">

@@ -22,7 +22,8 @@ export const STATUS = {
   done: { label: 'Sent', tone: 'done' }
 };
 export const StatusPill = ({ status }) => {
-  const s = STATUS[status] ?? { label: status, tone: 'done' };
+  // A state this screen does not know yet is shown plainly, never as its code.
+  const s = STATUS[status] ?? { label: 'Other', tone: 'done' };
   return <span className={`ms-status ${s.tone}`} data-testid="status">{s.label}</span>;
 };
 
@@ -49,6 +50,16 @@ export function Progress({ n, status }) {
 
 function Facts({ o }) {
   const linked = o?.whatsapp?.status === 'CONNECTED';
+  // Nothing is said before it is known: no "not linked, 0 agreed" flash while it loads.
+  if (!o) {
+    return (
+      <div className="ms-facts" aria-busy="true" data-testid="facts-loading">
+        {['fact-whatsapp', 'fact-agreed', 'fact-pace'].map(k => (
+          <div key={k} className="crm-card ms-fact crm-muted"><Loader2 size={18} className="animate-spin" aria-hidden="true" /><div><span>Checking…</span></div></div>
+        ))}
+      </div>
+    );
+  }
   return (
     <div className="ms-facts">
       <div className="crm-card ms-fact" data-testid="fact-whatsapp">
@@ -153,7 +164,7 @@ function Wishes({ mayChange }) {
   if (w.isError) return <div className="crm-card"><LoadFailed what="the wishes" error={w.error} onRetry={() => w.refetch()} /></div>;
   return (
     <section className="crm-card ms-wishes" aria-label="Automatic wishes">
-      {!w.data.moved && <p className="ms-note">Wishes are still sent from Inventory. The owner can move them here in Shop settings; the words and pictures come with them.</p>}
+      {!w.data.moved && <p className="ms-note">Wishes are still sent from Inventory. The owner can move them here in Settings; the words and pictures come with them.</p>}
       <Wish kind="birthday" data={w.data.birthday} mayChange={mayChange} moved={!!w.data.moved} />
       <Wish kind="anniversary" data={w.data.anniversary} mayChange={mayChange} moved={!!w.data.moved} />
       <p className="pe-hint">Birthday gift points and the "points lapsing" reminder stay in Inventory: they are about points.</p>

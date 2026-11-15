@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
+import toast from 'react-hot-toast';
 import { ArrowLeft, Loader2, X, Search, Plus, Pencil, Merge, Trash2 } from 'lucide-react';
 import { usePermission } from '../hooks/usePermission';
 import { useAddToGroup, useDeleteGroup, useGroup, useGroupRules, useGroups, useMergeGroup, useRemoveFromGroup, useRenameGroup } from '../hooks/useGroups';
@@ -75,7 +76,7 @@ function Member({ m, groupKey, mayEdit }) {
         <div className="crm-muted">{[m.phone ? formatPhone(m.phone) : null, m.code].filter(Boolean).join(' · ')}</div>
       </div>
       {mayEdit && m.customerId && (
-        <button type="button" className="crm-iconbtn" onClick={() => remove.mutate(m.customerId)} disabled={remove.isPending} aria-label={`Take ${m.name} out of the group`}><X size={16} /></button>
+        <button type="button" className="crm-iconbtn" onClick={() => remove.mutate(m.customerId, { onError: (e) => toast.error(e?.message || `${m.name} was not taken out. Try again.`) })} disabled={remove.isPending} aria-label={`Take ${m.name} out of the group`}><X size={16} /></button>
       )}
     </li>
   );

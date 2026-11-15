@@ -73,7 +73,7 @@ export default function MessageEditor() {
   const navigate = useNavigate();
   const { can } = usePermission();
   const existing = useMessage(id);
-  const overview = useMessagesOverview();
+  const overview = useMessagesOverview(can('crm:messages:send'));
   const segments = useSegments();
   const groups = useGroups();
   const save = useSaveMessage(id);

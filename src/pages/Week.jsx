@@ -19,14 +19,14 @@ const dayWords = (day) => new Date(`${day}T12:00:00Z`).toLocaleDateString('en-IN
 const initials = (name) => (name || '?').split(/\s+/).map(w => w[0]).slice(0, 2).join('').toUpperCase();
 const plural = (n, one, many) => `${n.toLocaleString('en-IN')} ${n === 1 ? one : many}`;
 
-function useWeek(which) {
-  return useQuery({ queryKey: ['week', which], queryFn: async () => (await api.get('/week', { params: { which } })).data, placeholderData: keepPreviousData });
+function useWeek(which, enabled = true) {
+  return useQuery({ queryKey: ['week', which], enabled, queryFn: async () => (await api.get('/week', { params: { which } })).data, placeholderData: keepPreviousData });
 }
 
 export default function Week() {
   const { can } = usePermission();
   const [which, setWhich] = useState('this');
-  const week = useWeek(which);
+  const week = useWeek(which, can('crm:team:view'));
   const d = week.data;
   const [all, setAll] = useState(false);
 
@@ -76,7 +76,7 @@ export default function Week() {
             <div className="td-sec-head"><h2 id="wk-team">Credit where it's due</h2><span className="crm-muted">Most brought back first</span></div>
             {d.team.length === 0 ? (
               <div className="crm-card wk-empty" data-testid="team-empty">
-                Nothing to credit yet. It fills in as staff mark promises and calls Done on <Link to="/today">To do today</Link>, and as walk-ins are taken at Inventory's counter.
+                Nothing to credit yet. It fills in as staff mark promises and calls Done on <Link to="/today">To do today</Link>, and as walk-ins are served on Shop floor.
               </div>
             ) : (
               <ul className="wk-team crm-card">

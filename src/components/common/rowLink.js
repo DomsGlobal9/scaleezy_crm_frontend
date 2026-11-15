@@ -33,7 +33,7 @@ export function rowLink(open, { label } = {}) {
       /*
        * Started on something INSIDE the row that handles its own clicks: leave it alone.
        *
-       * `!== e.currentTarget` matters more than it looks. rowToggle gives the row itself
+       * `!== e.currentTarget` matters more than it looks. A row given role=button itself
        * role="button", which is in the list above -- so closest() matched the ROW, and every
        * click on it was skipped as if it had landed on a control. The error log's stack traces
        * could not be opened by mouse at all, while the keyboard worked perfectly, because only
@@ -54,16 +54,3 @@ export function rowLink(open, { label } = {}) {
   };
 }
 
-/**
- * The same row behaviour for a row that opens underneath itself instead of going anywhere --
- * the error log's stack traces, for example.
- *
- * Kept apart from rowLink rather than given a flag, because the two say different things to a
- * screen reader: a link goes somewhere, a button with aria-expanded opens what is already here.
- * Reading "link" on a row that only unfolds is a promise the row does not keep.
- */
-export function rowToggle(toggle, { expanded, label } = {}) {
-  if (typeof toggle !== 'function') return {};
-  const it = rowLink(toggle, { label });
-  return { ...it, role: 'button', 'aria-expanded': !!expanded };
-}

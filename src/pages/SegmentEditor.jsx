@@ -31,7 +31,7 @@ export default function SegmentEditor() {
   const starter = STARTERS.find(s => s.name === params.get('starter'));
   // "Save as a list" from All customers arrives with its filters.
   const fromFilters = readRules(params.get('rules'));
-  const [rules, setRules] = useState(() => (starter ? { ...starter.rules } : Object.keys(fromFilters).length ? fromFilters : { spentAtLeast: 10000 }));
+  const [rules, setRules] = useState(() => (starter ? { ...starter.rules } : Object.keys(fromFilters).length ? Object.fromEntries(Object.entries(fromFilters).filter(([k]) => RULE[k])) : { spentAtLeast: 10000 }));
   const [name, setName] = useState(starter?.name ?? '');
   const [loaded, setLoaded] = useState(!editing);
   const [page, setPage] = useState(1);
@@ -40,7 +40,7 @@ export default function SegmentEditor() {
   // Editing: start from what is saved.
   useEffect(() => {
     if (editing && existing.data && !loaded) {
-      setRules({ ...existing.data.segment.rules });
+      setRules(Object.fromEntries(Object.entries(existing.data.segment.rules ?? {}).filter(([k]) => RULE[k])));
       setName(existing.data.segment.name);
       setLoaded(true);
     }
@@ -81,6 +81,17 @@ export default function SegmentEditor() {
       </div></div>
     );
   }
+  if (editing && !loaded && existing.isError) {
+    return (
+      <main className="crm-page"><div className="crm-card crm-empty" role="alert" data-testid="segment-missing">
+        <p>{existing.error?.statusCode === 404 ? 'This list is not there any more: it may have been deleted.' : 'This list could not be loaded.'}</p>
+        <div className="pe-btns">
+          {existing.error?.statusCode !== 404 && <button type="button" className="btn-secondary" onClick={() => existing.refetch()}>Try again</button>}
+          <Link to="/segments" className="btn-secondary">Saved lists</Link>
+        </div>
+      </div></main>
+    );
+  }
   if (editing && !loaded) {
     return <main className="crm-page"><div className="crm-card crm-row crm-muted" aria-busy="true"><Loader2 size={16} className="animate-spin" /> Loading the list…</div></main>;
   }
@@ -103,7 +114,7 @@ export default function SegmentEditor() {
         <section className="crm-card sg-rules" aria-label="Rules">
           <p className="sg-lead">Customers who</p>
           <ol className="sg-rule-list">
-            {keys.map((key, i) => (
+            {keys.filter(k => RULE[k]).map((key, i) => (
               <li key={key} className="sg-rule" data-testid="rule">
                 <span className="sg-and" aria-hidden="true">{i === 0 ? '' : 'and'}</span>
                 <RuleInput rule={RULE[key]} value={rules[key]} onChange={(v) => set(key, v)} choices={choices.data} />

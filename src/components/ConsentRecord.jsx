@@ -22,13 +22,15 @@ export default function ConsentRecord({ customerId, name, inventoryHref, editabl
   const closeRef = useRef(null);
   const opener = useRef(document.activeElement);
 
+  const closing = useRef(onClose);
+  closing.current = onClose;
   useEffect(() => {
     closeRef.current?.focus();
-    const onKey = (e) => { if (e.key === 'Escape') onClose(); };
+    const onKey = (e) => { if (e.key === 'Escape') closing.current(); };
     window.addEventListener('keydown', onKey);
     const back = opener.current;
     return () => { window.removeEventListener('keydown', onKey); back?.focus?.(); };
-  }, [onClose]);
+  }, []);
 
   const d = consent.data;
   return createPortal(

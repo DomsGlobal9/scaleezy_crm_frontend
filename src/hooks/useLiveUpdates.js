@@ -14,19 +14,26 @@ import { API_BASE_URL } from '../lib/config';
  * network), screens refresh every minute instead.
  */
 export const TOPIC_KEYS = {
-  customers: [['customers'], ['customer'], ['customerFrom'], ['groups'], ['group'], ['segments'], ['segment'], ['segmentPreview'], ['lookup'], ['counterCard'], ['today'], ['todayCount'], ['merges']],
+  customers: [['customers'], ['customer'], ['customerFrom'], ['groups'], ['group'], ['segments'], ['segment'], ['segmentPreview'], ['lookup'], ['counterCard'], ['today'], ['todayCount'], ['merges'], ['notifications'], ['sales', 'find']],
   timeline: [['customer'], ['customers'], ['today'], ['todayCount'], ['week'], ['counterCard'], ['segments'], ['segment'], ['sales', 'dashboard'], ['sales', 'visit']],
-  notes: [['notes'], ['followups'], ['customer'], ['today'], ['todayCount'], ['notifications']],
+  notes: [['notes'], ['followups'], ['customer'], ['today'], ['todayCount'], ['notifications'], ['reviews']],
   today: [['today'], ['todayCount'], ['week'], ['customer']],
-  floor: [['sales', 'dashboard'], ['sales', 'visit'], ['arrivals'], ['week'], ['counterCard'], ['customer']],
-  merges: [['merges'], ['customers']],
+  floor: [['sales', 'dashboard'], ['sales', 'visit'], ['arrivals'], ['week'], ['counterCard'], ['customer'], ['notifications']],
+  merges: [['merges'], ['customers'], ['notifications']],
   reviews: [['reviews'], ['customer'], ['notifications']],
   messages: [['messages'], ['week'], ['customer']],
   segments: [['segments'], ['segment'], ['segmentChoices']],
-  settings: [['shop'], ['festivals'], ['staff']]
+  settings: [['shop'], ['festivals'], ['staff'], ['door-qr']]
 };
 const EVERYTHING = Object.keys(TOPIC_KEYS);
 const FALLBACK_MS = 60_000;
+/**
+ * The All customers cards count the whole shop (17 counts): on a busy day a bill a minute would recount them a
+ * minute apart. They follow changes at most every 20 seconds; everything else reloads at once.
+ */
+export const SLOW_KEYS = [['customers', 'overview']];
+const SLOW_MS = 20_000;
+const isSlow = (key) => SLOW_KEYS.some(s => s.every((part, i) => key[i] === part));
 
 export function keysFor(topics) {
   const seen = new Set();
@@ -48,8 +55,23 @@ export function useLiveUpdates(enabled = true) {
     let closed = false;
     let retry = null;
 
+    let slowTimer = null;
+    let slowAt = 0;
+    const reloadSlow = () => {
+      if (slowTimer) return;
+      const wait = Math.max(0, slowAt + SLOW_MS - Date.now());
+      slowTimer = window.setTimeout(() => {
+        slowTimer = null;
+        slowAt = Date.now();
+        for (const queryKey of SLOW_KEYS) queryClient.invalidateQueries({ queryKey });
+      }, wait);
+    };
     const reload = (topics) => {
-      for (const queryKey of keysFor(topics)) queryClient.invalidateQueries({ queryKey });
+      let slow = false;
+      for (const queryKey of keysFor(topics)) {
+        queryClient.invalidateQueries({ queryKey, predicate: (q) => { if (isSlow(q.queryKey)) { slow = true; return false; } return true; } });
+      }
+      if (slow) reloadSlow();
     };
     const startFallback = () => {
       if (fallback || closed) return;
@@ -92,6 +114,6 @@ export function useLiveUpdates(enabled = true) {
     };
     connect();
     // Development's StrictMode mounts this twice: the first line is closed here, so only one stays open.
-    return () => { closed = true; stopFallback(); if (retry) window.clearTimeout(retry); source?.close(); };
+    return () => { closed = true; stopFallback(); if (retry) window.clearTimeout(retry); if (slowTimer) window.clearTimeout(slowTimer); source?.close(); };
   }, [queryClient, enabled]);
 }

@@ -16,7 +16,7 @@ import SalesCues from '../components/SalesCues';
  * shop's name and the pieces only: no menu, no stock counts, nothing about her. No shelves: a piece is
  * found by its photo and the number on its price tag.
  */
-const STEPS = [['ask', 'What she wants'], ['show', 'Show her'], ['bring', 'Bring these'], ['how', 'How did it go']];
+const STEPS = [['ask', 'What they want'], ['show', 'Show them'], ['bring', 'Bring these'], ['how', 'How did it go']];
 const SWATCH = { Pink: '#e0569b', Orange: '#ee8a3c', Red: '#c62f3a', Gold: '#c9a227', Yellow: '#e8c93b', Green: '#3f9d4e', Blue: '#2f6fd0', Purple: '#7d4bc4', Brown: '#8a5a3b', White: '#f4f1ea', Grey: '#8b8f96', Black: '#1b1b1b', Maroon: '#7a1f33', Beige: '#d8c3a5', Cream: '#efe4c8', Multicolour: 'conic-gradient(#e0569b,#e8c93b,#3f9d4e,#2f6fd0,#e0569b)' };
 const REASONS = [['price', 'Price'], ['colour', 'Colour'], ['fit', 'Fit'], ['fabric', 'Fabric'], ['think', 'Will think']];
 
@@ -47,7 +47,7 @@ export default function SalesVisit() {
     return (
       <main className="crm-page sv-page">
         <Link to="/sales" className="cp-back"><ArrowLeft size={14} /> Shop floor</Link>
-        <div className="crm-card"><h2>{who}: finished</h2><p className="crm-muted">This visit is saved{v.customer ? ' on her timeline' : ''}.</p></div>
+        <div className="crm-card"><h2>{who}: finished</h2><p className="crm-muted">This visit is saved{v.customer ? ' on their timeline' : ''}.</p></div>
       </main>
     );
   }
@@ -72,8 +72,11 @@ export default function SalesVisit() {
 
       {noStore && (
         <div className="crm-card sd-small sd-warn" role="alert">
-          Choose your store: the pieces shown are the ones in stock there.
-          <div style={{ marginTop: 8 }}>{(stores.data ?? []).map(s => <button key={s.id} type="button" className="sd-chip" onClick={() => setLocationId(s.id)}>{s.name}</button>)}</div>
+          {stores.data && stores.data.length === 0 ? 'This shop has no stores yet, so there is no stock to show. The owner adds stores in Inventory.'
+            : stores.isError ? <>Your stores could not be loaded. <button type="button" className="si-link" onClick={() => stores.refetch()}>Try again</button></>
+            : 'Choose your store: the pieces shown are the ones in stock there.'}
+          {(stores.data ?? []).length > 0 && <div style={{ marginTop: 8 }}>{stores.data.map(s => <button key={s.id} type="button" className="sd-chip" onClick={() => setLocationId(s.id)}>{s.name}</button>)}</div>}
+          {stores.isLoading && <p className="crm-muted"><Loader2 size={14} className="animate-spin" /> Loading your stores…</p>}
         </div>
       )}
 
@@ -110,7 +113,7 @@ function Ask({ ask, setAsk, pieces, onShow }) {
   const bands = rangesOf(o?.bands ?? []);
   return (
     <section className="crm-card sv-ask" data-testid="sv-ask">
-      <h2>What is she looking for?</h2>
+      <h2>What are they looking for?</h2>
       {pieces.isError && <p className="si-error" role="alert">{pieces.error?.message}</p>}
       {!o && pieces.isLoading && <p className="crm-muted"><Loader2 size={14} className="animate-spin" /> Looking in this store…</p>}
       {o && <>
@@ -125,7 +128,7 @@ function Ask({ ask, setAsk, pieces, onShow }) {
         <Chips label="Size" values={o.sizes} chosen={ask.sizes ?? []} onToggle={toggle('sizes')} testid="sv-sizes" />
       </>}
       <button type="button" className="btn-primary sv-wide" disabled={!pieces.data || pieces.data.count === 0} onClick={onShow} data-testid="sv-show">
-        {pieces.data ? (pieces.data.count === 0 ? 'Nothing in this store fits. Take something off.' : `Show her ${pieces.data.count} ${pieces.data.count === 1 ? 'piece' : 'pieces'}`) : 'Show her'}
+        {pieces.data ? (pieces.data.count === 0 ? 'Nothing in this store fits. Take something off.' : `Show them ${pieces.data.count} ${pieces.data.count === 1 ? 'piece' : 'pieces'}`) : 'Show them'}
       </button>
       <p className="crm-muted sd-small">Only pieces in stock in this store.</p>
     </section>
@@ -140,9 +143,15 @@ function ShowHer({ v, pieces, onDone, onBack }) {
   const toggle = (vid) => setChosen(s => { const n = new Set(s); n.has(vid) ? n.delete(vid) : n.add(vid); return n; });
   // Her screen: any staff message still showing ("added", "the till finds her") goes first.
   useEffect(() => { toast.remove(); document.body.classList.add('sv-her-open'); return () => document.body.classList.remove('sv-her-open'); }, []);
+  // Escape goes back, as Back does.
+  useEffect(() => {
+    const onKey = (e) => { if (e.key === 'Escape') onBack(); };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [onBack]);
   const save = async () => {
     try { await setPicks.mutateAsync([...chosen]); onDone(); }
-    catch (err) { toast.error(err?.message || 'Her picks could not be saved. Try again.'); }
+    catch (err) { toast.error(err?.message || 'The picks could not be saved. Try again.'); }
   };
   return (
     <div className="sv-her" role="dialog" aria-modal="true" aria-label="Pieces for the customer" data-testid="sv-her">
@@ -150,6 +159,11 @@ function ShowHer({ v, pieces, onDone, onBack }) {
         <div><div className="sv-her-shop"><Store size={14} aria-hidden="true" /> {v.shopName ?? 'Our shop'}</div><div className="sv-her-title">{v.customer ? `Picked for you, ${v.customer.firstName}` : 'Picked for you'}</div></div>
         <span className="sv-her-count" aria-live="polite"><Heart size={15} aria-hidden="true" /> {chosen.size}</span>
       </header>
+      {list.length === 0 && (
+        <div className="crm-empty" data-testid="sv-her-empty">
+          <p>{pieces.isLoading ? 'Finding the pieces…' : 'Nothing in this store fits just now. Go back and take something off.'}</p>
+        </div>
+      )}
       <ul className="sv-grid">
         {list.map(p => {
           const on = chosen.has(p.variantId);
@@ -183,7 +197,7 @@ function Bring({ v, onAdd, onNext }) {
   const tick = (i) => setItem.mutate({ itemId: i.id, brought: !i.brought }, { onError: (e) => toast.error(e?.message || 'Could not save that.') });
   return (
     <section className="crm-card sv-bring" data-testid="sv-bring">
-      <h2>Bring {picked.length} for {v.customer?.firstName ?? 'her'}</h2>
+      <h2>Bring {picked.length} for {v.customer?.firstName ?? 'them'}</h2>
       <p className="crm-muted sd-small">Find each by its photo and the number on its price tag.</p>
       <ul className="sv-list">
         {picked.map(i => (
@@ -196,7 +210,7 @@ function Bring({ v, onAdd, onNext }) {
       </ul>
       <div className="sd-actions">
         <button type="button" className="btn-secondary" onClick={onAdd}>Add more</button>
-        <button type="button" className="btn-primary" onClick={onNext} data-testid="sv-to-how">{all ? 'Brought them all' : 'She is trying them'}</button>
+        <button type="button" className="btn-primary" onClick={onNext} data-testid="sv-to-how">{all ? 'Brought them all' : 'Trying them on'}</button>
       </div>
     </section>
   );
@@ -218,7 +232,7 @@ function How({ v, onFinish, finishing }) {
             <div style={{ minWidth: 0, flex: 1 }}>
               <strong>{i.title}</strong>{i.price !== null && <> · {formatRupees(i.price)}</>}
               <div className="sd-chips" role="radiogroup" aria-label={`How ${i.title} went`}>
-                {[['bought', 'Bought'], ['not_for_her', 'Tried, not for her'], ['not_tried', "Didn't try"]].map(([k, l]) => (
+                {[['bought', 'Bought'], ['not_for_her', 'Tried, not for them'], ['not_tried', "Didn't try"]].map(([k, l]) => (
                   <button key={k} type="button" role="radio" aria-checked={i.outcome === k} className={`sd-chip${i.outcome === k ? ' on' : ''}`} onClick={() => put(i, { outcome: k })} data-testid={`sv-${k}`}>{l}</button>
                 ))}
               </div>

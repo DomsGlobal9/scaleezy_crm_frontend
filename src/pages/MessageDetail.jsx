@@ -68,13 +68,22 @@ export default function MessageDetail() {
 
         {mayAct && d.kind === 'manual' && (
           <div className="pe-btns" data-testid="actions">
-            {d.status === 'draft' && confirm !== 'start' && (
+            {d.status === 'draft' && !confirm && (
               <>
                 <button type="button" className="btn-primary" disabled={busy || !overview.data?.moved?.campaigns} onClick={() => setConfirm('start')}>Start</button>
                 <Link to={`/messages/${id}/edit`} className="btn-secondary">Change</Link>
                 <button type="button" className="btn-secondary" disabled={busy || !overview.data?.sendingSetUp} onClick={() => run('test')}>{act.isPending && act.variables === 'test' && <Loader2 size={14} className="animate-spin" />} Send me a test</button>
-                <button type="button" className="btn-secondary" disabled={busy} onClick={remove}>Delete draft</button>
+                <button type="button" className="btn-secondary" disabled={busy} onClick={() => setConfirm('delete')}>Delete draft</button>
               </>
+            )}
+            {confirm === 'delete' && (
+              <div className="ms-confirm" role="group" aria-label="Delete this draft">
+                <p>Delete this draft? Its words and who it was for go, and it cannot be brought back.</p>
+                <div className="pe-btns">
+                  <button type="button" className="pe-danger" disabled={busy} onClick={remove} data-testid="draft-delete-yes">{del.isPending && <Loader2 size={14} className="animate-spin" />} Yes, delete it</button>
+                  <button type="button" className="btn-secondary" onClick={() => setConfirm(null)}>Keep it</button>
+                </div>
+              </div>
             )}
             {confirm === 'start' && (
               <div className="ms-confirm" role="group" aria-label="Start sending">
@@ -99,7 +108,7 @@ export default function MessageDetail() {
             )}
           </div>
         )}
-        {d.status === 'draft' && overview.data && !overview.data.moved?.campaigns && <p className="ms-note">It can be started once the owner moves campaigns from Inventory to CRM in Shop settings.</p>}
+        {d.status === 'draft' && overview.data && !overview.data.moved?.campaigns && <p className="ms-note">It can be started once the owner moves campaigns from Inventory to CRM in Settings.</p>}
         {error && <p className="pe-err" role="alert">{error}</p>}
 
         {d.status !== 'draft' && (

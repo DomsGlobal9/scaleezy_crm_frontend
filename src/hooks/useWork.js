@@ -17,9 +17,6 @@ export function useNotes(customerId) {
 export function useStaff() {
   return useQuery({ queryKey: ['staff'], queryFn: async () => (await api.get('/staff')).data, staleTime: 5 * 60_000 });
 }
-export function useToday(scope) {
-  return useQuery({ queryKey: ['today', scope], queryFn: async () => (await api.get('/today', { params: { scope, notSeen: 20 } })).data, refetchInterval: 5 * 60_000 });
-}
 export function useTodayCount(enabled = true) {
   return useQuery({ queryKey: ['todayCount'], queryFn: async () => (await api.get('/today/count')).data, enabled, refetchInterval: 5 * 60_000 });
 }

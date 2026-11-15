@@ -66,7 +66,7 @@ async function main() {
     await page.getByTestId('sd-add').waitFor({ timeout: 15000 });
     check('an unknown number: "Not a customer yet", with the form', /Not a customer yet/.test(await page.getByTestId('sd-add').innerText()));
     await page.getByTestId('sd-name').fill(`Sowmya Screen ${STAMP}`);
-    await page.getByRole('radio', { name: 'She said yes' }).click();
+    await page.getByRole('radio', { name: 'Said yes' }).click();
     await page.getByRole('combobox', { name: 'Birthday day' }).click();
     await page.getByRole('option', { name: '14' }).click();
     await page.getByRole('combobox', { name: 'Birthday month' }).click();
@@ -85,7 +85,7 @@ async function main() {
     await page.getByTestId('sv-sizes').getByRole('button').first().click();
     await page.waitForFunction((b) => document.querySelector('[data-testid="sv-show"]')?.textContent !== b, before, { timeout: 15000 });
     const after = await page.getByTestId('sv-show').innerText();
-    check('choosing a size changes the count, live', /Show her \d+ piece/.test(after) && after !== before, { before, after });
+    check('choosing a size changes the count, live', /Show them \d+ piece/.test(after) && after !== before, { before, after });
     await page.getByTestId('sv-show').click();
     const her = page.getByTestId('sv-her');
     await her.waitFor({ timeout: 15000 });
@@ -167,7 +167,7 @@ async function main() {
     await page.getByTestId('sd-near').waitFor({ timeout: 15000 });
     check('one digit off: "Is this Sowmya …?" before adding anyone', /Is this Sowmya Screen/.test(await page.getByTestId('sd-near').innerText()));
     check('...and nobody was added for the typo', sql(`select count(*) from customers where client_id = '${SHOP}' and phone = '+91${near}'`) === '0');
-    await page.getByRole('button', { name: "Yes, it's her" }).click();
+    await page.getByRole('button', { name: "Yes, that's them" }).click();
     await page.waitForURL(/\/sales\/visit\//, { timeout: 20000 });
     check('"Yes, it\'s her": serving her, not someone new', await page.getByRole('heading', { level: 1, name: new RegExp(`Sowmya Screen ${STAMP}`) }).waitFor({ timeout: 15000 }).then(() => true).catch(() => false));
 

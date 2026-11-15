@@ -78,7 +78,12 @@ function useState_() {
   const team = useQuery({ queryKey: ['shop', 'team'], queryFn: async () => (await api.get('/shop/team')).data });
   const firstQr = qrs.find(q => q.data)?.data ?? null;
   const people = team.data?.people ?? [];
+  // Never "Checking…" for ever: no stores yet, or the door QR could not be asked.
+  const noStores = !!stores.data && stores.data.length === 0;
+  const qrNote = noStores ? 'No stores yet: add a store in Inventory first' : (stores.isError || qrs[0]?.isError) ? 'Could not check just now' : null;
+  const failed = 'Could not check just now';
   return {
+    qrNote, bandsNote: bands.isError ? failed : null, teamNote: team.isError ? failed : null,
     moved, bands, feedback, reviewAsk, arrivals, winback, stores, qrs, team,
     shop: firstQr?.shop ?? null,
     logo: firstQr ? !!firstQr.logo : null,
@@ -92,10 +97,10 @@ function useState_() {
 /** The essentials: what a shop needs for CRM to work well. Choices (automatic messages) are not here. */
 function essentials(st) {
   return [
-    { key: 'logo', section: 'shop', done: st.logo, title: 'Shop logo', yes: 'On the door QR and in the online shop', no: 'Not set: the door QR shows your first letter', action: { label: 'Add in Inventory', href: `${INVENTORY_URL}/settings?section=GENERAL` } },
-    { key: 'whatsapp', section: 'shop', done: st.whatsapp, title: 'WhatsApp linked', yes: 'Door QR and messages reach customers', no: 'Not linked: no door QR and no messages', action: { label: 'Link in Inventory', href: `${INVENTORY_URL}/settings?section=WHATSAPP` } },
-    { key: 'prices', section: 'prices', done: st.bandsSet, title: 'Price ranges', yes: 'Budgets read in your own price bands', no: 'Not set: budgets cannot be shown', action: { label: 'Set price ranges', to: '?section=prices' } },
-    { key: 'team', section: 'team', done: st.staff === null ? null : st.staff > 0, title: 'Your team', yes: `${st.staff} ${st.staff === 1 ? 'person' : 'people'} using CRM with you`, no: 'Only you so far: give your staff CRM access in Team members', action: { label: 'Open Team members', href: `${INVENTORY_URL}/settings?section=USERS` } }
+    { key: 'logo', section: 'shop', done: st.logo, note: st.qrNote, title: 'Shop logo', yes: 'On the door QR and in the online shop', no: 'Not set: the door QR shows your first letter', action: { label: 'Add in Inventory', href: `${INVENTORY_URL}/settings?section=GENERAL` } },
+    { key: 'whatsapp', section: 'shop', done: st.whatsapp, note: st.qrNote, title: 'WhatsApp linked', yes: 'Door QR and messages reach customers', no: 'Not linked: no door QR and no messages', action: { label: 'Link in Inventory', href: `${INVENTORY_URL}/settings?section=WHATSAPP` } },
+    { key: 'prices', section: 'prices', done: st.bandsSet, note: st.bandsNote, title: 'Price ranges', yes: 'Budgets read in your own price bands', no: 'Not set: budgets cannot be shown', action: { label: 'Set price ranges', to: '?section=prices' } },
+    { key: 'team', section: 'team', done: st.staff === null ? null : st.staff > 0, note: st.teamNote, title: 'Your team', yes: `${st.staff} ${st.staff === 1 ? 'person' : 'people'} using CRM with you`, no: 'Only you so far: give your staff CRM access in Team members', action: { label: 'Open Team members', href: `${INVENTORY_URL}/settings?section=USERS` } }
   ];
 }
 
@@ -153,7 +158,7 @@ function Overview({ st, go }) {
           {[...list].sort((a, b) => Number(a.done !== false) - Number(b.done !== false)).map(e => (
             <div key={e.key} className={`crm-card st-tile${e.done ? ' ok' : e.done === false ? ' miss' : ''}`} data-testid={`st-tile-${e.key}`}>
               {e.done ? <CheckCircle2 size={20} className="st-ok" aria-hidden="true" /> : e.done === false ? <AlertCircle size={20} className="st-warn" aria-hidden="true" /> : <Loader2 size={20} className="animate-spin" aria-hidden="true" />}
-              <span className="st-tile-text"><b>{e.title}</b><span className="crm-muted">{e.done === null ? 'Checking…' : e.done ? e.yes : e.no}</span></span>
+              <span className="st-tile-text"><b>{e.title}</b><span className="crm-muted">{e.done === null ? (e.note ?? 'Checking…') : e.done ? e.yes : e.no}</span></span>
               {e.done === false ? (
                 e.action.href
                   ? <a className="btn-primary st-btn" href={e.action.href} target="_blank" rel="noreferrer" data-testid={`st-fix-${e.key}`}>{e.action.label} <ExternalLink size={12} aria-hidden="true" /></a>
@@ -197,7 +202,7 @@ function ShopSection({ st }) {
           </div>
           <div className="st-shop-text">
             <h3>{first?.shop ?? 'Your shop'}</h3>
-            <p className="crm-muted">{first?.logo ? 'This logo is in the middle of every door QR.' : first ? `No logo yet: the door QR shows "${initialOf(first.shop)}" on a lime circle.` : 'Checking…'}</p>
+            <p className="crm-muted">{first?.logo ? 'This logo is in the middle of every door QR.' : first ? `No logo yet: the door QR shows "${initialOf(first.shop)}" on a lime circle.` : (st.qrNote ?? 'Checking…')}</p>
             <a className="btn-secondary st-btn" href={`${INVENTORY_URL}/settings?section=GENERAL`} target="_blank" rel="noreferrer" data-testid="st-logo-change">
               {first?.logo ? 'Change in Inventory' : 'Add your logo in Inventory'} <ExternalLink size={12} aria-hidden="true" />
             </a>

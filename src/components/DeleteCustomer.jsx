@@ -21,13 +21,15 @@ export default function DeleteCustomer({ customerId, onClose }) {
   const closeRef = useRef(null);
   const opener = useRef(document.activeElement);
 
+  const closing = useRef(onClose);
+  closing.current = onClose;
   useEffect(() => {
     closeRef.current?.focus();
-    const onKey = (e) => { if (e.key === 'Escape') onClose(); };
+    const onKey = (e) => { if (e.key === 'Escape') closing.current(); };
     window.addEventListener('keydown', onKey);
     const back = opener.current;
     return () => { window.removeEventListener('keydown', onKey); back?.focus?.(); };
-  }, [onClose]);
+  }, []);
 
   const p = preview.data;
   const expected = p ? (p.phoneLast4 ?? p.name ?? '') : '';

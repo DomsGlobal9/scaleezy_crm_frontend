@@ -56,7 +56,7 @@ export default function TeamAccess() {
               })}
             </ul>
           )}
-      {team.data && <p className="crm-muted sd-small">Only people who have signed in to CRM are listed. Deleting customers, Shop settings and automatic messages are the owner's alone.</p>}
+      {team.data && <p className="crm-muted sd-small">Only people who have signed in to CRM are listed. Deleting customers, Settings and automatic messages are the owner's alone.</p>}
     </section>
   );
 }

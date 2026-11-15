@@ -16,13 +16,15 @@ export default function SendOne({ customerId, name, onClose }) {
   const opener = useRef(document.activeElement);
   const first = (name || '').trim().split(/\s+/)[0] || 'them';
 
+  const closing = useRef(onClose);
+  closing.current = onClose;
   useEffect(() => {
     box.current?.focus();
-    const onKey = (e) => { if (e.key === 'Escape') onClose(); };
+    const onKey = (e) => { if (e.key === 'Escape') closing.current(); };
     window.addEventListener('keydown', onKey);
     const back = opener.current;
     return () => { window.removeEventListener('keydown', onKey); back?.focus?.(); };
-  }, [onClose]);
+  }, []);
 
   const submit = async (e) => {
     e.preventDefault();
