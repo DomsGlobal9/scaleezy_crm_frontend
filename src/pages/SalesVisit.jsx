@@ -174,7 +174,7 @@ function ShowHer({ v, pieces, onDone, onBack }) {
                   <span className={`sv-heart${on ? ' on' : ''}`}><Heart size={16} aria-hidden="true" fill={on ? 'currentColor' : 'none'} /></span></div>
                 <div className="sv-piece-name">{p.title}</div>
                 <div className="sv-piece-sub">{[p.colour, p.size].filter(Boolean).join(' · ')}</div>
-                <div className="sv-piece-price">{p.price !== null ? formatRupees(p.price) : ''}</div>
+                <div className="sv-piece-price">{p.price !== null ? `${formatRupees(p.price)}${p.per ? ` / ${p.per}` : ''}` : ''}</div>
                 {(p.hearted || p.newIn) && <div className="sv-piece-tags">{p.hearted && <span>You liked this online</span>}{p.newIn && <span>New in</span>}</div>}
               </button>
             </li>
@@ -204,7 +204,7 @@ function Bring({ v, onAdd, onNext }) {
           <li key={i.id} className={i.brought ? 'done' : ''}>
             <button type="button" className={`sv-box${i.brought ? ' on' : ''}`} role="checkbox" aria-checked={i.brought} aria-label={`Brought ${i.title}`} onClick={() => tick(i)} data-testid="sv-brought">{i.brought && <Check size={14} />}</button>
             <div className="sv-thumb" style={i.photo ? { backgroundImage: `url(${i.photo})` } : undefined} />
-            <div style={{ minWidth: 0 }}><strong>{i.title}</strong>{i.price !== null && <> · {formatRupees(i.price)}</>}<div className="crm-muted sd-small">{[i.colour, i.size, i.sku ? `Tag ${i.sku}` : null].filter(Boolean).join(' · ')}</div></div>
+            <div style={{ minWidth: 0 }}><strong>{i.title}</strong>{i.price !== null && <> · {formatRupees(i.price)}{i.per ? ` / ${i.per}` : ''}</>}<div className="crm-muted sd-small">{[i.colour, i.size, i.sku ? `Tag ${i.sku}` : null].filter(Boolean).join(' · ')}</div></div>
           </li>
         ))}
       </ul>
@@ -230,7 +230,7 @@ function How({ v, onFinish, finishing }) {
           <li key={i.id} className="sv-how-row">
             <div className="sv-thumb" style={i.photo ? { backgroundImage: `url(${i.photo})` } : undefined} />
             <div style={{ minWidth: 0, flex: 1 }}>
-              <strong>{i.title}</strong>{i.price !== null && <> · {formatRupees(i.price)}</>}
+              <strong>{i.title}</strong>{i.price !== null && <> · {formatRupees(i.price)}{i.per ? ` / ${i.per}` : ''}</>}
               <div className="sd-chips" role="radiogroup" aria-label={`How ${i.title} went`}>
                 {[['bought', 'Bought'], ['not_for_her', 'Tried, not for them'], ['not_tried', "Didn't try"]].map(([k, l]) => (
                   <button key={k} type="button" role="radio" aria-checked={i.outcome === k} className={`sd-chip${i.outcome === k ? ' on' : ''}`} onClick={() => put(i, { outcome: k })} data-testid={`sv-${k}`}>{l}</button>
