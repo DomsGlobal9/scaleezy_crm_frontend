@@ -33,6 +33,8 @@ export default function FollowUpTag({ followUp: f, today, canAct, onDone, onUndo
             ? <>Done{f.doneByName ? ` by ${f.doneByName}` : ''}</>
             : <span className={f.overdue ? 'fu-late' : f.dueToday ? 'fu-today' : ''}>{dueWords(f.dueOn, today)}</span>}
           {showWho && f.assigneeName && !f.done && <span> · {f.assigneeName}</span>}
+          {/* It came to the owner when the person it was for left the shop. */}
+          {f.wasFor && !f.done && <span data-testid="fu-was-for"> · was for {f.wasFor}</span>}
         </p>
       </div>
       {f.done && canAct && (

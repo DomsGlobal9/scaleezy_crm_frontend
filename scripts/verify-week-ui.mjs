@@ -38,7 +38,9 @@ async function as(browser, who, viewport = { width: 1366, height: 900 }) {
 }
 
 async function main() {
-  fixture('setup');
+  // Who the fixture used (its last line of output): names change, so the checks never assume them.
+  const { salesName } = JSON.parse(fixture('setup').split('\n').filter(l => l.trim().startsWith('{')).pop());
+  const SALES = new RegExp(salesName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
   const browser = await chromium.launch({ channel: process.env.BROWSER_CHANNEL || 'msedge', headless: true });
   try {
     const { ctx, page } = await as(browser, 'owner');
@@ -50,12 +52,12 @@ async function main() {
     const leadText = await lead.innerText();
     check('the headline: customers who came back after a follow-up, and the money in their bills', /\d+ customers? came back and bought within two weeks of someone getting in touch — ₹[\d,]+ in their bills/.test(leadText), leadText);
     const people = await page.getByTestId('person').allInnerTexts();
-    check('Local SALES credited: kept promises, and what came back (₹16,200)', people.some(t => /Local SALES/.test(t) && /kept \d+ promises?/.test(t) && /came back/.test(t) && /₹16,200/.test(t)), people);
-    check('...and their promise running late is said', people.some(t => /Local SALES/.test(t) && /late/.test(t)));
+    check('Sales credited: kept promises, and what came back (₹16,200)', people.some(t => SALES.test(t) && /kept \d+ promises?/.test(t) && /came back/.test(t) && /₹16,200/.test(t)), people);
+    check('...and their promise running late is said', people.some(t => SALES.test(t) && /late/.test(t)));
     check('the owner credited for getting in touch (₹10,400)', people.some(t => /Verification Owner/.test(t) && /got in touch with 1 regular/.test(t) && /₹10,400/.test(t)), people);
     check('Priya credited for the walk-in she took at Inventory\'s counter', people.some(t => /Priya/.test(t) && /looked after 1 walk-in/.test(t)));
     const back = await page.getByTestId('came-back').allInnerTexts();
-    check('who came back: Gayathri, after Local SALES kept a promise, with her bill', back.some(t => /Gayathri Iyer/.test(t) && /Local SALES kept a promise/.test(t) && /₹16,200/.test(t)), back);
+    check('who came back: Gayathri, after Sales kept a promise, with her bill', back.some(t => /Gayathri Iyer/.test(t) && t.includes(`${salesName} kept a promise`) && /₹16,200/.test(t)), back);
     check('...Hemalatha, after the owner got in touch on WhatsApp', back.some(t => /Hemalatha K/.test(t) && /got in touch on WhatsApp/.test(t)));
     check('...but not Esther (past 14 days) nor Anitha (bought before the contact)', !back.some(t => /Esther Thomas|Anitha Reddy/.test(t)));
     await page.screenshot({ path: path.join(shots, 'week-desktop.png'), fullPage: true });

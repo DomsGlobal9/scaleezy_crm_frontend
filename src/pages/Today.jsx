@@ -102,7 +102,7 @@ function reasonOf(item, today) {
   const f = item.facts;
   switch (item.kind) {
     case 'promise':
-      return { label: f.lateDays > 0 ? `You promised · ${f.lateDays} ${f.lateDays === 1 ? 'day' : 'days'} late` : 'You promised · due today', late: f.lateDays > 0, text: <><Who item={item} />: {f.promise}</> };
+      return { label: `${f.lateDays > 0 ? `You promised · ${f.lateDays} ${f.lateDays === 1 ? 'day' : 'days'} late` : 'You promised · due today'}${f.wasFor ? ` · was for ${f.wasFor}` : ''}`, late: f.lateDays > 0, text: <><Who item={item} />: {f.promise}</> };
     case 'stock':
       return { label: 'Asked to be told', text: <><Who item={item} /> asked about {f.item}. Check it's in, then tell them.</> };
     default:
