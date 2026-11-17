@@ -70,6 +70,8 @@ async function main() {
     await page.goto(`${APP}/settings?section=shop`);
     await page.getByTestId('st-logo').waitFor({ timeout: 15000 });
     await page.getByTestId('st-store').first().waitFor({ timeout: 15000 });
+    // The logo note is asked for on its own: wait until it has answered, not just the stores.
+    await page.waitForFunction(() => !/Checking/.test(document.querySelector('[data-testid="st-section-shop"]')?.innerText ?? 'Checking'), null, { timeout: 15000 });
     const shopText = await page.getByTestId('st-section-shop').innerText();
     check('Shop and door QR: the logo or the first letter, and how to change it in Inventory', /(This logo is in the middle|No logo yet)/.test(shopText) && !!(await page.getByTestId('st-logo-change').getAttribute('href'))?.includes('/settings?section=GENERAL'), shopText.slice(0, 200));
     check('...every store, with its door QR state', (await page.getByTestId('st-store').count()) >= 1);

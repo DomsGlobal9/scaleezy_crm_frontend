@@ -49,7 +49,7 @@ async function main() {
     await page.goto(`${APP}/groups`);
     await page.getByTestId('group').first().waitFor({ timeout: 20000 });
     const vipCount = (await api('GET', '/groups')).data.find(g => g.key === 'vip')?.count;
-    check(`the groups with their counts (VIP: ${vipCount})`, new RegExp(`VIP[\\s\\S]*${vipCount}\\s+customers`).test(await page.getByTestId('group').filter({ hasText: 'VIP' }).innerText()));
+    check(`the groups with their counts (VIP: ${vipCount})`, new RegExp(`VIP[\\s\\S]*${vipCount}\\s+customers?\\b`).test(await page.getByTestId('group').filter({ hasText: 'VIP' }).innerText()));
     await page.screenshot({ path: path.join(shots, 'groups-list.png') });
 
     await page.getByLabel('New group').fill(NAME);

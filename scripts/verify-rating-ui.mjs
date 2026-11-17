@@ -64,7 +64,8 @@ async function main() {
     await page.goto(`${API}/l/${code(1)}`);
     check('"How was your visit?", with the shop\'s name and five answers', (await page.locator('h1').innerText()) === 'How was your visit?' && (await page.locator('.shop').innerText()) === shopName && (await page.getByRole('button', { name: /of 5$/ }).count()) === 5);
     const first = nameOf(people[0]).split(/\s+/)[0];
-    check('nothing of the customer\'s on the page', !(await page.content()).includes(first) || first.length < 3, first);
+    // The shop's own name may share a word with theirs ("Verification Boutique", "Verification Customer"): not theirs.
+    check('nothing of the customer\'s on the page', !(await page.content()).split(shopName).join('').includes(first) || first.length < 3, first);
     check('it fits a phone', await noOverflow(page));
     await page.screenshot({ path: path.join(shots, 'rating-ask.png'), fullPage: true });
 

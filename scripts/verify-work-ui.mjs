@@ -42,6 +42,9 @@ async function main() {
 
   // Sales signs in once so they are on the team list (a follow-up can be for them).
   { const { ctx, page } = await as(browser, 'sales'); await page.goto(`${APP}/today`); await page.getByRole('heading', { name: 'Today' }).waitFor({ timeout: 20000 }); await ctx.close(); }
+  // Who that is, by the id in their own sign-in (names change, and an old copy of a renamed person can linger).
+  const salesUserId = JSON.parse(Buffer.from(tokenFor('sales').split('.')[1], 'base64url').toString()).sub;
+  const SALES = (await (await fetch(`${API}/api/v1/staff`, { headers: { Authorization: `Bearer ${tokenFor('owner')}` } })).json()).data.find(x => x.id === salesUserId);
 
   // ── The customer page's working card ──
   {
@@ -60,11 +63,11 @@ async function main() {
     await card.getByLabel('Add a follow-up').fill(`${STAMP} ask about the blouse fitting`);
     await card.getByRole('radio', { name: 'Today' }).click();
     await card.getByRole('combobox', { name: 'Who' }).click();
-    await page.getByRole('option', { name: 'Local SALES' }).click();
+    await page.getByRole('option', { name: SALES.name, exact: true }).click();
     await card.getByRole('button', { name: 'Save follow-up' }).click();
     const tag = card.getByTestId('followup').filter({ hasText: `${STAMP} ask about the blouse fitting` });
     await tag.waitFor({ timeout: 20000 });
-    check('the follow-up appears as a tag, due today, for Local SALES', /Today/.test(await tag.innerText()) && /Local SALES/.test(await tag.innerText()), await tag.innerText());
+    check(`the follow-up appears as a tag, due today, for ${SALES.name}`, /Today/.test(await tag.innerText()) && (await tag.innerText()).includes(SALES.name), await tag.innerText());
 
     await card.getByLabel('Add a follow-up').fill(`${STAMP} send the new Banarasi photos`);
     await card.getByRole('radio', { name: 'Tomorrow' }).click();
@@ -98,7 +101,7 @@ async function main() {
   // A promise to Anitha (a real phone), for Sales, due today: for the WhatsApp message.
   const ownerHeaders = { Authorization: `Bearer ${tokenFor('owner')}`, 'Content-Type': 'application/json' };
   const anithaId = (await (await fetch(`${API}/api/v1/customers?search=9848022301`, { headers: ownerHeaders })).json()).data.customers[0].id;
-  const salesId = (await (await fetch(`${API}/api/v1/staff`, { headers: ownerHeaders })).json()).data.find(x => x.name === 'Local SALES').id;
+  const salesId = SALES.id;
   const shopDay = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Kolkata' }).format(new Date());
   await fetch(`${API}/api/v1/customers/${anithaId}/followups`, { method: 'POST', headers: ownerHeaders, body: JSON.stringify({ body: `${STAMP} tell her the kurti is in`, dueOn: shopDay, assigneeId: salesId }) });
 
@@ -127,7 +130,8 @@ async function main() {
     await anitha.getByRole('button', { name: 'WhatsApp' }).click();
     const box = anitha.getByLabel('The message');
     await box.waitFor();
-    check('WhatsApp: a short message written for her, ending with the shop\'s name', /^Hello Anitha/.test(await box.inputValue()) && /Sri Lakshmi Silks/.test(await box.inputValue()), await box.inputValue());
+    const shopName = (await (await fetch(`${API}/api/v1/today/list`, { headers: ownerHeaders })).json()).data.shopName;
+    check('WhatsApp: a short message written for her, ending with the shop\'s name', /^Hello Anitha/.test(await box.inputValue()) && !!shopName && (await box.inputValue()).includes(shopName), await box.inputValue());
     check('...the five languages stay out of the way until asked for', (await anitha.getByRole('button', { name: 'తెలుగు' }).count()) === 0);
     await anitha.getByRole('button', { name: /change language/ }).click();
     await anitha.getByRole('button', { name: 'తెలుగు' }).click();

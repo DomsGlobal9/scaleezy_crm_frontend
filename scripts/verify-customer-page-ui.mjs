@@ -64,9 +64,11 @@ async function main() {
     const { context, page } = await signedIn(browser, owner, { width: 1280, height: 900 });
     await page.goto(`${APP}/customers`);
     const box = page.getByLabel('Search customers');
-    await box.fill(busiest.name);
+    // By code: several test customers can share a name ("Test Buyer"), never a code.
+    const findBy = busiest.code || busiest.name;
+    await box.fill(findBy);
     await page.waitForURL(/[?&]q=/, { timeout: 10000 });
-    const row = page.getByTestId('customer-row').filter({ hasText: busiest.name }).first();
+    const row = page.getByTestId('customer-row').filter({ hasText: findBy }).first();
     await row.waitFor({ timeout: 10000 });
     await row.click();
     await page.waitForURL(new RegExp(`/customers/${busiest.id}$`), { timeout: 10000 });
@@ -168,7 +170,7 @@ async function main() {
     // Back to the list as it was left.
     await page.getByRole('button', { name: 'Customers' }).click();
     await page.waitForURL(/\/customers\?q=/, { timeout: 10000 });
-    check('"← Customers" goes back to the list with the search kept', (await page.getByLabel('Search customers').inputValue()) === busiest.name);
+    check('"← Customers" goes back to the list with the search kept', (await page.getByLabel('Search customers').inputValue()) === findBy);
     await context.close();
   }
 

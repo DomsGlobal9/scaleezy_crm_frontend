@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { Users, Search, X, Loader2, ShieldOff, UserX, DownloadCloud, GitMerge, SlidersHorizontal } from 'lucide-react';
+import { Users, Search, X, Loader2, ShieldOff, UserX, DownloadCloud, GitMerge, SlidersHorizontal, Upload } from 'lucide-react';
+import { INVENTORY_URL } from '../lib/config';
 import { useShop } from '../hooks/useShop';
 import { useCustomerOverview, useCustomers } from '../hooks/useCustomers';
 import CustomerFilters from '../components/CustomerFilters';
@@ -18,6 +19,7 @@ import CustomerList from '../components/CustomerList';
 export default function Customers() {
   const { can } = usePermission();
   const mayMerge = can('crm:customer:merge');
+  const mayAdd = can('crm:customer:create');
   const merges = useMerges('open', mayMerge);
   const openPairs = merges.data?.open ?? 0;
   const navigate = useNavigate();
@@ -108,6 +110,12 @@ export default function Customers() {
               {total === 0 ? 'No customers' : total === 1 ? '1 customer' : `${total.toLocaleString('en-IN')} customers`}
               {search ? ' match' : ''}
             </span>
+          )}
+          {mayAdd && (
+            // One import for both apps: Inventory's checks the file first and adds nobody without a tick.
+            <a href={`${INVENTORY_URL}/customers?import=1`} target="_blank" rel="noreferrer" className="btn-secondary" data-testid="import-customers">
+              <Upload size={14} aria-hidden="true" /> Import customers
+            </a>
           )}
           {mayMerge && (
             <Link to="/duplicates" className="btn-secondary cu-dupes" data-testid="check-duplicates">
