@@ -180,6 +180,20 @@ async function main() {
     await phone.page.getByTestId('pp-tab-products').click();
     await phone.page.getByTestId('pp-photo').first().waitFor({ timeout: 20000 });
     check('phone: the picture choice fits, nothing scrolls sideways', await noOverflow(phone.page));
+    // A shop with many photos (SPHL has 53): the tiles keep their shape and the grid scrolls (live 18 Nov
+    // they were squeezed into 15 px strips). The shop's own answer, repeated to 60 photos.
+    await phone.page.route('**/api/v1/messages/product-photos*', async (route) => {
+      const real = await (await route.fetch()).json();
+      const first = real.data[0];
+      const many = Array.from({ length: 12 }, (_, i) => ({ id: `${first.id}-${i}`, title: `${first.title} ${i + 1}`, images: Array.from({ length: 5 }, (_, k) => ({ id: `${first.images[0].id.slice(0, 30)}${String(i * 5 + k).padStart(6, '0')}`, url: first.images[0].url })) }));
+      await route.fulfill({ json: { ...real, data: many } });
+    });
+    await phone.page.getByTestId('pp-search').fill('a');
+    await phone.page.waitForTimeout(1200);
+    const shapes = await phone.page.$$eval('[data-testid="pp-photo"]', ts => ts.map(t => { const b = t.getBoundingClientRect(); return [b.width, b.height]; }));
+    check('60 product photos: every tile keeps its shape (taller than wide), the grid scrolls instead', shapes.length === 60 && shapes.every(([w, h]) => h > w), shapes.slice(0, 3));
+    await phone.page.unroute('**/api/v1/messages/product-photos*');
+    await phone.page.keyboard.press('Escape');
     await phone.page.screenshot({ path: path.join(shots, 'messages-picture-phone.png') });
     await phone.page.keyboard.press('Escape');
     await fetch('http://localhost:4008/api/v1/messages/templates', { method: 'POST', headers: { Authorization: `Bearer ${tokenFor('owner')}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ name: `${STAMP} phone ${'long name '.repeat(6)}`.slice(0, 80), text: 'Hi {name}, '.repeat(40) }) });
