@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { Loader2, Megaphone, Plus, ShieldOff, CircleCheck, CircleAlert, Clock, Users } from 'lucide-react';
+import { Loader2, Megaphone, Plus, ShieldOff, CircleCheck, CircleAlert, Clock, Users, Copy } from 'lucide-react';
 import { usePermission } from '../hooks/usePermission';
-import { useMessages, useMessagesOverview, useSaveWishes, useWishes } from '../hooks/useMessages';
+import { useMessages, useMessagesOverview, useSaveWishes, useWishes, useCopyMessage } from '../hooks/useMessages';
 import { formatRupees } from '../utils/money';
 import { formatDay } from '../utils/dates';
 import LoadFailed from '../components/LoadFailed';
@@ -88,6 +88,9 @@ function Facts({ o }) {
 }
 
 function List({ tab, navigate }) {
+  const { can } = usePermission();
+  const mayCopy = tab === 'shop' && can('crm:messages:send');
+  const copy = useCopyMessage();
   const list = useMessages(tab);
   if (list.isLoading) return <div className="crm-card crm-row crm-muted" aria-busy="true"><Loader2 size={16} className="animate-spin" /> Loading the messages…</div>;
   if (list.isError) return <div className="crm-card"><LoadFailed what="the messages" error={list.error} onRetry={() => list.refetch()} /></div>;
@@ -119,6 +122,11 @@ function List({ tab, navigate }) {
           </div>
           <div className="ms-snip">{m.text}</div>
           <Progress n={m.numbers} status={m.status} />
+          {mayCopy && m.kind === 'manual' && (
+            <div className="ms-row-end"><button type="button" className="btn-secondary ms-small" disabled={copy.isPending} data-testid="message-copy"
+              onClick={async (e) => { e.stopPropagation(); try { const c = await copy.mutateAsync(m.id); toast.success(`Copied as a new draft: "${c.name}"`); navigate(`/messages/${c.id}`); } catch (err) { toast.error(err?.message || 'The message could not be copied.'); } }}>
+              <Copy size={14} /> Copy</button></div>
+          )}
         </li>
       ))}
     </ul>

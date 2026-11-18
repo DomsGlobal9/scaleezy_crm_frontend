@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { ArrowLeft, Loader2 } from 'lucide-react';
+import { ArrowLeft, Loader2, Copy } from 'lucide-react';
 import { usePermission } from '../hooks/usePermission';
-import { useDeleteDraft, useMessage, useMessageAction, useMessagesOverview } from '../hooks/useMessages';
+import { useCopyMessage, useDeleteDraft, useMessage, useMessageAction, useMessagesOverview } from '../hooks/useMessages';
 import { formatRupees } from '../utils/money';
 import { formatDay } from '../utils/dates';
 import MessageBubble from '../components/MessageBubble';
@@ -26,6 +26,7 @@ export default function MessageDetail() {
   const overview = useMessagesOverview();
   const act = useMessageAction(id);
   const del = useDeleteDraft(id);
+  const copy = useCopyMessage();
   const [confirm, setConfirm] = useState(null);
   const [error, setError] = useState(null);
   const mayAct = can('crm:messages:send');
@@ -107,6 +108,11 @@ export default function MessageDetail() {
               </div>
             )}
           </div>
+        )}
+        {mayAct && d.kind === 'manual' && !confirm && (
+          <div className="ms-row-end"><button type="button" className="btn-secondary ms-small" disabled={copy.isPending} data-testid="detail-copy"
+            onClick={async () => { try { const c = await copy.mutateAsync(id); toast.success(`Copied as a new draft: "${c.name}"`); navigate(`/messages/${c.id}`); } catch (err) { setError(err?.message || 'The message could not be copied.'); } }}>
+            {copy.isPending ? <Loader2 size={14} className="animate-spin" /> : <Copy size={14} />} Copy as a new draft</button></div>
         )}
         {d.status === 'draft' && overview.data && !overview.data.moved?.campaigns && <p className="ms-note">It can be started once the owner moves campaigns from Inventory to CRM in Settings.</p>}
         {error && <p className="pe-err" role="alert">{error}</p>}

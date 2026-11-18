@@ -134,3 +134,33 @@ export function useSaveArrivals() {
     onSuccess: (data) => qc.setQueryData(['shop', 'arrivals'], data)
   });
 }
+
+// ── Pictures added right here, and templates (18 Nov: campaigns are CRM's alone) ──
+export function useProductPhotos(q, enabled = true) {
+  return useQuery({ queryKey: ['messages', 'product-photos', q], queryFn: async () => (await api.get('/messages/product-photos', { params: q ? { q } : {} })).data, enabled, staleTime: 60_000, placeholderData: keepPreviousData });
+}
+/** { base64 } (an upload) or { productImageId } (a product photo) -> the picture, ready for WhatsApp. */
+export function useAddPicture() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (input) => (input.base64 ? await api.post('/messages/pictures/upload', { base64: input.base64 }) : await api.post('/messages/pictures/from-product', { productImageId: input.productImageId })).data,
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['messages', 'pictures'] })
+  });
+}
+export function useTemplates(enabled = true) {
+  // Read afresh each time the list opens: a colleague's template saved a moment ago must be there.
+  return useQuery({ queryKey: ['messages', 'templates'], queryFn: async () => (await api.get('/messages/templates')).data, enabled, staleTime: 0, refetchOnMount: 'always' });
+}
+export function useSaveTemplate() {
+  const qc = useQueryClient();
+  // Refreshed either way: "already a template called ..." means the list on screen was behind.
+  return useMutation({ mutationFn: async (body) => (await api.post('/messages/templates', body)).data, onSettled: () => qc.invalidateQueries({ queryKey: ['messages', 'templates'] }) });
+}
+export function useDeleteTemplate() {
+  const qc = useQueryClient();
+  return useMutation({ mutationFn: async (id) => (await api.delete(`/messages/templates/${id}`)).data, onSuccess: () => qc.invalidateQueries({ queryKey: ['messages', 'templates'] }) });
+}
+export function useCopyMessage() {
+  const qc = useQueryClient();
+  return useMutation({ mutationFn: async (id) => (await api.post(`/messages/${id}/copy`)).data, onSuccess: () => qc.invalidateQueries({ queryKey: ['messages'] }) });
+}

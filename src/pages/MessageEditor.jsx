@@ -1,15 +1,15 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { createPortal } from 'react-dom';
 import toast from 'react-hot-toast';
-import { ArrowLeft, Loader2, ImagePlus, Link2, X, ShieldOff } from 'lucide-react';
+import { ArrowLeft, Loader2, ImagePlus, Link2, X, ShieldOff, BookmarkPlus, LayoutTemplate } from 'lucide-react';
 import Select from '../components/common/Select';
 import MessageBubble from '../components/MessageBubble';
 import LoadFailed from '../components/LoadFailed';
 import { usePermission } from '../hooks/usePermission';
 import { useSegments } from '../hooks/useSegments';
 import { useGroups } from '../hooks/useGroups';
-import { useMessage, useMessagePreview, useMessagesOverview, usePictures, useSaveMessage } from '../hooks/useMessages';
+import { useMessage, useMessagePreview, useMessagesOverview, useSaveMessage } from '../hooks/useMessages';
+import { PicturePicker, SaveTemplateDialog, TemplatesDialog } from '../components/MessagePictures';
 
 /**
  * Writing a message (Phase 3, the approved mockup): its name, who gets it -- a Saved list, a Customer
@@ -43,30 +43,6 @@ function Who({ audience }) {
   );
 }
 
-function PicturePicker({ onPick, onClose }) {
-  const pics = usePictures();
-  return createPortal(
-    <div className="cr-backdrop" onMouseDown={(e) => { if (e.target === e.currentTarget) onClose(); }}>
-      <div className="cr-dialog" role="dialog" aria-modal="true" aria-labelledby="pp-title">
-        <header className="cr-head">
-          <div><h2 id="pp-title">Choose a picture</h2><p>The pictures your shop already used in its messages.</p></div>
-          <button type="button" className="crm-iconbtn" onClick={onClose} aria-label="Close"><X size={18} /></button>
-        </header>
-        {pics.isLoading ? <div className="crm-row crm-muted"><Loader2 size={16} className="animate-spin" /> Loading the pictures…</div>
-          : pics.isError ? <LoadFailed what="the pictures" error={pics.error} onRetry={() => pics.refetch()} />
-          : pics.data.length === 0 ? <p className="crm-muted">No pictures yet. Add one to a campaign in Inventory first; it shows here after.</p>
-          : (
-            <div className="ms-pics">
-              {pics.data.map(p => (
-                <button key={p.id} type="button" className="ms-pic-pick" onClick={() => onPick(p)} aria-label="Use this picture"><img src={p.url} alt="" /></button>
-              ))}
-            </div>
-          )}
-      </div>
-    </div>,
-    document.body
-  );
-}
 
 export default function MessageEditor() {
   const { id } = useParams();
@@ -84,6 +60,8 @@ export default function MessageEditor() {
   const [media, setMedia] = useState(null);
   const [link, setLink] = useState(null);
   const [picking, setPicking] = useState(false);
+  const [templates, setTemplates] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
 
   useEffect(() => {
@@ -128,7 +106,9 @@ export default function MessageEditor() {
   return (
     <main className="crm-page ms-page">
       <Link to={id ? `/messages/${id}` : '/messages'} className="cp-back"><ArrowLeft size={14} /> {id ? 'Back to the message' : 'All messages'}</Link>
-      <div className="crm-head"><div><h1>{id ? 'Change the draft' : 'New message'}</h1><p>Only customers who agreed to offers get it. STOP ends them all.</p></div></div>
+      <div className="crm-head"><div><h1>{id ? 'Change the draft' : 'New message'}</h1><p>Only customers who agreed to offers get it. STOP ends them all.</p></div>
+        <div className="ms-head-tools"><button type="button" className="btn-secondary ms-small" onClick={() => setTemplates(true)} data-testid="start-from-template"><LayoutTemplate size={14} /> Start from a template</button></div>
+      </div>
       <div className="ms-edit">
         <form className="crm-card ms-form" onSubmit={submit} data-testid="message-editor">
           <label className="pe-field"><span>Name (only the shop sees it)</span>
@@ -167,6 +147,7 @@ export default function MessageEditor() {
           {error && <p className="pe-err" role="alert">{error}</p>}
           <div className="pe-btns">
             <button type="submit" className="btn-primary" disabled={save.isPending}>{save.isPending && <Loader2 size={14} className="animate-spin" />} Save draft</button>
+            <button type="button" className="btn-secondary ms-small" disabled={!text.trim()} onClick={() => setSaving(true)} data-testid="save-as-template"><BookmarkPlus size={14} /> Save as a template</button>
             <Link to={id ? `/messages/${id}` : '/messages'} className="btn-secondary">Cancel</Link>
           </div>
         </form>
@@ -176,6 +157,13 @@ export default function MessageEditor() {
         </div>
       </div>
       {picking && <PicturePicker onClose={() => setPicking(false)} onPick={(p) => { setMedia(p); setPicking(false); }} />}
+      {templates && <TemplatesDialog onClose={() => setTemplates(false)} onUse={(t) => {
+        setText(t.text); setMedia(t.media); setLink(t.link ? { type: t.link.type, url: t.link.type === 'EXTERNAL' ? t.link.target : '' } : null);
+        if (!name.trim()) setName(t.name);
+        setTemplates(false); toast.success(`Filled in from "${t.name}". Choose who gets it, then save.`);
+      }} />}
+      {saving && <SaveTemplateDialog draft={{ name, text, media: media ? { id: media.id } : null, link: link ? (link.type === 'WHATSAPP' ? { type: 'WHATSAPP' } : { type: 'EXTERNAL', url: link.url }) : null }}
+        onClose={(saved) => { setSaving(false); if (saved) toast.success('Saved as a template.'); }} />}
     </main>
   );
 }
