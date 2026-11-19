@@ -103,7 +103,8 @@ async function main() {
       await page.getByRole('button', { name: 'Open menu' }).click();
       await side.locator('.crm-tab', { hasText: 'Customers' }).click();
       await page.waitForURL(/\/customers$/);
-      await page.waitForTimeout(350);
+      // The menu slides out: wait for the end of its animation, not a fixed time.
+      await side.waitFor({ state: 'hidden', timeout: 3000 }).catch(() => {});
       check(`${label}: choosing a place goes there and closes the menu`, !(await side.isVisible()));
       await page.getByTestId('customer-row').first().waitFor({ timeout: 20000 });
       check(`${label}: Customers, no sideways scroll`, await noOverflow(page));

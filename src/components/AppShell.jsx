@@ -1,11 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom';
-import { LayoutDashboard, CalendarCheck2, TrendingUp, DoorOpen, Users, Tags, ListFilter, Megaphone, Moon, Sun, LogOut, Menu, X, Search, Star, Settings as SettingsIcon } from 'lucide-react';
+import { LayoutDashboard, CalendarCheck2, TrendingUp, DoorOpen, Users, Tags, ListFilter, Megaphone, Moon, Sun, LogOut, Menu, X, Search, Star, Scissors, Settings as SettingsIcon } from 'lucide-react';
 import CustomerSearch from './CustomerSearch';
 import NotificationsBell from './NotificationsBell';
 import { useAuth } from '../context/AuthContext';
 import { usePermission } from '../hooks/usePermission';
 import { useTodayCount } from '../hooks/useWork';
+import { useOpenWork, useUsesServices } from '../hooks/useBoutique';
 import { useLiveUpdates } from '../hooks/useLiveUpdates';
 import { notePage } from '../utils/backTo';
 import { useReviewStats } from '../hooks/useReviews';
@@ -44,6 +45,10 @@ export default function AppShell() {
   // Every screen of this tab updates at once when something changes in the shop (12 Nov): one line, here.
   useLiveUpdates(!!user);
   const dueCount = due.data?.mine ?? 0;
+  // Due and ready is only a boutique shop's (it uses Boutique); a retail shop never sees it.
+  const boutique = useUsesServices(seesCustomers);
+  const openWork = useOpenWork(seesCustomers && boutique);
+  const lateCount = (openWork.data ?? []).filter(w => w.overdue).length;
   const reviewStats = useReviewStats(seesCustomers);
   const waiting = (reviewStats.data?.needsReply ?? 0) + (reviewStats.data?.feedbackOpen ?? 0);
 
@@ -68,6 +73,7 @@ export default function AppShell() {
     ...(can('crm:sales') ? [{ to: '/sales', label: 'Shop floor', icon: LayoutDashboard }] : []),
     { to: '/today', label: 'To do today', icon: CalendarCheck2, count: dueCount, countLabel: `${dueCount} due` },
     ...(can('crm:team:view') ? [{ to: '/week', label: 'This week', icon: TrendingUp }] : []),
+    ...(boutique ? [{ to: '/due', label: 'Due and ready', icon: Scissors, count: lateCount, countLabel: `${lateCount} overdue` }] : []),
     { to: '/counter', label: 'At the door', icon: DoorOpen },
     { to: '/customers', label: 'All customers', icon: Users },
     { to: '/reviews', label: 'Reviews', icon: Star, count: waiting, countLabel: `${waiting} waiting` },

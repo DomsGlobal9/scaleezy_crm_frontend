@@ -1,0 +1,94 @@
+/* Boutique work on the customer page, and Due and ready (the mockups approved 19 Nov). Theme colours only, so light
+   and dark both work; every control at least 40 px to tap. */
+.bw-strip { width: 100%; margin-top: 12px; display: flex; gap: 10px; align-items: center; padding: 10px 12px; border-radius: 12px; border: 1px solid color-mix(in srgb, var(--brand-solid) 35%, transparent); background: color-mix(in srgb, var(--brand-solid) 10%, transparent); color: var(--text-primary); text-align: left; font: inherit; cursor: pointer; min-height: 48px; }
+.bw-strip:focus-visible { outline: 2px solid var(--accent-primary); outline-offset: 2px; }
+.bw-strip-ico { width: 30px; height: 30px; border-radius: 9px; display: grid; place-items: center; flex: 0 0 auto; background: color-mix(in srgb, var(--brand-solid) 18%, transparent); color: var(--brand-ink); }
+.bw-strip-words { min-width: 0; flex: 1; }
+.bw-strip-words b { display: block; font-weight: 600; }
+.bw-strip-words small { color: var(--text-secondary); font-size: 12px; }
+.bw-strip .late, .bw-facts .late { color: var(--accent-danger); font-weight: 600; }
+.bw-strip-go { margin-left: auto; color: var(--brand-ink); font-weight: 600; font-size: 13px; white-space: nowrap; display: inline-flex; align-items: center; gap: 2px; }
+
+.bw-open { display: grid; gap: 12px; }
+@media (min-width: 1100px) { .bw-open { grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; } }
+.bw-job { border: 1px solid var(--border-light); border-radius: 12px; padding: 14px; background: var(--bg-input); }
+.bw-job.ready { border-color: color-mix(in srgb, var(--brand-solid) 45%, transparent); }
+.bw-job.over { border-color: color-mix(in srgb, var(--accent-danger) 45%, transparent); }
+.bw-job.ship { border-color: color-mix(in srgb, #3b82f6 40%, transparent); }
+.bw-jt { display: flex; justify-content: space-between; gap: 10px; align-items: flex-start; }
+.bw-what { min-width: 0; }
+.bw-what b { display: block; font-size: 15px; }
+.bw-what small { color: var(--text-secondary); font-size: 12px; overflow-wrap: anywhere; }
+.bw-pill { font-size: 12px; font-weight: 600; padding: 3px 9px; border-radius: 999px; white-space: nowrap; flex: 0 0 auto; background: var(--bg-hover); }
+.bw-pill.ready { background: color-mix(in srgb, var(--brand-solid) 16%, transparent); color: var(--brand-ink); }
+.bw-pill.over { background: color-mix(in srgb, var(--accent-danger) 15%, transparent); color: var(--accent-danger); }
+.bw-pill.ship { background: color-mix(in srgb, #3b82f6 15%, transparent); color: #3b82f6; }
+.bw-pill.cancelled { color: var(--text-muted); }
+
+/* The steps: where the work is, at a glance. */
+.bw-track { list-style: none; display: flex; margin: 14px 0 4px; padding: 0; }
+.bw-track li { flex: 1; position: relative; display: flex; flex-direction: column; align-items: center; text-align: center; min-width: 0; }
+.bw-track li::before { content: ''; position: absolute; top: 5px; left: -50%; right: 50%; height: 2px; background: var(--border-light); }
+.bw-track li:first-child::before { display: none; }
+.bw-track li.done::before, .bw-track li.now::before { background: var(--brand-solid); }
+.bw-dot { width: 12px; height: 12px; border-radius: 50%; border: 2px solid var(--border-focus); background: var(--bg-card); position: relative; z-index: 1; }
+.bw-track li.done .bw-dot { background: var(--brand-solid); border-color: var(--brand-solid); }
+.bw-track li.now .bw-dot { border-color: var(--brand-solid); box-shadow: 0 0 0 4px color-mix(in srgb, var(--brand-solid) 20%, transparent); }
+.bw-step { font-size: 11px; color: var(--text-muted); margin-top: 6px; line-height: 1.3; }
+.bw-step em { font-style: normal; }
+.bw-track li.now .bw-step { color: var(--text-primary); font-weight: 600; }
+@media (max-width: 560px) { .bw-step em { display: none; } }
+
+.bw-facts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin: 12px 0 0; padding-top: 12px; border-top: 1px solid var(--border-light); }
+.bw-facts dt { color: var(--text-muted); font-size: 12px; }
+.bw-facts dd { margin: 0; font-weight: 600; }
+.bw-meas { display: flex; gap: 6px; align-items: center; color: var(--text-secondary); font-size: 12px; margin: 10px 0 0; }
+.bw-acts { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+.bw-acts:empty { display: none; }
+.bw-btn { display: inline-flex; align-items: center; gap: 6px; min-height: 40px; text-decoration: none; }
+.bw-done { margin-top: 18px; }
+.bw-done h3 { font-size: 13px; color: var(--text-secondary); margin: 0 0 6px; font-weight: 600; }
+.bw-done ul { list-style: none; margin: 0; padding: 0; }
+.bw-done li { display: flex; justify-content: space-between; gap: 12px; padding: 10px 0; border-top: 1px solid var(--border-light); font-size: 13px; flex-wrap: wrap; }
+.bw-empty { text-align: center; padding: 28px 12px; color: var(--text-secondary); display: grid; justify-items: center; gap: 4px; }
+.bw-empty b { color: var(--text-primary); }
+.bw-empty p { margin: 0; }
+
+/* Due and ready */
+.dr-counts { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin: 16px 0; }
+@media (max-width: 520px) { .dr-counts { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.dr-count { text-align: left; border: 1px solid var(--border-light); border-radius: 12px; padding: 10px 12px; background: var(--bg-card); color: var(--text-primary); font: inherit; cursor: pointer; min-height: 64px; }
+.dr-count b { display: block; font-size: 22px; line-height: 1.15; }
+.dr-count small { color: var(--text-secondary); }
+.dr-count.on { border-color: var(--brand-solid); background: color-mix(in srgb, var(--brand-solid) 8%, var(--bg-card)); }
+.dr-count.red b { color: var(--accent-danger); }
+.dr-count:focus-visible { outline: 2px solid var(--accent-primary); outline-offset: 2px; }
+.dr-group h2 { font-size: 13px; color: var(--text-secondary); font-weight: 600; margin: 16px 0 8px; }
+.dr-item { display: flex; align-items: center; gap: 8px; border: 1px solid var(--border-light); border-left-width: 3px; border-radius: 12px; margin-bottom: 8px; background: var(--bg-card); padding-right: 8px; }
+.dr-item.over { border-left-color: var(--accent-danger); }
+.dr-item.ready { border-left-color: var(--brand-solid); }
+.dr-item.ship { border-left-color: #3b82f6; }
+.dr-open { flex: 1; min-width: 0; display: flex; align-items: center; gap: 12px; padding: 12px; background: none; border: 0; color: inherit; font: inherit; text-align: left; cursor: pointer; }
+.dr-when { width: 64px; flex: 0 0 auto; text-align: center; }
+.dr-when b { display: block; font-size: 16px; line-height: 1.1; }
+.dr-when small { color: var(--text-muted); font-size: 11px; }
+.dr-when.over b { color: var(--accent-danger); }
+.dr-what { flex: 1; min-width: 0; }
+.dr-what b, .dr-what small { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dr-what small { color: var(--text-secondary); font-size: 12px; }
+.dr-bal { text-align: right; flex: 0 0 auto; }
+.dr-bal b { display: block; }
+.dr-bal small { color: var(--text-muted); font-size: 12px; }
+.dr-call { width: 40px; height: 40px; border-radius: 10px; border: 1px solid var(--border-light); display: grid; place-items: center; color: var(--text-primary); flex: 0 0 auto; }
+.dr-table-card { padding: 0; overflow: hidden; }
+.dr-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.dr-table th { text-align: left; color: var(--text-muted); font-weight: 600; font-size: 12px; padding: 10px 14px; border-bottom: 1px solid var(--border-light); }
+.dr-table td { padding: 12px 14px; border-bottom: 1px solid var(--border-light); vertical-align: middle; }
+.dr-table td small { display: block; color: var(--text-muted); font-size: 12px; }
+.dr-table tbody tr { cursor: pointer; }
+.dr-table tbody tr:hover { background: var(--bg-hover); }
+.dr-table a { color: var(--text-primary); font-weight: 600; text-decoration: none; }
+.dr-tag { font-size: 12px; font-weight: 600; padding: 3px 9px; border-radius: 999px; white-space: nowrap; background: var(--bg-hover); }
+.dr-tag.over { background: color-mix(in srgb, var(--accent-danger) 15%, transparent); color: var(--accent-danger); }
+.dr-tag.ready { background: color-mix(in srgb, var(--brand-solid) 16%, transparent); color: var(--brand-ink); }
+.dr-tag.ship { background: color-mix(in srgb, #3b82f6 15%, transparent); color: #3b82f6; }

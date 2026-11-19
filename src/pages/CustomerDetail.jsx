@@ -30,6 +30,8 @@ import PastPurchases, { PastOnTimeline, usePast } from '../components/PastPurcha
 import { useMediaQuery } from '../hooks/useMediaQuery';
 import { FeedbackCard, ReviewCard } from '../components/ReviewCards';
 import WinbackOffer from '../components/WinbackOffer';
+import BoutiqueWork, { BoutiqueStrip } from '../components/BoutiqueWork';
+import { useUsesServices } from '../hooks/useBoutique';
 
 /**
  * One customer: who they are and their numbers in one header; below, what they wear, their
@@ -113,8 +115,11 @@ export default function CustomerDetail() {
 
   // The open tab is in the address, so Back and a shared link keep it. Arriving to add a follow-up
   // (?followup=1) opens Follow-ups on a phone; on a laptop they are always beside the tabs.
+  // Boutique work is a tab only in a shop that uses Boutique (the owner, 19 Nov: never confuse a retail shop).
+  const boutique = useUsesServices(can('crm:customer:view'));
+  const tabs = boutique ? [...TABS.slice(0, 4), { key: 'boutique', label: 'Boutique work' }, ...TABS.slice(4)] : TABS;
   const asked = params.get('tab');
-  const tab = TABS.some(t => t.key === asked) ? asked : params.get('followup') ? 'work' : 'wear';
+  const tab = tabs.some(t => t.key === asked) ? asked : params.get('followup') ? 'work' : 'wear';
   const reviews = useCustomerReviews(id, can('crm:customer:view'));
   const waiting = (reviews.data?.reviews ?? []).filter(r => r.needsReply).length + (reviews.data?.feedback ?? []).filter(f => !f.handledAt).length;
   const narrow = useMediaQuery('(max-width: 860px)');
@@ -170,12 +175,13 @@ export default function CustomerDetail() {
       ) : (
         <>
           <Header profile={customer.data.profile} numbers={customer.data.numbers} />
+          {boutique && <BoutiqueStrip customerId={customer.data.profile.id} onOpen={() => show('boutique')} />}
           <WinbackOffer customerId={id} />
           {reviews.data?.unhappy && <Unhappy unhappy={reviews.data.unhappy} profile={customer.data.profile} onFollowUp={askFollowUp} />}
           <section className={`cp-body${tab === 'work' ? ' on-work' : ''}`}>
             <div className="crm-card cp-main">
               <div className="cp-tabs" role="tablist" aria-label="About this customer">
-                {TABS.map(t => (
+                {tabs.map(t => (
                   <button key={t.key} type="button" role="tab" id={`cp-tab-${t.key}`} aria-selected={tab === t.key}
                     className={`cp-tab${tab === t.key ? ' on' : ''}${t.phoneOnly ? ' phone-only' : ''}`} onClick={() => show(t.key)}>
                     {t.label}
@@ -188,6 +194,7 @@ export default function CustomerDetail() {
                 {tab === 'timeline' ? <Timeline id={id} />
                   : tab === 'festivals' ? <FestivalsTab customerId={customer.data.profile.id} />
                   : tab === 'reviews' ? <ReviewsTab reviews={reviews} />
+                  : tab === 'boutique' ? <BoutiqueWork customerId={customer.data.profile.id} phone={customer.data.profile.phone} firstName={(customer.data.profile.name || '').trim().split(/\s+/)[0]} />
                   : <><PastPurchases customerId={customer.data.profile.id} /><WhatTheyWear customerId={customer.data.profile.id} onFestivals={() => show('festivals')} /></>}
               </div>
             </div>
