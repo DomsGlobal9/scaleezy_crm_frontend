@@ -215,7 +215,7 @@ async function main() {
     await page.getByTestId('customer-row').filter({ hasText: 'Lakshmi Devi' }).first().click();
     await page.getByTestId('profile').waitFor({ timeout: 20000 });
     check('phone: follow-ups and notes wait behind their own tab', !(await page.getByTestId('work-card').isVisible()));
-    await page.getByRole('tab', { name: 'Follow-ups' }).click();
+    await page.getByRole('tab', { name: 'Follow-ups & groups' }).click();
     await page.getByTestId('work-card').waitFor({ timeout: 20000 });
     check('phone, customer page with the working card: no sideways scroll', await noOverflow(page));
     await page.screenshot({ path: path.join(shots, 'work-customer-phone.png'), fullPage: false });

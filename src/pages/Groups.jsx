@@ -11,7 +11,7 @@ import LoadFailed from '../components/LoadFailed';
 /**
  * Customer groups (plan §7, item 2): the shop's own groups -- VIP, Wholesale, Staff -- with who is in
  * each, the rules they carry (no offer messages, no wishes, join by spending), and the offers that
- * are only for them. Kept in Inventory, where offers and the till read them; managed here.
+ * are only for them. CRM's own (18 Nov); Inventory keeps a read-only copy for its till, prices and offers.
  */
 export default function Groups() {
   const { can } = usePermission();

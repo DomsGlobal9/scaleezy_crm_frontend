@@ -69,6 +69,8 @@ function cleanup(movedBefore) {
   sql(`delete from audit_logs where client_id = '${SHOP}' and created_at >= '${START}' and entity_type = 'CRM_HANDOVER'`);
   sql(`delete from customers where client_id = '${SHOP}' and id in (${list})`);
   sql(`delete from customer_groups where client_id = '${SHOP}' and key = '${GROUP.toLowerCase()}'`);
+  sql(`delete from crm.customer_groups where client_id = '${SHOP}' and key = '${GROUP.toLowerCase()}'`);
+  sql(`update crm.group_sync set version = version + 1 where client_id = '${SHOP}'`);
   sql(`update module_subscriptions set moved = '${movedBefore || '{}'}'::jsonb where client_id = '${SHOP}' and module = 'crm'`);
 }
 
@@ -76,12 +78,18 @@ async function main() {
   const movedBefore = sql(`select moved::text from module_subscriptions where client_id = '${SHOP}' and module = 'crm'`);
   const hadSettings = sql(`select count(*) from crm.message_settings where client_id = '${SHOP}'`) !== '0';
   await stub('reset', {});
-  sql(`INSERT INTO customer_groups (id, client_id, name, key, no_offer_messages, no_wishes, created_at, updated_at) VALUES ('${randomUUID()}', '${SHOP}', '${GROUP}', '${GROUP.toLowerCase()}', false, false, now(), now())`);
+  // (the test group is made in CRM below, once its customers are in CRM)
   const A = customer(1, `Anitha Ui${STAMP}`, { agreed: true });
   customer(2, `Bhavani Ui${STAMP}`, { agreed: true });
   customer(3, `Chitra Ui${STAMP}`);
   const H = customer(4, `Hema Ui${STAMP}`, { agreed: true, tags: [] });
   ts('src/scripts/support/refresh-customers.ts', made);
+  // Groups are CRM's (18 Nov): the test group is made in CRM, with these three in it; Inventory's copy follows.
+  const crmIds = sql(`select string_agg(customer_id, ',') from crm.identities where client_id = '${SHOP}' and source = 'inventory' and external_id in (${made.slice(0, 3).map(i => `'${i}'`).join(',')})`).split(',').filter(Boolean);
+  const owner0 = tokenFor('owner');
+  const crmApi = (method, p, body) => fetch(`http://localhost:4008/api/v1${p}`, { method, headers: { Authorization: `Bearer ${owner0}`, 'Content-Type': 'application/json' }, body: body ? JSON.stringify(body) : undefined }).then(r => r.json());
+  await crmApi('POST', '/groups', { name: GROUP });
+  await crmApi('POST', '/groups/members', { group: GROUP, customerIds: crmIds });
 
   const browser = await chromium.launch({ channel: process.env.BROWSER_CHANNEL || 'msedge', headless: true });
   try {
@@ -99,22 +107,22 @@ async function main() {
     // The card is there before the facts arrive (it says "not linked" until then): wait for them.
     await page.waitForFunction(() => /ending \d{4}\./.test(document.querySelector('[data-testid="fact-whatsapp"]')?.textContent ?? ''), null, { timeout: 20000 });
     check('the three facts: linked (the number as the service gives it, its end), who agreed, how fast', /linked/.test(await page.getByTestId('fact-whatsapp').innerText()) && /ending 9623\./.test(await page.getByTestId('fact-whatsapp').innerText()) && /agreed to offers/.test(await page.getByTestId('fact-agreed').innerText()) && /a day, 10 am to 8 pm/.test(await page.getByTestId('fact-pace').innerText()));
-    check('"still sent from Inventory", with the way to Shop settings', /still sent from Inventory/.test(await page.getByTestId('not-moved').innerText()));
+    check('campaigns are CRM\'s alone: nothing says "still sent from Inventory"', (await page.getByTestId('not-moved').count()) === 0 && !/still sent from Inventory|move them here/i.test(await page.locator('main').innerText()));
 
     console.log('\n2. Shop settings');
-    await page.getByTestId('not-moved').getByRole('link', { name: 'Settings' }).click();
-    const sw = page.getByTestId('campaigns-switch');
-    await sw.waitFor({ timeout: 15000 });
-    await sw.click();
-    await page.waitForFunction(() => document.querySelector('[data-testid="campaigns-switch"]')?.getAttribute('aria-checked') === 'true', null, { timeout: 15000 });
-    check('the owner moves campaigns: Inventory records it', sql(`select coalesce(moved->>'campaigns', '') from module_subscriptions where client_id = '${SHOP}' and module = 'crm'`) === 'true');
+    await page.goto(`${APP}/settings`);
+    await page.getByText('Your choices').waitFor({ timeout: 20000 });
+    check('Settings has no campaigns or wishes switch, and no "Messages from CRM"', (await page.getByTestId('campaigns-switch').count()) === 0 && (await page.getByTestId('wishes-switch').count()) === 0 && !/Campaigns sent from CRM|Wishes sent from CRM|Messages from CRM/.test(await page.locator('main').innerText()));
+    await page.goto(`${APP}/settings?section=messages`);
+    await page.waitForTimeout(800);
+    check('...and its old address shows no switch either', (await page.getByTestId('campaigns-switch').count()) === 0);
     await page.screenshot({ path: path.join(shots, 'messages-settings.png') });
 
     console.log('\n3. A new message');
     await page.goto(`${APP}/messages`);
     await page.getByRole('link', { name: 'New message' }).click();
     await page.getByTestId('message-editor').waitFor();
-    await page.getByLabel('Name (only the shop sees it)').fill('Diwali silk week');
+    await page.getByLabel('Name (only the shop sees it)').fill(`Diwali silk week ${STAMP}`);
     await page.getByRole('combobox', { name: 'Who gets it' }).click();
     await page.getByRole('option', { name: `Customer group: ${GROUP}` }).click();
     const who = page.getByTestId('who');
@@ -151,8 +159,8 @@ async function main() {
     check('its page: 2 sent of 2', true);
     await page.screenshot({ path: path.join(shots, 'messages-detail.png') });
     await page.getByRole('link', { name: 'All messages' }).click();
-    const row = page.getByTestId('message').filter({ hasText: 'Diwali silk week' });
-    await row.waitFor({ timeout: 15000 });
+    const row = page.getByTestId('message').filter({ hasText: `Diwali silk week ${STAMP}` });
+    await row.waitFor({ timeout: 15000 }).catch(async e => { console.log('DEBUG', page.url(), (await page.locator('main').innerText()).slice(0, 900)); throw e; });
     check('the list shows it with its numbers', /2 sent/.test(await row.innerText()), await row.innerText());
     await page.screenshot({ path: path.join(shots, 'messages-list.png') });
 

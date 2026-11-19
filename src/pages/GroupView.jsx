@@ -91,13 +91,16 @@ function AddMember({ group }) {
   const add = useAddToGroup();
   const [said, setSaid] = useState('');
   const inGroup = new Set(group.members.map(m => m.customerId));
-  const results = search ? (found.data?.customers ?? []).filter(c => !inGroup.has(c.id)).slice(0, 6) : [];
+  // Only the answer for what is typed now: a list left over from the last search (still on screen while the new
+  // one loads, or before the pause after typing) could add the wrong person with one click.
+  const current = search && search === typed.trim() && !found.isPlaceholderData;
+  const results = current ? (found.data?.customers ?? []).filter(c => !inGroup.has(c.id)).slice(0, 6) : [];
 
   const addOne = async (c) => {
     setSaid('');
     try {
       const r = await add.mutateAsync({ group: group.name, customerIds: [c.id] });
-      setSaid(r?.notInInventory ? `${c.name} is not in Inventory yet, so cannot join a group.` : `${c.name} added.`);
+      setSaid(r?.tooManyGroups ? `${c.name} is in 20 groups already. Take them out of one first.` : r?.already ? `${c.name} is in this group already.` : `${c.name} added.`);
       setTyped('');
     } catch (e) { setSaid(e?.message || 'Could not add them.'); }
   };

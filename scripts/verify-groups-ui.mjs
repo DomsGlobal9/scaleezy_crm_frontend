@@ -58,9 +58,9 @@ async function main() {
     await page.getByTestId('no-members').waitFor({ timeout: 15000 });
     check('make a group: its page, nobody in it yet', (await page.getByTestId('group-name').innerText()).trim() === NAME);
 
-    await page.getByLabel('Find a customer to add').fill('Anitha');
+    await page.getByLabel('Find a customer to add').fill('Anitha Reddy');
     await page.getByTestId('add-results').getByRole('button', { name: 'Add' }).first().click();
-    await page.getByTestId('member').filter({ hasText: 'Anitha Reddy' }).waitFor({ timeout: 15000 });
+    await page.getByTestId('member').filter({ hasText: 'Anitha Reddy' }).waitFor({ timeout: 15000 }).catch(async e => { console.log('DEBUG', (await page.locator('main').innerText()).slice(0, 1200)); throw e; });
     check('add Anitha by searching her name: she is in it, linked to her CRM page', (await page.getByTestId('member').filter({ hasText: 'Anitha Reddy' }).getByRole('link').getAttribute('href'))?.startsWith('/customers/'));
 
     await page.getByLabel('No birthday or anniversary wishes').check();

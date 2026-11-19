@@ -176,7 +176,7 @@ async function main() {
 
     // The warning goes with a follow-up
     await page.getByTestId('unhappy-followup').click();
-    const fuBox = page.getByTestId('work-card');
+    const fuBox = page.getByTestId('work-card').locator('section[aria-labelledby="fu-h"]');
     await fuBox.locator('textarea, input[type="text"]').first().waitFor({ timeout: 10000 });
     check('Add follow-up opens the box, staying on the tab', /tab=timeline/.test(page.url()));
     await fuBox.locator('textarea, input[type="text"]').first().fill('Call about the review');

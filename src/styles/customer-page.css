@@ -105,3 +105,29 @@
   .cp-tab { font-size: 13px; }
   .ct-line { grid-template-columns: 76px minmax(0, 1fr); }
 }
+
+/* The Groups card (18 Nov, the approved mockup) */
+.cg-card .wk-head { justify-content: space-between; }
+.cg-sub { color: var(--text-secondary); font-size: 12px; }
+.cg-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.cg-chip { display: inline-flex; align-items: center; gap: 6px; padding: 4px 4px 4px 11px; border-radius: 999px; background: rgba(166, 217, 43, .12); border: 1px solid rgba(166, 217, 43, .35); font-size: 13px; max-width: 100%; overflow-wrap: anywhere; }
+.cg-auto { font-size: 11px; color: var(--text-secondary); }
+.cg-x { width: 24px; height: 24px; border-radius: 50%; border: 0; background: transparent; color: var(--text-secondary); display: inline-grid; place-items: center; cursor: pointer; flex-shrink: 0; }
+.cg-x:hover { background: var(--bg-input); color: var(--text-primary); }
+.cg-x:focus-visible { outline: 2px solid var(--accent-primary); outline-offset: 1px; }
+.cg-ask { padding: 10px 12px; border-radius: 10px; background: var(--bg-input); font-size: 13px; display: grid; gap: 8px; }
+.cg-ask p { margin: 0; }
+.cg-add { position: relative; }
+.cg-select { width: 100%; display: flex; justify-content: space-between; align-items: center; background: var(--bg-input); border: 1px solid var(--border-light); border-radius: 10px; padding: 9px 12px; color: var(--text-secondary); font-size: 14px; cursor: pointer; }
+.cg-select:focus-visible { outline: 2px solid var(--accent-primary); outline-offset: 1px; }
+.cg-menu { margin-top: 6px; background: var(--bg-input); border: 1px solid var(--border-light); border-radius: 10px; overflow: hidden; max-height: 280px; overflow-y: auto; }
+.cg-item { width: 100%; display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 9px 12px; border: 0; border-top: 1px solid var(--border-light); background: transparent; color: var(--text-primary); text-align: left; font-size: 14px; }
+.cg-item:first-child { border-top: 0; }
+button.cg-item { cursor: pointer; }
+button.cg-item:hover, button.cg-item:focus-visible { background: rgba(166, 217, 43, .10); outline: none; }
+.cg-item small { color: var(--text-secondary); font-size: 12px; white-space: nowrap; }
+.cg-item span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cg-make { color: var(--brand-solid); justify-content: flex-start; }
+.cg-new { gap: 8px; }
+.cg-new .ms-input { flex: 1; min-width: 0; }
+.cg-note { color: var(--text-secondary); font-size: 12px; margin: 0; line-height: 1.5; }

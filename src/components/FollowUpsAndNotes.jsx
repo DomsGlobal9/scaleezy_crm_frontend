@@ -19,7 +19,7 @@ const WHEN = [
   { key: 'week', label: 'In a week', days: 7 }
 ];
 
-export default function FollowUpsAndNotes({ customerId }) {
+export default function FollowUpsAndNotes({ customerId, after = null }) {
   const { user } = useAuth();
   const { can } = usePermission();
   const canWrite = can('crm:customer:update');
@@ -91,6 +91,7 @@ export default function FollowUpsAndNotes({ customerId }) {
           {notes.data && notes.data.length === 0 && !writing && <p className="crm-muted wk-none">No notes yet.</p>}
         </div>
       </section>
+      {after}
     </aside>
   );
 }

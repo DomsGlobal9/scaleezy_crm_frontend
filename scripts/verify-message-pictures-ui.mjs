@@ -142,12 +142,12 @@ async function main() {
       el.dispatchEvent(new DragEvent('drop', { dataTransfer: dt, bubbles: true, cancelable: true }));
     });
     check('a PDF dropped on it: "not a picture"', /not a picture/.test(await pk.getByTestId('pp-error').innerText()));
-    // A real picture: locally Inventory's storage is cut off, so the plain "could not be saved" must show, and the picker stays.
+    // A real picture: CRM makes it ready and keeps it, so the picker closes and the message shows it.
     await pk.getByTestId('pp-file').setInputFiles({ name: 'green.png', mimeType: 'image/png', buffer: greenPng(160) });
-    const answered = await pk.getByTestId('pp-error').filter({ hasText: /could not be saved|try again/i }).waitFor({ timeout: 30000 }).then(() => true, () => false);
-    const pickedAnyway = (await page.getByTestId('picture-picker').count()) === 0;
-    check('a real picture: Inventory\'s answer shows in plain words (locally "could not be saved"), or it is added', answered || pickedAnyway, await pk.getByTestId('pp-error').innerText().catch(() => 'no message'));
-    if (!pickedAnyway) await page.keyboard.press('Escape');
+    const added = await page.getByTestId('picture-picker').waitFor({ state: 'detached', timeout: 30000 }).then(() => true, () => false);
+    const shown = added && await page.waitForFunction(() => [...document.querySelectorAll('img')].some(i => i.complete && i.naturalWidth > 0 && /\/api\/v1\/pictures\/|message-pictures/.test(i.src)), null, { timeout: 15000 }).then(() => true, () => false);
+    check('a real picture: CRM makes it ready and keeps it, and the message shows it', added && shown && (await page.getByRole('button', { name: 'Remove the picture' }).count()) === 1, await pk.getByTestId('pp-error').innerText().catch(() => 'no message'));
+    if (!added) await page.keyboard.press('Escape');
 
     // A name that already exists, and one full of HTML: said plainly, shown as text, never run.
     const nasty = `${STAMP} <img src=x onerror=alert(1)> ${'very long name '.repeat(3)}`.slice(0, 80);

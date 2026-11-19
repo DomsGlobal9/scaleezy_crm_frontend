@@ -71,7 +71,7 @@ export default function MessageDetail() {
           <div className="pe-btns" data-testid="actions">
             {d.status === 'draft' && !confirm && (
               <>
-                <button type="button" className="btn-primary" disabled={busy || !overview.data?.moved?.campaigns} onClick={() => setConfirm('start')}>Start</button>
+                <button type="button" className="btn-primary" disabled={busy} onClick={() => setConfirm('start')}>Start</button>
                 <Link to={`/messages/${id}/edit`} className="btn-secondary">Change</Link>
                 <button type="button" className="btn-secondary" disabled={busy || !overview.data?.sendingSetUp} onClick={() => run('test')}>{act.isPending && act.variables === 'test' && <Loader2 size={14} className="animate-spin" />} Send me a test</button>
                 <button type="button" className="btn-secondary" disabled={busy} onClick={() => setConfirm('delete')}>Delete draft</button>
@@ -114,7 +114,6 @@ export default function MessageDetail() {
             onClick={async () => { try { const c = await copy.mutateAsync(id); toast.success(`Copied as a new draft: "${c.name}"`); navigate(`/messages/${c.id}`); } catch (err) { setError(err?.message || 'The message could not be copied.'); } }}>
             {copy.isPending ? <Loader2 size={14} className="animate-spin" /> : <Copy size={14} />} Copy as a new draft</button></div>
         )}
-        {d.status === 'draft' && overview.data && !overview.data.moved?.campaigns && <p className="ms-note">It can be started once the owner moves campaigns from Inventory to CRM in Settings.</p>}
         {error && <p className="pe-err" role="alert">{error}</p>}
 
         {d.status !== 'draft' && (

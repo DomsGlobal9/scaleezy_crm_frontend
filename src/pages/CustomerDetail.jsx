@@ -16,6 +16,7 @@ import { formatDay, since } from '../utils/dates';
 import { INVENTORY_URL } from '../lib/config';
 import LoadFailed from '../components/LoadFailed';
 import FollowUpsAndNotes from '../components/FollowUpsAndNotes';
+import CustomerGroupsCard from '../components/CustomerGroupsCard';
 import ConsentRecord from '../components/ConsentRecord';
 import WhatTheyWear, { readStore } from '../components/WhatTheyWear';
 import FestivalBuying from '../components/FestivalBuying';
@@ -94,7 +95,7 @@ const TABS = [
   { key: 'festivals', label: 'Festivals' },
   { key: 'timeline', label: 'Timeline' },
   { key: 'reviews', label: 'Reviews and feedback' },
-  { key: 'work', label: 'Follow-ups', phoneOnly: true }
+  { key: 'work', label: 'Follow-ups & groups', phoneOnly: true }
 ];
 
 export default function CustomerDetail() {
@@ -187,7 +188,7 @@ export default function CustomerDetail() {
                   : <><PastPurchases customerId={customer.data.profile.id} /><WhatTheyWear customerId={customer.data.profile.id} onFestivals={() => show('festivals')} /></>}
               </div>
             </div>
-            <FollowUpsAndNotes customerId={customer.data.profile.id} />
+            <FollowUpsAndNotes customerId={customer.data.profile.id} after={<CustomerGroupsCard customerId={customer.data.profile.id} firstName={(customer.data.profile.name || '').trim().split(/\s+/)[0]} />} />
           </section>
         </>
       )}

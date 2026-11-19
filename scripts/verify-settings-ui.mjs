@@ -57,11 +57,16 @@ async function main() {
     await page.screenshot({ path: path.join(shots, 'settings-overview.png'), fullPage: true });
 
     // Each section opens and the address remembers it.
-    for (const key of ['shop', 'changes', 'prices', 'festivals', 'messages', 'automatic', 'team']) {
+    for (const key of ['shop', 'changes', 'prices', 'festivals', 'automatic', 'team']) {
       await page.getByTestId(`st-go-${key}`).click();
       await page.getByTestId(`st-section-${key}`).waitFor({ timeout: 10000 });
       check(`section "${key}" opens, and the address says so`, page.url().endsWith(`?section=${key}`));
     }
+    // Campaigns and wishes are CRM's alone (18 Nov, the owner): no "Messages from CRM" section, no switch.
+    check('no "Messages from CRM" section: campaigns and wishes have no switch', (await page.getByTestId('st-go-messages').count()) === 0 && !/Messages from CRM|Campaigns sent from CRM|Wishes sent from CRM/.test(await page.locator('main').innerText()));
+    await page.goto(`${APP}/settings?section=messages`);
+    await page.waitForTimeout(800);
+    check('...and its old address opens Settings without a campaigns switch', (await page.getByTestId('campaigns-switch').count()) === 0 && (await page.getByTestId('wishes-switch').count()) === 0);
     await page.goto(`${APP}/settings?section=prices`);
     await page.getByTestId('st-ruler').waitFor({ timeout: 15000 });
     check('a link opens a section directly: Price ranges, with the ruler of the shop\'s ranges', (await page.locator('.st-seg').count()) >= 2 && (await page.getByTestId('price-bands').count()) === 1);

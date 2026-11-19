@@ -12,7 +12,7 @@ import { rowLink } from '../components/common/rowLink';
 /**
  * Messages (Phase 3, the mockup approved 29 Oct): WhatsApp from the shop's own number. The three facts
  * that decide whether a message reaches anybody, then the shop's own messages and the automatic ones
- * (birthday and anniversary wishes) as tabs. Inventory's Campaigns page, moved here.
+ * (birthday and anniversary wishes) as tabs. Campaigns and wishes are CRM's alone (18 Nov, the owner).
  */
 export const STATUS = {
   draft: { label: 'Draft', tone: 'draft' },
@@ -134,7 +134,7 @@ function List({ tab, navigate }) {
 }
 
 /** One kind of wish: on or off, its words, and how many get it today. */
-function Wish({ kind, data, mayChange, moved }) {
+function Wish({ kind, data, mayChange }) {
   const save = useSaveWishes();
   const [text, setText] = useState(null);
   const label = kind === 'birthday' ? 'Birthday wishes' : 'Anniversary wishes';
@@ -156,7 +156,7 @@ function Wish({ kind, data, mayChange, moved }) {
       <div className="ms-wish-foot">
         <p className="pe-hint">
           {data.on ? `Sent on the day, from 10 am. Only to customers who agreed to offers. Today: ${data.today.toLocaleString('en-IN')} ${data.today === 1 ? 'person' : 'people'}.` : 'Off. Switch on to send on the day.'}
-          {!moved && ' They start once wishes move here from Inventory.'}
+          {kind === 'birthday' && ' When your shop gives birthday points, the wish also says how many were added and the new total.'}
         </p>
         {mayChange && text !== null && text !== data.text && (
           <button type="button" className="btn-primary ms-small" disabled={save.isPending} onClick={() => send({ text }, 'The words are saved.')}>Save the words</button>
@@ -172,16 +172,15 @@ function Wishes({ mayChange }) {
   if (w.isError) return <div className="crm-card"><LoadFailed what="the wishes" error={w.error} onRetry={() => w.refetch()} /></div>;
   return (
     <section className="crm-card ms-wishes" aria-label="Automatic wishes">
-      {!w.data.moved && <p className="ms-note">Wishes are still sent from Inventory. The owner can move them here in Settings; the words and pictures come with them.</p>}
-      <Wish kind="birthday" data={w.data.birthday} mayChange={mayChange} moved={!!w.data.moved} />
-      <Wish kind="anniversary" data={w.data.anniversary} mayChange={mayChange} moved={!!w.data.moved} />
+      <Wish kind="birthday" data={w.data.birthday} mayChange={mayChange} />
+      <Wish kind="anniversary" data={w.data.anniversary} mayChange={mayChange} />
       <p className="pe-hint">Birthday gift points and the "points lapsing" reminder stay in Inventory: they are about points.</p>
     </section>
   );
 }
 
 export default function Messages() {
-  const { can, isOwner } = usePermission();
+  const { can } = usePermission();
   const navigate = useNavigate();
   const [params, setParams] = useSearchParams();
   const tab = params.get('tab') === 'automatic' ? 'automatic' : 'shop';
@@ -210,11 +209,6 @@ export default function Messages() {
       </div>
 
       {overview.isError ? <div className="crm-card"><LoadFailed what="the facts about your WhatsApp" error={overview.error} onRetry={() => overview.refetch()} /></div> : <Facts o={o} />}
-      {o && !o.moved?.campaigns && (
-        <p className="ms-note" data-testid="not-moved">
-          Campaigns are still sent from Inventory. Messages can be written and saved here, and start once the owner moves campaigns to CRM{isOwner ? <> in <Link to="/settings?section=messages">Settings</Link></> : ' in Settings'}.
-        </p>
-      )}
       {o && !o.sendingSetUp && <p className="ms-note">WhatsApp sending is not set up for CRM yet. Messages can be written and saved, and go out once it is.</p>}
 
       <div className="ms-tabs" role="tablist" aria-label="Messages">

@@ -4,16 +4,15 @@ import { useQueries, useQuery } from '@tanstack/react-query';
 import { QRCodeSVG } from 'qrcode.react';
 import toast from 'react-hot-toast';
 import {
-  LayoutGrid, Store, UserCog, Ruler, CalendarHeart, Send, Sparkles, Users, ShieldOff, Loader2, ExternalLink,
+  LayoutGrid, Store, UserCog, Ruler, CalendarHeart, Sparkles, Users, ShieldOff, Loader2, ExternalLink,
   Printer, CheckCircle2, CircleDashed, AlertCircle, ChevronRight, MessageCircle
 } from 'lucide-react';
 import { api } from '../lib/api';
 import { INVENTORY_URL } from '../lib/config';
 import { usePermission } from '../hooks/usePermission';
-import { useMoved, useSetMoved, useSetProfileMoved } from '../hooks/useProfileEdit';
+import { useMoved, useSetProfileMoved } from '../hooks/useProfileEdit';
 import { useFeedbackSettings, usePriceBands, useReviewAskSettings, useArrivalsSettings, useWinbackSettings } from '../hooks/useMessages';
 import { useStores } from '../hooks/useCounter';
-import { formatDay } from '../utils/dates';
 import { rangeWord, rangesOf } from '../utils/customerFilters';
 import Select from '../components/common/Select';
 import LoadFailed from '../components/LoadFailed';
@@ -38,7 +37,6 @@ const SECTIONS = [
   { key: 'changes', group: 'Customers', label: 'Where changes are made', icon: UserCog, sub: 'Offers, birthdays, deletes' },
   { key: 'prices', group: 'Customers', label: 'Price ranges', icon: Ruler, sub: 'Your budget bands' },
   { key: 'festivals', group: 'Customers', label: 'Festivals', icon: CalendarHeart, sub: "Your shop's calendar" },
-  { key: 'messages', group: 'Messages', label: 'Messages from CRM', icon: Send, sub: 'Campaigns, wishes' },
   { key: 'automatic', group: 'Messages', label: 'Automatic messages', icon: Sparkles, sub: 'Thank-you, ratings, new stock, win-back' },
   { key: 'team', group: 'People', label: 'Team and access', icon: Users, sub: 'Who can do what' }
 ];
@@ -138,8 +136,6 @@ function Overview({ st, go }) {
     { title: 'Ask online buyers to rate', on: st.reviewAsk.data?.on, section: 'automatic' },
     { title: 'New stock in their size', on: st.arrivals.data?.on, section: 'automatic' },
     { title: 'Win back regulars', on: st.winback.data?.on, section: 'automatic' },
-    { title: 'Campaigns sent from CRM', on: m.campaigns === true, section: 'messages' },
-    { title: 'Wishes sent from CRM', on: !!m.wishes, section: 'messages' },
     { title: 'Customer changes made in CRM', on: m.profile === true, section: 'changes' }
   ];
   return (
@@ -292,8 +288,6 @@ export default function ShopSettings() {
 function Owner({ section, go }) {
   const st = useState_();
   const setProfile = useSetProfileMoved();
-  const setCampaigns = useSetMoved('campaigns');
-  const setWishes = useSetMoved('wishes');
   const [refused, setRefused] = useState({});
   const m = st.moved.data ?? {};
   const flip = (key, mutation, on, words) => async () => {
@@ -310,7 +304,6 @@ function Owner({ section, go }) {
     if (key === 'prices') return st.bandsSet === false ? 'warn' : st.bandsSet ? 'ok' : null;
     if (key === 'team') return st.staff === 0 ? 'warn' : st.staff ? 'ok' : null;
     if (key === 'automatic') return st.autoOn > 0 ? 'ok' : null;
-    if (key === 'messages') return m.campaigns === true || m.wishes ? 'ok' : null;
     if (key === 'changes') return m.profile === true ? 'ok' : null;
     return null;
   };
@@ -319,13 +312,13 @@ function Owner({ section, go }) {
   let body;
   if (section === 'overview') body = <Overview st={st} go={go} />;
   else if (section === 'shop') body = <ShopSection st={st} />;
-  else if (section === 'changes' || section === 'messages') {
+  else if (section === 'changes') {
     body = (
       <section className="crm-card pe-settings st-card" data-testid="shop-settings">
-        <Head icon={current.icon} title={current.label} sub={section === 'changes' ? 'Where your staff change a customer: here in CRM, or in Inventory.' : 'Campaigns and birthday wishes: sent from CRM, or still from Inventory.'} />
+        <Head icon={current.icon} title={current.label} sub="Where your staff change a customer: here in CRM, or in Inventory." />
         {st.moved.isLoading ? <div className="crm-row crm-muted" aria-busy="true"><Loader2 size={16} className="animate-spin" /> Loading…</div>
           : st.moved.isError ? <LoadFailed what="the shop settings" error={st.moved.error} onRetry={() => st.moved.refetch()} />
-            : section === 'changes' ? (
+            : (
               <>
                 <Row id="pe-profile" title="Change offers, birthdays and deletes here" on={m.profile === true} busy={setProfile.isPending} testid="profile-switch" refusal={refused.profile}
                   onFlip={flip('profile', setProfile, !(m.profile === true), ['Offers, birthdays and deletes are changed here now.', 'Inventory looks after offers, birthdays and deletes again.'])}>
@@ -336,18 +329,6 @@ function Owner({ section, go }) {
                 <div className="pe-state" data-testid="profile-state">
                   {setProfile.isPending ? 'Saving…' : m.profile === true ? 'On: your staff change these here. Inventory shows them read only.' : 'Off: Inventory looks after these for now.'}
                 </div>
-              </>
-            ) : (
-              <>
-                <Row id="pe-campaigns" title="Send campaigns from CRM" on={m.campaigns === true} busy={setCampaigns.isPending} testid="campaigns-switch" refusal={refused.campaigns}
-                  onFlip={flip('campaigns', setCampaigns, !(m.campaigns === true), ['Campaigns are sent from CRM now.', 'Inventory sends your campaigns again.'])}>
-                  <p>{m.campaigns === true ? "Your campaigns are made and sent here, in Messages. Inventory's Campaigns page shows the old ones, read only." : 'Off: Inventory sends your campaigns for now. Messages can be written here, and start once this is on.'}</p>
-                </Row>
-                <Row id="pe-wishes" title="Send birthday and anniversary wishes from CRM" on={!!m.wishes} busy={setWishes.isPending} testid="wishes-switch" refusal={refused.wishes}
-                  onFlip={flip('wishes', setWishes, !m.wishes, ['Wishes are sent from CRM now, with the words and pictures you had.', 'Inventory sends your wishes again.'])}>
-                  <p>{m.wishes?.fromDay ? `From ${formatDay(`${m.wishes.fromDay}T12:00:00Z`)}. Inventory wished the days before.` : 'Off: Inventory sends your wishes for now. When this goes on, the words and pictures come with them.'}</p>
-                </Row>
-                <p className="pe-hint">Birthday gift points and the "points lapsing" reminder stay in Inventory: they are about points.</p>
               </>
             )}
       </section>
