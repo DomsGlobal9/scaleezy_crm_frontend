@@ -5,7 +5,8 @@ import { backWords } from '../utils/backTo';
 import {
   ArrowLeft, Loader2, IndianRupee, Undo2, Star, Wallet, DoorOpen, Eye, MessageCircle, NotebookPen,
   CircleCheck, CircleAlert, CircleSlash, ExternalLink, UserX, ShieldOff, CalendarClock, ShieldCheck, ChevronRight,
-  Phone, Mail, MapPin, Cake, Heart, Receipt, ChevronDown, Trash2
+  Phone, Mail, MapPin, Cake, Heart, Receipt, ChevronDown, Trash2,
+  Scissors
 } from 'lucide-react';
 import { useCounterCard } from '../hooks/useCounter';
 import { useCustomer, useTimeline } from '../hooks/useCustomer';
@@ -59,7 +60,9 @@ const KIND = {
   feedback: { icon: Star, tone: 'msg' },
   consent: { icon: ShieldCheck, tone: 'consent' },
   note: { icon: NotebookPen, tone: '' },
-  followup: { icon: CalendarClock, tone: 'fu' }
+  followup: { icon: CalendarClock, tone: 'fu' },
+  // Work a module did for them (Boutique): stitching taken, ready to collect…
+  service: { icon: Scissors, tone: 'fu' }
 };
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
