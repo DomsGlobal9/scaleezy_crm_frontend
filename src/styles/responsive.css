@@ -1,0 +1,56 @@
+/*
+ * Every device (19 Nov, the owner: "some buttons collapsed, check each and every page, every device"). Loaded last.
+ * Found with scripts/audit-layout.mjs (five widths, 360 to 1366) and the live app at phone width.
+ */
+
+/* Fingers, not mouse pointers: chips, tabs and small buttons at least 36 px to tap. */
+@media (pointer: coarse), (max-width: 860px) {
+  .cp-chip, .ms-tab, [role="tab"], [role="radio"] { min-height: 36px; display: inline-flex; align-items: center; }
+  .cp-tab { min-height: 44px; }
+  /* Every button at least 36 px tall (40 for the main ones); a button that looks like a link keeps its look but
+     gets the room around it, so the finger lands on it. */
+  button, a.btn-primary, a.btn-secondary, a[role="button"] { min-height: 36px; }
+  /* Tabs and chips in a sideways row keep their full words: they scroll, they never squeeze into each other. */
+  .cp-tabs > *, .cp-chips > *, .ms-tabs > * { flex-shrink: 0; }
+  /* Narrow ones get width too: a birthday's "Add", Settings' arrows, icon buttons. */
+  .pe-chg, .st-open, .crm-iconbtn { min-width: 40px; justify-content: center; }
+  .btn-primary, .btn-secondary, .tk-btn, .cp-btn { min-height: 40px; }
+  button:not([class*="btn"]):not(.cp-chip):not(.ms-tab):not([role="tab"]):not([role="radio"]) { display: inline-flex; align-items: center; }
+}
+
+/* The customer's visits: one row you swipe, newest at the right (Visits.jsx scrolls to it), never two broken rows
+   with a day count stranded at the start. */
+.cp-visits .vt-dots { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; padding-bottom: 2px; overscroll-behavior-x: contain; }
+.cp-visits .vt-dots::-webkit-scrollbar { display: none; }
+.cp-visits .vt-step, .cp-visits .vt-v { flex: 0 0 auto; }
+
+/* Tabs that scroll sideways show it: the last one fades at the edge. */
+@media (max-width: 860px) {
+  .cp-tabs { -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent); mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent); padding-right: 28px; }
+}
+
+@media (max-width: 640px) {
+  /* WhatsApp offers: one full-width bar, "Change" at its right, not a tall pill with "Change" on a line of its own. */
+  .cp-head .cp-consent { width: 100%; border-radius: 12px; display: flex; flex-wrap: nowrap; align-items: center; gap: 8px; }
+  .cp-head .cp-consent > span:not(.cp-consent-more) { flex: 1 1 auto; min-width: 0; }
+  .cp-head .cp-consent .cp-consent-more { flex: 0 0 auto; margin-left: auto; }
+  .cp-head-acts > .cp-btn, .cp-head-acts > div > .cp-btn { min-height: 40px; }
+
+  /* The numbers: two by two, never three and one left hanging. */
+  .cp-nums { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .cp-num, .cp-num:nth-child(3n + 1) { padding: 0 10px; border-left: 1px solid var(--border-light); }
+  .cp-num:nth-child(2n + 1) { padding-left: 0; border-left: none; }
+  .cp-num:last-child:nth-child(odd) { grid-column: 1 / -1; }
+}
+
+/* A tablet: the customer's facts in two columns, not three narrow ones breaking every line. */
+@media (min-width: 641px) and (max-width: 1100px) {
+  .pp-facts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+/* "Later" on Today read as switched off: it is a real button. */
+.tk-btn.ghost { color: var(--text-primary); }
+.tk-btn.ghost:disabled, .tk-btn:disabled { opacity: .5; cursor: not-allowed; }
+
+/* Button rows wrap as whole buttons, never squeezing a label onto two lines. */
+.btn-primary, .btn-secondary, .cp-btn, .tk-btn { white-space: nowrap; }

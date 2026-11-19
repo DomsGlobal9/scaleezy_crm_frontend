@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useLayoutEffect, useRef } from 'react';
 import { formatDay } from '../utils/dates';
 
 /**
@@ -35,9 +35,12 @@ export function visitsNote(v) {
 export function VisitTrail({ v, show = 3, note = true }) {
   const dated = v.dated.slice(-show);
   const hidden = v.earlier + (v.datedCount - dated.length);
+  // One row that scrolls sideways on a phone: open it at the newest visit.
+  const row = useRef(null);
+  useLayoutEffect(() => { if (row.current) row.current.scrollLeft = row.current.scrollWidth; }, [v.datedCount, show]);
   return (
     <div className="vt" data-testid="visit-trail">
-      <div className="vt-dots">
+      <div className="vt-dots" ref={row}>
         {hidden > 0 && (
           <span className="vt-v" title={v.earlier ? 'Bills from before CRM have no dates in the old records' : undefined}>
             <i className="vt-dot old" aria-hidden="true" />
