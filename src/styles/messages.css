@@ -131,3 +131,6 @@
   .mp-tpl { grid-template-columns: 40px minmax(0, 1fr); }
   .mp-tpl .pe-btns { grid-column: 1 / -1; justify-content: flex-end; }
 }
+.mp-tpl-head { list-style: none; font-size: 12px; font-weight: 600; color: var(--text-secondary); padding: 14px 0 4px; border-top: 1px solid var(--border-light); }
+.mp-tpl-head + .mp-tpl { border-top: none; }
+.mp-tpl-note { list-style: none; padding: 6px 0 10px; font-size: 13px; }

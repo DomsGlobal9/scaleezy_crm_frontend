@@ -107,12 +107,12 @@ function List({ tab, navigate }) {
     );
   }
   return (
-    <ul className="ms-list" aria-label="Messages">
+    <ul className="ms-list" aria-label="Campaigns">
       {rows.map(m => (
-        <li key={m.id} data-testid="message" {...rowLink(() => navigate(`/messages/${m.id}`), { label: `Open ${m.name}` })} className="crm-card ms-item row-link">
+        <li key={m.id} data-testid="message" {...rowLink(() => navigate(`/campaigns/${m.id}`), { label: `Open ${m.name}` })} className="crm-card ms-item row-link">
           <div className="ms-item-top">
             <div style={{ minWidth: 0 }}>
-              <Link to={`/messages/${m.id}`} className="ms-name" onClick={(e) => e.stopPropagation()}>{m.name}</Link>
+              <Link to={`/campaigns/${m.id}`} className="ms-name" onClick={(e) => e.stopPropagation()}>{m.name}</Link>
               <div className="ms-meta">
                 {[m.audienceText, m.numbers?.total ? `${m.numbers.total.toLocaleString('en-IN')} ${m.numbers.total === 1 ? 'person' : 'people'}` : null,
                   m.startedAt ? `started ${formatDay(m.startedAt)}${m.createdBy ? ` by ${m.createdBy}` : ''}` : 'not started'].filter(Boolean).join(' · ')}
@@ -124,7 +124,7 @@ function List({ tab, navigate }) {
           <Progress n={m.numbers} status={m.status} />
           {mayCopy && m.kind === 'manual' && (
             <div className="ms-row-end"><button type="button" className="btn-secondary ms-small" disabled={copy.isPending} data-testid="message-copy"
-              onClick={async (e) => { e.stopPropagation(); try { const c = await copy.mutateAsync(m.id); toast.success(`Copied as a new draft: "${c.name}"`); navigate(`/messages/${c.id}`); } catch (err) { toast.error(err?.message || 'The message could not be copied.'); } }}>
+              onClick={async (e) => { e.stopPropagation(); try { const c = await copy.mutateAsync(m.id); toast.success(`Copied as a new draft: "${c.name}"`); navigate(`/campaigns/${c.id}`); } catch (err) { toast.error(err?.message || 'The message could not be copied.'); } }}>
               <Copy size={14} /> Copy</button></div>
           )}
         </li>
@@ -191,7 +191,7 @@ export default function Messages() {
       <div className="crm-notice">
         <div className="crm-card">
           <ShieldOff size={28} style={{ color: 'var(--accent-warning)' }} />
-          <h2>Messages are not part of your role</h2>
+          <h2>Campaigns are not part of your role</h2>
           <p>Ask the owner if you need to send WhatsApp messages to many customers. You can still message one customer from their page.</p>
         </div>
       </div>
@@ -202,16 +202,16 @@ export default function Messages() {
     <main className="crm-page ms-page">
       <div className="crm-head">
         <div style={{ minWidth: 0 }}>
-          <h1><Megaphone size={24} aria-hidden="true" /> Messages</h1>
+          <h1><Megaphone size={24} aria-hidden="true" /> Campaigns</h1>
           <p>Send an offer or news to your customers on WhatsApp, from your shop's own number.</p>
         </div>
-        {can('crm:messages:send') && <Link to="/messages/new" className="btn-primary ms-new"><Plus size={16} /> New message</Link>}
+        {can('crm:messages:send') && <Link to="/campaigns/new" className="btn-primary ms-new"><Plus size={16} /> New campaign</Link>}
       </div>
 
       {overview.isError ? <div className="crm-card"><LoadFailed what="the facts about your WhatsApp" error={overview.error} onRetry={() => overview.refetch()} /></div> : <Facts o={o} />}
       {o && !o.sendingSetUp && <p className="ms-note">WhatsApp sending is not set up for CRM yet. Messages can be written and saved, and go out once it is.</p>}
 
-      <div className="ms-tabs" role="tablist" aria-label="Messages">
+      <div className="ms-tabs" role="tablist" aria-label="Campaigns">
         {[['shop', 'Sent by the shop'], ['automatic', 'Automatic']].map(([key, label]) => (
           <button key={key} type="button" role="tab" aria-selected={tab === key} className={`ms-tab${tab === key ? ' on' : ''}`}
             onClick={() => setParams(key === 'shop' ? {} : { tab: key }, { replace: true })}>{label}</button>

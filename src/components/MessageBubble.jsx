@@ -1,14 +1,16 @@
 import React from 'react';
 
 /**
- * The message as a customer sees it on WhatsApp: the picture, the words with {name} and {link} filled
- * in for an example customer, and the STOP line that always goes at the end.
+ * The message as a customer sees it on WhatsApp: the picture, the words with {name}, {link}, {points} and
+ * {points_value} filled in for an example customer, and the STOP line that always goes at the end.
  */
-export function fillIn(text, { name = 'Meena', shop = 'your shop', link = null } = {}) {
+export function fillIn(text, { name = 'Meena', shop = 'your shop', link = null, points = '1,250', pointsValue = '₹125' } = {}) {
   return (text || '')
     .replace(/\{name\}/g, name)
     .replace(/\{shop\}/g, shop)
-    .replace(/\{link\}/g, link ?? '');
+    .replace(/\{link\}/g, link ?? '')
+    .replace(/\{points\}/g, points)
+    .replace(/\{points_value\}/g, pointsValue);
 }
 
 export default function MessageBubble({ text, media, link, shop, name = 'Meena' }) {

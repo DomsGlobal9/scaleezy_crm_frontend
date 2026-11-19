@@ -32,7 +32,7 @@ const ROUTES = [
   ['customer', `/customers/${customer}`], ['duplicates', '/duplicates'], ['reviews', '/reviews'], ['rated-low', '/reviews/rated-low'],
   ['festivals', '/festivals'], ['groups', '/groups'], ...(group ? [['group', `/groups/${encodeURIComponent(group)}`]] : []),
   ['segments', '/segments'], ['segment-new', '/segments/new'], ...(segment ? [['segment', `/segments/${segment}`]] : []),
-  ['messages', '/messages'], ['message-new', '/messages/new'], ...(message ? [['message', `/messages/${message}`]] : []),
+  ['messages', '/campaigns'], ['message-new', '/campaigns/new'], ...(message ? [['message', `/campaigns/${message}`]] : []),
   ['settings', '/settings'], ['settings-shop', '/settings?section=shop'], ['settings-auto', '/settings?section=automatic'], ['settings-team', '/settings?section=team'],
   ['door-qr', `/door-qr?locationId=${store}`], ['not-found', '/no-such-page']
 ];

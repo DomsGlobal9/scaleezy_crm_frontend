@@ -101,13 +101,19 @@ async function main() {
 
     console.log('\n1. Messages');
     await page.goto(`${APP}/today`);
-    await page.getByRole('link', { name: 'Messages' }).click();
-    await page.waitForURL(/\/messages$/);
+    await page.getByRole('link', { name: 'Campaigns' }).click();
+    await page.waitForURL(/\/campaigns$/);
     await page.getByTestId('fact-whatsapp').waitFor({ timeout: 20000 });
     // The card is there before the facts arrive (it says "not linked" until then): wait for them.
     await page.waitForFunction(() => /ending \d{4}\./.test(document.querySelector('[data-testid="fact-whatsapp"]')?.textContent ?? ''), null, { timeout: 20000 });
     check('the three facts: linked (the number as the service gives it, its end), who agreed, how fast', /linked/.test(await page.getByTestId('fact-whatsapp').innerText()) && /ending 9623\./.test(await page.getByTestId('fact-whatsapp').innerText()) && /agreed to offers/.test(await page.getByTestId('fact-agreed').innerText()) && /a day, 10 am to 8 pm/.test(await page.getByTestId('fact-pace').innerText()));
     check('campaigns are CRM\'s alone: nothing says "still sent from Inventory"', (await page.getByTestId('not-moved').count()) === 0 && !/still sent from Inventory|move them here/i.test(await page.locator('main').innerText()));
+
+    // The screen is "Campaigns" (19 Nov, the owner); old /messages links and bookmarks still open it.
+    check('the menu and the screen say "Campaigns"', (await page.getByRole('link', { name: 'Campaigns' }).count()) > 0 && /Campaigns/.test(await page.getByRole('heading', { level: 1 }).first().innerText()));
+    await page.goto(`${APP}/messages?tab=automatic`);
+    await page.waitForURL(/\/campaigns\?tab=automatic$/, { timeout: 15000 });
+    check('an old /messages?tab=automatic link opens /campaigns?tab=automatic', true);
 
     console.log('\n2. Shop settings');
     await page.goto(`${APP}/settings`);
@@ -119,8 +125,8 @@ async function main() {
     await page.screenshot({ path: path.join(shots, 'messages-settings.png') });
 
     console.log('\n3. A new message');
-    await page.goto(`${APP}/messages`);
-    await page.getByRole('link', { name: 'New message' }).click();
+    await page.goto(`${APP}/campaigns`);
+    await page.getByRole('link', { name: 'New campaign' }).click();
     await page.getByTestId('message-editor').waitFor();
     await page.getByLabel('Name (only the shop sees it)').fill(`Diwali silk week ${STAMP}`);
     await page.getByRole('combobox', { name: 'Who gets it' }).click();
@@ -135,7 +141,7 @@ async function main() {
     check('the bubble shows what Meena sees, the link and the STOP line', /Hi Meena, our Diwali silk week starts Friday\. shop\.link/.test(await bubble.innerText()) && /Reply STOP to stop these messages/.test(await bubble.innerText()), await bubble.innerText());
     await page.screenshot({ path: path.join(shots, 'messages-editor.png') });
     await page.getByRole('button', { name: 'Save draft' }).click();
-    await page.waitForURL(/\/messages\/[0-9a-f-]{36}$/, { timeout: 15000 });
+    await page.waitForURL(/\/campaigns\/[0-9a-f-]{36}$/, { timeout: 15000 });
     const detail = page.getByTestId('message-detail');
     await detail.waitFor();
     check('saved as a draft, on its own page', (await page.getByTestId('status').innerText()) === 'Draft');
@@ -158,7 +164,7 @@ async function main() {
     await page.waitForFunction(() => /2\s*sent of 2/.test(document.querySelector('[data-testid="stats"]')?.textContent ?? ''), null, { timeout: 15000 });
     check('its page: 2 sent of 2', true);
     await page.screenshot({ path: path.join(shots, 'messages-detail.png') });
-    await page.getByRole('link', { name: 'All messages' }).click();
+    await page.getByRole('link', { name: 'All campaigns' }).click();
     const row = page.getByTestId('message').filter({ hasText: `Diwali silk week ${STAMP}` });
     await row.waitFor({ timeout: 15000 }).catch(async e => { console.log('DEBUG', page.url(), (await page.locator('main').innerText()).slice(0, 900)); throw e; });
     check('the list shows it with its numbers', /2 sent/.test(await row.innerText()), await row.innerText());
@@ -184,7 +190,7 @@ async function main() {
     await page.keyboard.press('Escape');
 
     console.log('\n6. Automatic');
-    await page.goto(`${APP}/messages?tab=automatic`);
+    await page.goto(`${APP}/campaigns?tab=automatic`);
     const bday = page.getByTestId('wish-birthday');
     await bday.waitFor({ timeout: 15000 });
     const bSwitch = bday.getByRole('switch');
@@ -201,10 +207,10 @@ async function main() {
     const sp = await sctx.newPage();
     await sp.goto(`${APP}/customers/${crmIdOf(H)}`);
     await sp.getByTestId('profile').waitFor({ timeout: 20000 });
-    check('Sales has no Messages in the sidebar', (await sp.getByRole('link', { name: 'Messages' }).count()) === 0);
+    check('Sales has no Messages in the sidebar', (await sp.getByRole('link', { name: 'Campaigns' }).count()) === 0);
     check('...but can message one customer', await sp.getByTestId('message-one').isVisible());
-    await sp.goto(`${APP}/messages`);
-    await sp.getByText('Messages are not part of your role').waitFor({ timeout: 15000 });
+    await sp.goto(`${APP}/campaigns`);
+    await sp.getByText('Campaigns are not part of your role').waitFor({ timeout: 15000 });
     check('...and Messages says it is not part of their role', true);
     await sctx.close();
 
@@ -212,11 +218,11 @@ async function main() {
     const pctx = await browser.newContext({ viewport: { width: 390, height: 844 } });
     await pctx.addCookies([{ name: 'token', value: ownerToken, domain: 'localhost', path: '/', httpOnly: true, sameSite: 'Lax' }]);
     const pp = await pctx.newPage();
-    await pp.goto(`${APP}/messages`);
+    await pp.goto(`${APP}/campaigns`);
     await pp.getByTestId('message').first().waitFor({ timeout: 20000 });
     check('the list fits', await noOverflow(pp));
     await pp.screenshot({ path: path.join(shots, 'messages-list-phone.png'), fullPage: true });
-    await pp.goto(`${APP}/messages/new`);
+    await pp.goto(`${APP}/campaigns/new`);
     await pp.getByTestId('message-editor').waitFor();
     check('the editor fits', await noOverflow(pp));
     await pp.screenshot({ path: path.join(shots, 'messages-editor-phone.png'), fullPage: true });

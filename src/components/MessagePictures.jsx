@@ -140,11 +140,13 @@ export function TemplatesDialog({ onUse, onClose }) {
     <Dialog title="Templates" sub="Messages your shop saved to use again." onClose={onClose} testid="templates">
       {list.isLoading ? <div className="crm-row crm-muted"><Loader2 size={16} className="animate-spin" /> Loading the templates…</div>
         : list.isError ? <LoadFailed what="the templates" error={list.error} onRetry={() => list.refetch()} />
-        : list.data.length === 0 ? <p className="crm-muted" data-testid="templates-none">No templates yet. Write a message and press "Save as a template".</p>
         : (
           <ul className="mp-tpls">
-            {list.data.map(t => (
-              <li key={t.id} className="mp-tpl" data-testid="template">
+            {!list.data.some(t => !t.starter) && <li className="mp-tpl-note crm-muted" data-testid="templates-none">No templates of your own yet. Write a message and press "Save as a template". Or start from one below.</li>}
+            {list.data.map((t, i) => (
+              <React.Fragment key={t.id}>
+              {t.starter && !list.data[i - 1]?.starter && <li className="mp-tpl-head" data-testid="templates-starters">Ready-made</li>}
+              <li className="mp-tpl" data-testid="template" data-starter={t.starter ? 'yes' : undefined}>
                 {t.media?.url ? <img src={t.media.url} alt="" /> : <span className="mp-noimg" aria-hidden="true" />}
                 {asking === t.id ? (
                   <>
@@ -154,10 +156,11 @@ export function TemplatesDialog({ onUse, onClose }) {
                 ) : (
                   <>
                     <div style={{ minWidth: 0 }}><b>{t.name}</b><small>{t.text}</small></div>
-                    <div className="pe-btns"><button type="button" className="btn-primary" onClick={() => onUse(t)} data-testid="template-use">Use</button><button type="button" className="btn-secondary mp-del" onClick={() => setAsking(t.id)} aria-label={`Delete ${t.name}`}><Trash2 size={14} /> Delete</button></div>
+                    <div className="pe-btns"><button type="button" className="btn-primary" onClick={() => onUse(t)} data-testid="template-use">Use</button>{!t.starter && <button type="button" className="btn-secondary mp-del" onClick={() => setAsking(t.id)} aria-label={`Delete ${t.name}`}><Trash2 size={14} /> Delete</button>}</div>
                   </>
                 )}
               </li>
+              </React.Fragment>
             ))}
           </ul>
         )}

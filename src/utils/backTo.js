@@ -24,7 +24,7 @@ const PLACES = [
   [/^\/groups/, 'Groups'],
   [/^\/segments\/.+/, 'The list'],
   [/^\/segments/, 'Saved lists'],
-  [/^\/messages/, 'Messages'],
+  [/^\/campaigns/, 'Campaigns'],
   [/^\/settings/, 'Settings'],
   [/^\/festivals/, 'Festivals'],
   [/^\/customers\/?$/, 'All customers'],

@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { Loader2, CloudOff, RotateCw } from 'lucide-react';
 import { useAuth } from './context/AuthContext';
 import AppShell from './components/AppShell';
@@ -26,6 +26,12 @@ import Groups from './pages/Groups';
 import GroupView from './pages/GroupView';
 import Reviews from './pages/Reviews';
 import RatedLow from './pages/RatedLow';
+
+/** /messages/... (the screen's name until 19 Nov) opens the same place under /campaigns, with its ?tab= kept. */
+function OldMessagesAddress() {
+  const { pathname, search } = useLocation();
+  return <Navigate to={`${pathname.replace(/^\/messages/, '/campaigns')}${search}`} replace />;
+}
 
 export default function App() {
   const { status, refresh } = useAuth();
@@ -76,10 +82,12 @@ export default function App() {
           <Route path="/segments/new" element={<SegmentEditor />} />
           <Route path="/segments/:id" element={<SegmentView />} />
           <Route path="/segments/:id/edit" element={<SegmentEditor />} />
-          <Route path="/messages" element={<Messages />} />
-          <Route path="/messages/new" element={<MessageEditor />} />
-          <Route path="/messages/:id" element={<MessageDetail />} />
-          <Route path="/messages/:id/edit" element={<MessageEditor />} />
+          <Route path="/campaigns" element={<Messages />} />
+          <Route path="/campaigns/new" element={<MessageEditor />} />
+          <Route path="/campaigns/:id" element={<MessageDetail />} />
+          <Route path="/campaigns/:id/edit" element={<MessageEditor />} />
+          {/* The screen was called Messages until 19 Nov: old links and bookmarks still open it. */}
+          <Route path="/messages/*" element={<OldMessagesAddress />} />
           <Route path="/settings" element={<ShopSettings />} />
           <Route path="*" element={<Navigate to="/today" replace />} />
         </Route>

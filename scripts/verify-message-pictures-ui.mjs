@@ -45,7 +45,7 @@ async function main() {
   const browser = await chromium.launch({ channel: process.env.BROWSER_CHANNEL || 'msedge', headless: true });
   try {
     const { ctx, page } = await as(browser);
-    await page.goto(`${APP}/messages/new`);
+    await page.goto(`${APP}/campaigns/new`);
     await page.getByTestId('message-editor').waitFor({ timeout: 30000 });
 
     // The picture: three ways in.
@@ -85,7 +85,7 @@ async function main() {
     check('"Save as a template" asks only for a name, starting from the message\'s', (await save.getByTestId('template-name').inputValue()) === STAMP);
     await save.getByTestId('template-save').click();
     await save.waitFor({ state: 'detached', timeout: 10000 });
-    await page.goto(`${APP}/messages/new`);
+    await page.goto(`${APP}/campaigns/new`);
     await page.getByTestId('start-from-template').click();
     const tpl = page.getByTestId('templates');
     await tpl.getByTestId('template').first().waitFor({ timeout: 10000 });
@@ -106,12 +106,12 @@ async function main() {
     // Copy on a message in the list (one made for the check, removed after).
     const owner = tokenFor('owner');
     const made = await (await fetch('http://localhost:4008/api/v1/messages', { method: 'POST', headers: { Authorization: `Bearer ${owner}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ name: `${STAMP} message`, text: 'Hi {name}, our Diwali silk week starts Friday. {shop}', audience: { everyone: true } }) })).json();
-    await page.goto(`${APP}/messages`);
+    await page.goto(`${APP}/campaigns`);
     const row = page.getByTestId('message').filter({ hasText: `${STAMP} message` }).first();
     await row.waitFor({ timeout: 20000 }).catch(() => {});
     if (await row.count()) {
       await row.getByTestId('message-copy').click();
-      await page.waitForURL(/\/messages\/[0-9a-f-]{36}$/, { timeout: 15000 });
+      await page.waitForURL(/\/campaigns\/[0-9a-f-]{36}$/, { timeout: 15000 });
       check('Copy makes a new draft "Copy of ..." and opens it', /Copy of /.test(await page.getByTestId('message-detail').innerText()));
       const copied = page.url().split('/').pop();
       sql(`delete from crm.message_campaigns where id = '${copied}'`);
@@ -122,7 +122,7 @@ async function main() {
     page.on('dialog', d => { alerted = true; d.dismiss().catch(() => {}); });
     const api = (method, p, body) => fetch(`http://localhost:4008/api/v1${p}`, { method, headers: { Authorization: `Bearer ${owner}`, 'Content-Type': 'application/json' }, body: body ? JSON.stringify(body) : undefined }).then(r => r.json());
     const have = (await api('GET', '/messages/templates')).data ?? [];
-    await page.goto(`${APP}/messages/new`);
+    await page.goto(`${APP}/campaigns/new`);
     await page.getByTestId('message-editor').waitFor({ timeout: 30000 });
     if (have.length === 0) {
       await page.getByTestId('start-from-template').click();
@@ -174,7 +174,7 @@ async function main() {
     await ctx.close();
 
     const phone = await as(browser, { width: 390, height: 844 });
-    await phone.page.goto(`${APP}/messages/new`);
+    await phone.page.goto(`${APP}/campaigns/new`);
     await phone.page.getByTestId('message-editor').waitFor({ timeout: 30000 });
     await phone.page.getByRole('button', { name: 'Add a picture' }).click();
     await phone.page.getByTestId('pp-tab-products').click();

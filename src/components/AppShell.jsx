@@ -73,7 +73,7 @@ export default function AppShell() {
     { to: '/reviews', label: 'Reviews', icon: Star, count: waiting, countLabel: `${waiting} waiting` },
     { to: '/groups', label: 'Customer groups', icon: Tags },
     { to: '/segments', label: 'Saved lists', icon: ListFilter },
-    ...(can('crm:messages:view') ? [{ to: '/messages', label: 'Messages', icon: Megaphone }] : []),
+    ...(can('crm:messages:view') ? [{ to: '/campaigns', label: 'Campaigns', icon: Megaphone }] : []),
   ] : [];
 
   const initials = (user?.name || user?.email || '?').split(/\s+/).map(w => w[0]).slice(0, 2).join('').toUpperCase();

@@ -27,7 +27,7 @@ async function main() {
     await sp.goto(`${APP}/settings`);
     await sp.waitForLoadState('networkidle');
     check('Sales: no Team and access', (await sp.getByTestId('team-access').count()) === 0);
-    check('Sales: the Shop floor is in the menu, Messages is not', (await sp.getByRole('link', { name: 'Shop floor' }).count()) === 1 && (await sp.getByRole('link', { name: 'Messages' }).count()) === 0);
+    check('Sales: the Shop floor is in the menu, Messages is not', (await sp.getByRole('link', { name: 'Shop floor' }).count()) === 1 && (await sp.getByRole('link', { name: 'Campaigns' }).count()) === 0);
 
     const ctx = await browser.newContext({ viewport: { width: 1366, height: 900 } });
     await ctx.addCookies([{ name: 'token', value: tokenFor('owner'), domain: 'localhost', path: '/', httpOnly: true, sameSite: 'Lax' }]);

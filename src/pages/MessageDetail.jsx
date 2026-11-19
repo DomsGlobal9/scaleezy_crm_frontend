@@ -32,7 +32,7 @@ export default function MessageDetail() {
   const mayAct = can('crm:messages:send');
 
   if (m.isLoading) return <main className="crm-page"><div className="crm-card crm-row crm-muted" aria-busy="true"><Loader2 size={16} className="animate-spin" /> Loading the message…</div></main>;
-  if (m.isError) return <main className="crm-page"><Link to="/messages" className="cp-back"><ArrowLeft size={14} /> All messages</Link><div className="crm-card"><LoadFailed what="the message" error={m.error} onRetry={() => m.refetch()} /></div></main>;
+  if (m.isError) return <main className="crm-page"><Link to="/campaigns" className="cp-back"><ArrowLeft size={14} /> All campaigns</Link><div className="crm-card"><LoadFailed what="the message" error={m.error} onRetry={() => m.refetch()} /></div></main>;
   const d = m.data;
   const num = d.numbers ?? { total: 0, handed: 0, read: 0, tapped: 0, cameIn: 0, cameInAmount: 0 };
 
@@ -49,7 +49,7 @@ export default function MessageDetail() {
     } catch (err) { setError(err?.message || 'That did not work. Try again.'); }
   };
   const remove = async () => {
-    try { await del.mutateAsync(); toast.success('Draft deleted.'); navigate('/messages', { replace: true }); }
+    try { await del.mutateAsync(); toast.success('Draft deleted.'); navigate('/campaigns', { replace: true }); }
     catch (err) { setError(err?.message || 'The draft could not be deleted. Try again.'); }
   };
   const busy = act.isPending || del.isPending;
@@ -57,7 +57,7 @@ export default function MessageDetail() {
 
   return (
     <main className="crm-page ms-page">
-      <Link to={d.kind === 'manual' ? '/messages' : '/messages?tab=automatic'} className="cp-back"><ArrowLeft size={14} /> All messages</Link>
+      <Link to={d.kind === 'manual' ? '/campaigns' : '/campaigns?tab=automatic'} className="cp-back"><ArrowLeft size={14} /> All campaigns</Link>
       <section className="crm-card ms-detail" data-testid="message-detail">
         <div className="ms-detail-head">
           <div style={{ minWidth: 0 }}>
@@ -72,7 +72,7 @@ export default function MessageDetail() {
             {d.status === 'draft' && !confirm && (
               <>
                 <button type="button" className="btn-primary" disabled={busy} onClick={() => setConfirm('start')}>Start</button>
-                <Link to={`/messages/${id}/edit`} className="btn-secondary">Change</Link>
+                <Link to={`/campaigns/${id}/edit`} className="btn-secondary">Change</Link>
                 <button type="button" className="btn-secondary" disabled={busy || !overview.data?.sendingSetUp} onClick={() => run('test')}>{act.isPending && act.variables === 'test' && <Loader2 size={14} className="animate-spin" />} Send me a test</button>
                 <button type="button" className="btn-secondary" disabled={busy} onClick={() => setConfirm('delete')}>Delete draft</button>
               </>
@@ -111,7 +111,7 @@ export default function MessageDetail() {
         )}
         {mayAct && d.kind === 'manual' && !confirm && (
           <div className="ms-row-end"><button type="button" className="btn-secondary ms-small" disabled={copy.isPending} data-testid="detail-copy"
-            onClick={async () => { try { const c = await copy.mutateAsync(id); toast.success(`Copied as a new draft: "${c.name}"`); navigate(`/messages/${c.id}`); } catch (err) { setError(err?.message || 'The message could not be copied.'); } }}>
+            onClick={async () => { try { const c = await copy.mutateAsync(id); toast.success(`Copied as a new draft: "${c.name}"`); navigate(`/campaigns/${c.id}`); } catch (err) { setError(err?.message || 'The message could not be copied.'); } }}>
             {copy.isPending ? <Loader2 size={14} className="animate-spin" /> : <Copy size={14} />} Copy as a new draft</button></div>
         )}
         {error && <p className="pe-err" role="alert">{error}</p>}

@@ -26,6 +26,7 @@ export const RULES = [
   { key: 'groups', label: 'In a group…', input: 'groups', start: [], says: v => `are in ${list(v)}` },
   { key: 'whatsapp', label: 'WhatsApp offers…', input: 'whatsapp', start: 'agreed', says: v => (v === 'agreed' ? 'agreed to WhatsApp offers' : 'have not agreed to WhatsApp offers') },
   { key: 'hasPoints', label: 'Have loyalty points', input: 'flag', start: true, says: () => 'have loyalty points' },
+  { key: 'pointsAtLeast', label: 'Have at least … points', input: 'count', start: 500, lead: 'have at least', after: 'points', says: v => `have at least ${Number(v).toLocaleString('en-IN')} points` },
   { key: 'hasCredit', label: 'Have store credit', input: 'flag', start: true, says: () => 'have store credit' },
   { key: 'visitsAtLeast', label: 'Came on at least … different days', input: 'count', start: 2, lead: 'came on at least', after: 'different days', says: v => `came on at least ${v} different ${v === 1 ? 'day' : 'days'}` },
   { key: 'visitsAtMost', label: 'Came on at most … different days', input: 'count', start: 1, lead: 'came on at most', after: 'different days', says: v => `came on at most ${v} different ${v === 1 ? 'day' : 'days'}` },

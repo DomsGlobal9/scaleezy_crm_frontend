@@ -37,7 +37,7 @@ const SECTIONS = [
   { key: 'changes', group: 'Customers', label: 'Where changes are made', icon: UserCog, sub: 'Offers, birthdays, deletes' },
   { key: 'prices', group: 'Customers', label: 'Price ranges', icon: Ruler, sub: 'Your budget bands' },
   { key: 'festivals', group: 'Customers', label: 'Festivals', icon: CalendarHeart, sub: "Your shop's calendar" },
-  { key: 'automatic', group: 'Messages', label: 'Automatic messages', icon: Sparkles, sub: 'Thank-you, ratings, new stock, win-back' },
+  { key: 'automatic', group: 'Campaigns', label: 'Automatic messages', icon: Sparkles, sub: 'Thank-you, ratings, new stock, win-back' },
   { key: 'team', group: 'People', label: 'Team and access', icon: Users, sub: 'Who can do what' }
 ];
 const KEYS = new Set(SECTIONS.map(s => s.key));

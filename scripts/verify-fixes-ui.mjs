@@ -44,14 +44,14 @@ async function main() {
     const { ctx, page } = await as(browser, 'owner');
 
     console.log('\nDelete draft');
-    await page.goto(`${APP}/messages/${draftId}`);
+    await page.goto(`${APP}/campaigns/${draftId}`);
     await page.getByRole('button', { name: 'Delete draft' }).click();
     check('Delete draft asks first, in plain words', await page.getByText('Delete this draft?').isVisible());
     await page.getByRole('button', { name: 'Keep it' }).click();
     check('"Keep it" keeps it', sql(`select count(*) from crm.message_campaigns where id = '${draftId}'`) === '1' && await page.getByRole('button', { name: 'Delete draft' }).isVisible());
     await page.getByRole('button', { name: 'Delete draft' }).click();
     await page.getByTestId('draft-delete-yes').click();
-    await page.waitForURL(/\/messages$/);
+    await page.waitForURL(/\/campaigns$/);
     check('"Yes, delete it" deletes it and goes back to Messages', sql(`select count(*) from crm.message_campaigns where id = '${draftId}'`) === '0');
 
     console.log('\nBack links');
@@ -77,7 +77,7 @@ async function main() {
     let release;
     const held = new Promise(r => { release = r; });
     await page.route('**/api/v1/messages/overview', async (route) => { await held; await route.continue(); });
-    await page.goto(`${APP}/messages`);
+    await page.goto(`${APP}/campaigns`);
     await page.getByTestId('facts-loading').waitFor({ timeout: 8000 });
     const early = await page.locator('main').innerText();
     check('Messages while loading: no "not linked" and no "0 customers agreed"', !/not linked|0 customers agreed/.test(early), early.slice(0, 200));

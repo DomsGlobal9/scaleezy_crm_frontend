@@ -95,7 +95,7 @@ export default function MessageEditor() {
       const body = { name, text, audience, media: media ? { id: media.id } : null, link: link ? (link.type === 'WHATSAPP' ? { type: 'WHATSAPP' } : { type: 'EXTERNAL', url: link.url }) : null };
       const m = await save.mutateAsync(body);
       toast.success('Draft saved. Check it, send yourself a test, then press Start.');
-      navigate(`/messages/${m.id}`, { replace: !!id });
+      navigate(`/campaigns/${m.id}`, { replace: !!id });
     } catch (err) {
       setError(err?.message || 'The message could not be saved. Try again.');
     }
@@ -105,8 +105,8 @@ export default function MessageEditor() {
   const grps = groups.data ?? [];
   return (
     <main className="crm-page ms-page">
-      <Link to={id ? `/messages/${id}` : '/messages'} className="cp-back"><ArrowLeft size={14} /> {id ? 'Back to the message' : 'All messages'}</Link>
-      <div className="crm-head"><div><h1>{id ? 'Change the draft' : 'New message'}</h1><p>Only customers who agreed to offers get it. STOP ends them all.</p></div>
+      <Link to={id ? `/campaigns/${id}` : '/campaigns'} className="cp-back"><ArrowLeft size={14} /> {id ? 'Back to the campaign' : 'All campaigns'}</Link>
+      <div className="crm-head"><div><h1>{id ? 'Change the draft' : 'New campaign'}</h1><p>Only customers who agreed to offers get it. STOP ends them all.</p></div>
         <div className="ms-head-tools"><button type="button" className="btn-secondary ms-small" onClick={() => setTemplates(true)} data-testid="start-from-template"><LayoutTemplate size={14} /> Start from a template</button></div>
       </div>
       <div className="ms-edit">
@@ -126,7 +126,7 @@ export default function MessageEditor() {
           <label className="pe-field"><span>Message</span>
             <textarea className="ms-area" rows={5} value={text} onChange={(e) => setText(e.target.value)} placeholder="Hi {name}, our Diwali silk week starts Friday." aria-label="Message" />
           </label>
-          <p className="pe-hint">{'{name}'} becomes each customer's first name, {'{shop}'} your shop's name. The line "Reply STOP to stop these messages" is added at the end, always.</p>
+          <p className="pe-hint">{'{name}'} becomes each customer's first name, {'{shop}'} your shop's name, {'{points}'} the loyalty points they have and {'{points_value}'} what those are worth. The line "Reply STOP to stop these messages" is added at the end, always.</p>
           <div className="ms-att">
             {media ? <button type="button" className="btn-secondary ms-small" onClick={() => setMedia(null)}><X size={14} /> Remove the picture</button>
               : <button type="button" className="btn-secondary ms-small" onClick={() => setPicking(true)}><ImagePlus size={14} /> Add a picture</button>}
@@ -148,7 +148,7 @@ export default function MessageEditor() {
           <div className="pe-btns">
             <button type="submit" className="btn-primary" disabled={save.isPending}>{save.isPending && <Loader2 size={14} className="animate-spin" />} Save draft</button>
             <button type="button" className="btn-secondary ms-small" disabled={!text.trim()} onClick={() => setSaving(true)} data-testid="save-as-template"><BookmarkPlus size={14} /> Save as a template</button>
-            <Link to={id ? `/messages/${id}` : '/messages'} className="btn-secondary">Cancel</Link>
+            <Link to={id ? `/campaigns/${id}` : '/campaigns'} className="btn-secondary">Cancel</Link>
           </div>
         </form>
         <div className="ms-side">
