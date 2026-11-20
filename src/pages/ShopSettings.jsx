@@ -5,7 +5,7 @@ import { QRCodeSVG } from 'qrcode.react';
 import toast from 'react-hot-toast';
 import {
   LayoutGrid, Store, UserCog, Ruler, CalendarHeart, Sparkles, Users, ShieldOff, Loader2, ExternalLink,
-  Printer, CheckCircle2, CircleDashed, AlertCircle, ChevronRight, MessageCircle
+  Printer, CheckCircle2, CircleDashed, AlertCircle, ChevronRight, MessageCircle, Star
 } from 'lucide-react';
 import { api } from '../lib/api';
 import { INVENTORY_URL } from '../lib/config';
@@ -17,6 +17,7 @@ import { rangeWord, rangesOf } from '../utils/customerFilters';
 import Select from '../components/common/Select';
 import LoadFailed from '../components/LoadFailed';
 import FeedbackSettings from '../components/FeedbackSettings';
+import { LevelsSettings } from '../components/NextSettings';
 import PriceBands from '../components/PriceBands';
 import TeamAccess from '../components/TeamAccess';
 
@@ -36,8 +37,9 @@ const SECTIONS = [
   { key: 'shop', group: 'Your shop', label: 'Shop and door QR', icon: Store, sub: 'Logo, stores, standees' },
   { key: 'changes', group: 'Customers', label: 'Where changes are made', icon: UserCog, sub: 'Offers, birthdays, deletes' },
   { key: 'prices', group: 'Customers', label: 'Price ranges', icon: Ruler, sub: 'Your budget bands' },
+  { key: 'levels', group: 'Customers', label: 'Customer levels', icon: Star, sub: 'Silver, Gold… and their points' },
   { key: 'festivals', group: 'Customers', label: 'Festivals', icon: CalendarHeart, sub: "Your shop's calendar" },
-  { key: 'automatic', group: 'Campaigns', label: 'Automatic messages', icon: Sparkles, sub: 'Thank-you, ratings, new stock, win-back' },
+  { key: 'automatic', group: 'Campaigns', label: 'Automatic messages', icon: Sparkles, sub: 'Thank-you, ratings, parcels, money owed' },
   { key: 'team', group: 'People', label: 'Team and access', icon: Users, sub: 'Who can do what' }
 ];
 const KEYS = new Set(SECTIONS.map(s => s.key));
@@ -348,6 +350,8 @@ function Owner({ section, go }) {
         <Link className="btn-primary st-btn" to="/festivals" data-testid="st-festivals">Open festivals <ChevronRight size={14} aria-hidden="true" /></Link>
       </section>
     );
+  } else if (section === 'levels') {
+    body = <section className="crm-card st-card"><LevelsSettings /></section>;
   } else if (section === 'automatic') {
     body = <section className="crm-card st-card"><FeedbackSettings /></section>;
   } else {

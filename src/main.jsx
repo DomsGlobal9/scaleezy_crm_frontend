@@ -24,6 +24,8 @@ import './styles/topbar.css';
 import './styles/customer-page.css';
 import './styles/sign-in.css';
 import './styles/boutique.css';
+import './styles/bookings.css';
+import './styles/next.css';
 import './styles/responsive.css'; // last: every device (19 Nov)
 import App from './App.jsx';
 import { AuthProvider } from './context/AuthContext.jsx';

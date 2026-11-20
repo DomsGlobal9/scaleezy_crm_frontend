@@ -3,6 +3,7 @@ import toast from 'react-hot-toast';
 import { Loader2 } from 'lucide-react';
 import { useArrivalsSettings, useFeedbackSettings, useReviewAskSettings, useSaveArrivals, useSaveFeedback, useSaveReviewAsk, useSaveWinback, useWinbackSettings } from '../hooks/useMessages';
 import Select from './common/Select';
+import NextSettings from './NextSettings';
 import LoadFailed from './LoadFailed';
 
 /**
@@ -51,6 +52,7 @@ export default function FeedbackSettings() {
       <ReviewAsk />
       <Arrivals />
       <WinBack />
+      <NextSettings />
     </div>
   );
 }

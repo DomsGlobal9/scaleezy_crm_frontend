@@ -31,6 +31,8 @@ import { useMediaQuery } from '../hooks/useMediaQuery';
 import { FeedbackCard, ReviewCard } from '../components/ReviewCards';
 import WinbackOffer from '../components/WinbackOffer';
 import BoutiqueWork, { BoutiqueStrip } from '../components/BoutiqueWork';
+import CustomerAppointments, { AppointmentStrip } from '../components/CustomerAppointments';
+import { LevelCard, MoneyOwedCard, BringAFriendCard, SendPicksCard } from '../components/NextCards';
 import { useUsesServices } from '../hooks/useBoutique';
 
 /**
@@ -175,8 +177,16 @@ export default function CustomerDetail() {
       ) : (
         <>
           <Header profile={customer.data.profile} numbers={customer.data.numbers} />
+          {boutique && <AppointmentStrip customerId={customer.data.profile.id} onOpen={() => show('boutique')} />}
           {boutique && <BoutiqueStrip customerId={customer.data.profile.id} onOpen={() => show('boutique')} />}
           <WinbackOffer customerId={id} />
+          {/* A phone or tablet: the side column is a tab, so the level, money owed, picks and bring a friend show here. */}
+          <div className="nx-phone">
+            <LevelCard customerId={customer.data.profile.id} />
+            <MoneyOwedCard customerId={customer.data.profile.id} />
+            <SendPicksCard customerId={customer.data.profile.id} name={customer.data.profile.name} phone={customer.data.profile.phone} consent={customer.data.profile.consent} />
+            <BringAFriendCard customerId={customer.data.profile.id} name={customer.data.profile.name} />
+          </div>
           {reviews.data?.unhappy && <Unhappy unhappy={reviews.data.unhappy} profile={customer.data.profile} onFollowUp={askFollowUp} />}
           <section className={`cp-body${tab === 'work' ? ' on-work' : ''}`}>
             <div className="crm-card cp-main">
@@ -194,11 +204,17 @@ export default function CustomerDetail() {
                 {tab === 'timeline' ? <Timeline id={id} />
                   : tab === 'festivals' ? <FestivalsTab customerId={customer.data.profile.id} />
                   : tab === 'reviews' ? <ReviewsTab reviews={reviews} />
-                  : tab === 'boutique' ? <BoutiqueWork customerId={customer.data.profile.id} phone={customer.data.profile.phone} firstName={(customer.data.profile.name || '').trim().split(/\s+/)[0]} />
+                  : tab === 'boutique' ? <><CustomerAppointments customerId={customer.data.profile.id} name={customer.data.profile.name} /><BoutiqueWork customerId={customer.data.profile.id} phone={customer.data.profile.phone} firstName={(customer.data.profile.name || '').trim().split(/\s+/)[0]} /></>
                   : <><PastPurchases customerId={customer.data.profile.id} /><WhatTheyWear customerId={customer.data.profile.id} onFestivals={() => show('festivals')} /></>}
               </div>
             </div>
-            <FollowUpsAndNotes customerId={customer.data.profile.id} after={<CustomerGroupsCard customerId={customer.data.profile.id} firstName={(customer.data.profile.name || '').trim().split(/\s+/)[0]} />} />
+            <FollowUpsAndNotes customerId={customer.data.profile.id} after={<>
+              <LevelCard customerId={customer.data.profile.id} />
+              <MoneyOwedCard customerId={customer.data.profile.id} />
+              <CustomerGroupsCard customerId={customer.data.profile.id} firstName={(customer.data.profile.name || '').trim().split(/\s+/)[0]} />
+              <SendPicksCard customerId={customer.data.profile.id} name={customer.data.profile.name} phone={customer.data.profile.phone} consent={customer.data.profile.consent} />
+              <BringAFriendCard customerId={customer.data.profile.id} name={customer.data.profile.name} />
+            </>} />
           </section>
         </>
       )}

@@ -1,0 +1,55 @@
+/* The next five on a customer's page and in Settings (the mockups approved 19 Nov). Theme colours only; controls at
+   least 40 px to tap; nothing wider than its column. */
+.nx-card { display: grid; gap: 8px; min-width: 0; }
+.nx-card .wk-head h2 { display: inline-flex; align-items: center; gap: 6px; }
+.nx-badge { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; font-weight: 700; padding: 3px 10px; border-radius: 999px; background: color-mix(in srgb, var(--accent-warning) 16%, transparent); color: var(--accent-warning); white-space: nowrap; }
+.nx-big { margin: 0; font-size: 20px; font-weight: 700; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.nx-big small { font-size: 12px; font-weight: 500; color: var(--text-secondary); }
+.nx-line { margin: 0; font-size: 13px; line-height: 1.45; overflow-wrap: anywhere; }
+.nx-bar { height: 6px; border-radius: 999px; background: var(--bg-hover); overflow: hidden; }
+.nx-bar span { display: block; height: 100%; background: var(--brand-solid); border-radius: inherit; }
+.nx-list { list-style: none; margin: 0; padding: 0; display: grid; }
+.nx-list li { display: flex; justify-content: space-between; gap: 10px; padding: 8px 0; border-top: 1px solid var(--border-light); font-size: 13px; flex-wrap: wrap; }
+.nx-acts { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+.nx-owed { border-color: color-mix(in srgb, var(--accent-warning) 35%, var(--border-light)); }
+.nx-code { margin: 0; font: 700 18px/1.2 ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: .06em; padding: 8px 12px; border: 1px dashed var(--border-focus); border-radius: 10px; text-align: center; user-select: all; }
+.nx-ok { color: var(--brand-ink); font-weight: 600; display: inline-flex; align-items: center; gap: 4px; margin: 0; font-size: 13px; }
+.nx-use { display: grid; gap: 8px; }
+.nx-use .input-field { min-height: 42px; text-transform: uppercase; letter-spacing: .04em; }
+
+/* The picks sheet: a grid of pieces to tick. */
+.nx-picks { width: min(760px, 100%); }
+.nx-grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; max-height: 50vh; overflow-y: auto; }
+@media (max-width: 400px) { .nx-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.nx-piece { width: 100%; display: grid; gap: 4px; text-align: left; padding: 6px; border: 2px solid transparent; border-radius: 12px; background: var(--bg-input); color: var(--text-primary); font: inherit; cursor: pointer; min-width: 0; }
+.nx-piece.on { border-color: var(--brand-solid); }
+.nx-piece:focus-visible { outline: 2px solid var(--accent-primary); outline-offset: 2px; }
+.nx-piece b { font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.nx-piece small { font-size: 12px; color: var(--text-secondary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.nx-photo { position: relative; aspect-ratio: 3 / 4; border-radius: 8px; background: var(--bg-hover); display: grid; place-items: center; overflow: hidden; color: var(--text-muted); }
+.nx-photo img { width: 100%; height: 100%; object-fit: cover; }
+.nx-tick { position: absolute; top: 6px; right: 6px; width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; background: var(--brand-solid); color: var(--brand-on, #0f1a10); }
+
+/* Settings */
+.nx-sched { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+@media (max-width: 640px) { .nx-sched { grid-template-columns: 1fr; } }
+.nx-points { max-width: 260px; }
+.nx-levels { display: grid; gap: 12px; }
+.nx-levels h2 { display: flex; align-items: center; gap: 8px; margin: 0; font-size: 18px; }
+.nx-lv-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.nx-lv-list li { border: 1px solid var(--border-light); border-radius: 12px; padding: 12px; display: grid; gap: 10px; }
+.nx-lv-list li.on { border-color: color-mix(in srgb, var(--brand-solid) 45%, transparent); }
+.nx-lv-name { display: flex; gap: 10px; align-items: center; cursor: pointer; min-height: 40px; }
+.nx-lv-name input { width: 20px; height: 20px; accent-color: var(--brand-solid); flex: 0 0 auto; }
+.nx-lv-name span { display: grid; min-width: 0; }
+.nx-lv-name small { color: var(--text-secondary); font-size: 12px; }
+.nx-lv-fields { display: grid; grid-template-columns: 140px minmax(0, 1fr); gap: 10px; }
+@media (max-width: 520px) { .nx-lv-fields { grid-template-columns: 1fr; } }
+
+/* Laptop: these cards sit in the side column. Phone and tablet (the side column is a tab there): under the header. */
+.nx-phone { display: none; }
+@media (max-width: 860px) {
+  .nx-phone { display: grid; gap: 10px; margin: 12px 0; }
+  .nx-phone:empty { display: none; }
+  .cp-rail .nx-card { display: none; }
+}

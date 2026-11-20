@@ -18,6 +18,8 @@ import SegmentView from './pages/SegmentView';
 import CustomerFrom from './pages/CustomerFrom';
 import Counter from './pages/Counter';
 import DueAndReady from './pages/DueAndReady';
+import Appointments from './pages/Appointments';
+import Leads from './pages/Leads';
 import SalesDashboard from './pages/SalesDashboard';
 import DoorQr from './pages/DoorQr';
 import SalesVisit from './pages/SalesVisit';
@@ -68,6 +70,8 @@ export default function App() {
           <Route path="/week" element={<Week />} />
           <Route path="/counter" element={<Counter />} />
           <Route path="/due" element={<DueAndReady />} />
+          <Route path="/appointments" element={<Appointments />} />
+          <Route path="/leads" element={<Leads />} />
           <Route path="/sales" element={<SalesDashboard />} />
           <Route path="/sales/visit/:id" element={<SalesVisit />} />
           <Route path="/door-qr" element={<DoorQr />} />
