@@ -75,7 +75,7 @@ function Dues() {
         </label>
       </div>
       {d.payLinkProblem
-        ? <p className="nx-warn" role="status" data-testid="dues-paylink-problem"><b>Pay links can't be made yet:</b> your shop's Razorpay is not connected. Connect it in Inventory, Settings → Online shop → Payments. Until then, reminders ask customers to pay at the shop.</p>
+        ? <p className="nx-warn" role="status" data-testid="dues-paylink-problem"><b>Pay links can't be made yet:</b> your shop's Razorpay is not connected. Connect it in Inventory, Settings → Payments. Until then, reminders ask customers to pay at the shop.</p>
         : <p className="pe-hint" data-testid="dues-paylink-ok">Bills bought online get a pay link from your own Razorpay in the reminder; till bills are paid at the counter.</p>}
       {error && <p className="pe-err" role="alert">{error}</p>}
     </>
