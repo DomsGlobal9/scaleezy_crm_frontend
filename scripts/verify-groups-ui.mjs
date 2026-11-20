@@ -97,7 +97,7 @@ async function main() {
       await p2.getByTestId('group').first().waitFor({ timeout: 20000 });
       check('sales: no "New group"', (await p2.getByLabel('New group').count()) === 0);
       await p2.getByTestId('group').filter({ hasText: 'VIP' }).click();
-      await p2.getByTestId('member').first().waitFor({ timeout: 15000 });
+      await p2.getByLabel('Find a customer to add').waitFor({ timeout: 15000 });
       check('...but can add people, and has no rename, merge or delete', (await p2.getByLabel('Find a customer to add').count()) === 1 && (await p2.getByRole('button', { name: 'Rename' }).count()) === 0 && (await p2.getByRole('button', { name: /^Delete/ }).count()) === 0);
       await c2.close();
     }
@@ -107,7 +107,7 @@ async function main() {
       await p3.getByTestId('group').first().waitFor({ timeout: 20000 });
       check('phone: the groups, no sideways scroll', await noOverflow(p3));
       await p3.goto(`${APP}/groups/vip`);
-      await p3.getByTestId('member').first().waitFor({ timeout: 15000 });
+      await p3.getByTestId('group-name').waitFor({ timeout: 15000 });
       check('phone: a group, no sideways scroll', await noOverflow(p3));
       await p3.screenshot({ path: path.join(shots, 'groups-phone.png'), fullPage: true });
       await c3.close();
