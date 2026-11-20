@@ -41,7 +41,7 @@ export function MoneyOwedCard({ customerId }) {
   if (!q.data || (q.data.totalPaise <= 0 && !q.data.reminders.length)) return null;
   const d = q.data;
   const doRemind = async () => {
-    try { await remind.mutateAsync(); toast.success('Reminder sent on WhatsApp.'); }
+    try { const r = await remind.mutateAsync(); toast.success(r?.sent?.links ? 'Reminder sent on WhatsApp, with a link to pay online.' : 'Reminder sent on WhatsApp.'); }
     catch (e) { toast.error(e?.message || 'It could not be sent.'); }
   };
   return (
@@ -50,7 +50,7 @@ export function MoneyOwedCard({ customerId }) {
       {d.totalPaise > 0 ? <p className="nx-big">{rupeesFromPaise(d.totalPaise)} <small>oldest {d.oldestDays} day{d.oldestDays === 1 ? '' : 's'}</small></p> : <p className="crm-muted">Nothing owed now.</p>}
       {d.items.length > 0 && (
         <ul className="nx-list">
-          {d.items.map(i => <li key={i.orderId}><span>Bill {i.orderNumber ?? ''} · {i.kind === 'kept' ? 'kept order' : 'pay later'}</span><b>{rupeesFromPaise(i.amountPaise)}</b></li>)}
+          {d.items.map(i => <li key={i.orderId}><span>Bill {i.orderNumber ?? ''} · {i.kind === 'kept' ? 'kept order' : 'pay later'}{i.payAt === 'till' ? ' · at the counter' : ' · pay link'}</span><b>{rupeesFromPaise(i.amountPaise)}</b></li>)}
         </ul>
       )}
       <p className="nx-line crm-muted">

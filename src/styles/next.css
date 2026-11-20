@@ -53,3 +53,5 @@
   .nx-phone:empty { display: none; }
   .cp-rail .nx-card { display: none; }
 }
+
+.nx-warn { margin: 0; padding: 10px 12px; border-radius: 10px; font-size: 13px; line-height: 1.5; border: 1px solid color-mix(in srgb, var(--accent-warning) 50%, transparent); background: color-mix(in srgb, var(--accent-warning) 9%, transparent); }
