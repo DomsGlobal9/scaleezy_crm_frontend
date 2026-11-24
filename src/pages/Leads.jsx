@@ -103,7 +103,8 @@ export default function Leads() {
   if (services.isLoading) return <main className="crm-page"><div className="crm-card crm-row crm-muted"><Loader2 size={16} className="animate-spin" /> Loading…</div></main>;
   const counts = leads.data?.counts ?? {};
   const items = leads.data?.items ?? [];
-  const canReply = can('crm:messages:send');
+  // A reply answers their own question: anyone who works with customers can send it (not a campaign).
+  const canReply = can('crm:customer:update');
 
   return (
     <main className="crm-page ld-page">
