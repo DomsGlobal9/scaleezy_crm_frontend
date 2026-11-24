@@ -81,6 +81,22 @@ async function main() {
     await page.getByTestId('lead-show-talking').click(); await settle(page);
     const talking = await page.getByTestId('lead').filter({ hasText: `UI Lead Kavya ${STAMP}` }).waitFor({ timeout: 10000 }).then(() => true, () => false);
     check('...they move to Talking', talking && /show=talking/.test(page.url()), page.url());
+    // Show them pieces from the shop's stock, as a reply; the link opens the online shop to buy (24 Nov).
+    await page.getByTestId('lead').filter({ hasText: `UI Lead Kavya ${STAMP}` }).getByTestId('lead-picks').click();
+    const picks = page.getByTestId('picks-sheet');
+    await page.waitForFunction(() => document.querySelector('[data-testid=picks-none]') || document.querySelector('[data-testid=pick]'), null, { timeout: 12000 }).catch(() => {});
+    const pieceCount = await picks.getByTestId('pick').count();
+    if (pieceCount > 0) {
+      await picks.getByTestId('pick').nth(0).click();
+      if (pieceCount > 1) await picks.getByTestId('pick').nth(1).click();
+      await page.getByTestId('picks-send').click();
+      await picks.waitFor({ state: 'hidden', timeout: 15000 }).catch(() => {});
+      const sentPicks = (await stub()).filter(m => String(m.to).endsWith(PHONE) && /as you asked/.test(m.text));
+      check('Send pieces on the lead: the pieces go on WhatsApp as a reply, with a link to buy online', sentPicks.length === 1 && /buy online here: http/.test(sentPicks[0].text), sentPicks.map(m => m.text));
+    } else {
+      check('Send pieces on the lead opens the pieces (none in this shop: said plainly)', await page.getByTestId('picks-none').isVisible());
+      await page.keyboard.press('Escape');
+    }
 
     console.log('\n3. Booking from the lead');
     await page.getByTestId('lead').filter({ hasText: `UI Lead Kavya ${STAMP}` }).getByTestId('lead-book').click();

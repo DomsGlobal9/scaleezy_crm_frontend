@@ -113,7 +113,7 @@ export function BringAFriendCard({ customerId, name }) {
   );
 }
 
-function PicksSheet({ customerId, name, onClose }) {
+export function PicksSheet({ customerId, name, onClose, asReply = false }) {
   const [all, setAll] = useState(false);
   const [q, setQ] = useState('');
   const [chosen, setChosen] = useState([]);
@@ -126,7 +126,7 @@ function PicksSheet({ customerId, name, onClose }) {
   const go = async () => {
     try {
       const r = await send.mutateAsync(chosen);
-      if (r.sent || r.queued) { toast.success(`Picks sent to ${firstOf(name)} on WhatsApp.`); onClose(); }
+      if (r.sent || r.queued) { toast.success(`Sent to ${firstOf(name)} on WhatsApp: the pieces, with a link to buy them online.`); onClose(); }
       else toast.error(r.reason || 'It could not be sent.');
     } catch (e) { toast.error(e?.message || 'It could not be sent.'); }
   };
@@ -160,7 +160,7 @@ function PicksSheet({ customerId, name, onClose }) {
               })}
             </ul>
           )}
-        <p className="pe-hint">Only to customers who agreed to offers; it counts as the shop's one offer in 3 days. A bill through the link is credited to you.</p>
+        <p className="pe-hint">{asReply ? 'A reply to what they asked: one link to see, try on and buy these online. A bill through the link is credited to you.' : "Only to customers who agreed to offers; it counts as the shop's one offer in 3 days. A bill through the link is credited to you."}</p>
         <div className="pe-btns">
           <button type="button" className="btn-primary bk-go" disabled={!chosen.length || send.isPending} onClick={go} data-testid="picks-send">{send.isPending && <Loader2 size={14} className="animate-spin" />} Send {chosen.length || ''} pick{chosen.length === 1 ? '' : 's'}</button>
           <button type="button" className="btn-secondary" onClick={onClose}>Cancel</button>

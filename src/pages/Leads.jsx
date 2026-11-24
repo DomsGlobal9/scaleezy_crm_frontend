@@ -2,12 +2,13 @@ import React, { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Link, useSearchParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { Loader2, MessageCircle, Phone, Plus, Sparkles, X } from 'lucide-react';
+import { Loader2, MessageCircle, Phone, Plus, ShoppingBag, Sparkles, X } from 'lucide-react';
 import { useShopServices } from '../hooks/useBoutique';
 import { useLeads, useAddLead, useChangeLead, useAppointments, SOURCES, LOST_REASONS, sourceWords, ago, dayKey } from '../hooks/useBookings';
 import { usePermission } from '../hooks/usePermission';
 import BookSheet from '../components/BookSheet';
 import ReplySheet from '../components/ReplySheet';
+import { PicksSheet } from '../components/NextCards';
 import LoadFailed from '../components/LoadFailed';
 
 /**
@@ -96,6 +97,7 @@ export default function Leads() {
   const [reply, setReply] = useState(null);
   const [book, setBook] = useState(null);
   const [notNow, setNotNow] = useState(null);
+  const [picks, setPicks] = useState(null);
   const [adding, setAdding] = useState(false);
 
   if (services.isLoading) return <main className="crm-page"><div className="crm-card crm-row crm-muted"><Loader2 size={16} className="animate-spin" /> Loading…</div></main>;
@@ -144,6 +146,7 @@ export default function Leads() {
                     <div className="ap-acts">
                       {l.customer?.phone && <a className="btn-primary bw-btn" href={`tel:${l.customer.phone}`}><Phone size={15} /> Call</a>}
                       {canReply && l.customer?.phone && <button type="button" className="btn-secondary bw-btn" onClick={() => setReply(l.id)} data-testid="lead-reply"><MessageCircle size={15} /> Reply</button>}
+                      {can('crm:customer:update') && l.customer?.phone && l.stage !== 'lost' && <button type="button" className="btn-secondary bw-btn" onClick={() => setPicks(l)} data-testid="lead-picks"><ShoppingBag size={15} /> Send pieces</button>}
                       {can('crm:customer:update') && l.stage !== 'booked' && <button type="button" className="btn-secondary" onClick={() => setBook(l)} data-testid="lead-book">Book</button>}
                       {can('crm:customer:update') && l.stage !== 'lost' && <button type="button" className="btn-secondary" onClick={() => setNotNow(l)} data-testid="lead-notnow">Not now</button>}
                     </div>
@@ -156,6 +159,7 @@ export default function Leads() {
       {reply && <ReplySheet leadId={reply} onClose={() => setReply(null)} onBook={(l) => { setReply(null); setBook(l); }} />}
       {book && <BookSheet customer={{ id: book.customer.id, name: book.customer.name }} staffNames={diary.data?.staff ?? []} reminders={diary.data?.reminders ?? true} boutique={boutique} onClose={() => setBook(null)} />}
       {notNow && <NotNow lead={notNow} onClose={() => setNotNow(null)} />}
+      {picks && <PicksSheet customerId={picks.customer.id} name={picks.customer.name} asReply onClose={() => setPicks(null)} />}
       {adding && <AddLead onClose={() => setAdding(false)} />}
     </main>
   );
