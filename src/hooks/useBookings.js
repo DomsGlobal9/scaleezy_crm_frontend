@@ -54,7 +54,7 @@ export function useReplyLead() {
 }
 
 export const KINDS = [
-  { key: 'consultation', label: 'Consultation', minutes: 60 },
+  { key: 'consultation', label: 'Consultation or visit', minutes: 60 },
   { key: 'measurement', label: 'Measurement', minutes: 30 },
   { key: 'trial', label: 'Trial', minutes: 30 },
   { key: 'delivery', label: 'Delivery', minutes: 15 },

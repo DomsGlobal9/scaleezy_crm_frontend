@@ -50,11 +50,11 @@ export default function AppShell() {
   const boutique = useUsesServices(seesCustomers);
   const openWork = useOpenWork(seesCustomers && boutique);
   const lateCount = (openWork.data ?? []).filter(w => w.overdue).length;
-  // A boutique on CRM keeps its appointments and leads here (20 Nov); the menu says how many today and how many new.
+  // Every shop keeps its appointments and leads in CRM (retail too, 24 Nov); the menu says how many today and how many new.
   const todayKey = dayKey(new Date());
-  const diary = useAppointments({ from: todayKey, to: todayKey }, seesCustomers && boutique);
+  const diary = useAppointments({ from: todayKey, to: todayKey }, seesCustomers);
   const todayCount = (diary.data?.items ?? []).filter(a => a.status !== 'cancelled').length;
-  const leadsNew = useLeads('new', seesCustomers && boutique);
+  const leadsNew = useLeads('new', seesCustomers);
   const newLeads = leadsNew.data?.counts?.new ?? 0;
   const reviewStats = useReviewStats(seesCustomers);
   const waiting = (reviewStats.data?.needsReply ?? 0) + (reviewStats.data?.feedbackOpen ?? 0);
@@ -80,11 +80,10 @@ export default function AppShell() {
     ...(can('crm:sales') ? [{ to: '/sales', label: 'Shop floor', icon: LayoutDashboard }] : []),
     { to: '/today', label: 'To do today', icon: CalendarCheck2, count: dueCount, countLabel: `${dueCount} due` },
     ...(can('crm:team:view') ? [{ to: '/week', label: 'This week', icon: TrendingUp }] : []),
-    ...(boutique ? [
-      { to: '/appointments', label: 'Appointments', icon: CalendarDays, count: todayCount, countLabel: `${todayCount} today` },
-      { to: '/leads', label: 'Leads', icon: Sparkles, count: newLeads, countLabel: `${newLeads} new` },
-      { to: '/due', label: 'Due and ready', icon: Scissors, count: lateCount, countLabel: `${lateCount} overdue` }
-    ] : []),
+    { to: '/appointments', label: 'Appointments', icon: CalendarDays, count: todayCount, countLabel: `${todayCount} today` },
+    { to: '/leads', label: 'Leads', icon: Sparkles, count: newLeads, countLabel: `${newLeads} new` },
+    // Stitching due and ready is a boutique's only.
+    ...(boutique ? [{ to: '/due', label: 'Due and ready', icon: Scissors, count: lateCount, countLabel: `${lateCount} overdue` }] : []),
     { to: '/counter', label: 'At the door', icon: DoorOpen },
     { to: '/customers', label: 'All customers', icon: Users },
     { to: '/reviews', label: 'Reviews', icon: Star, count: waiting, countLabel: `${waiting} waiting` },

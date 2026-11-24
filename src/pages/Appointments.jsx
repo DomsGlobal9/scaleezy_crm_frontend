@@ -55,7 +55,9 @@ function Card({ a, onMove, onCame, busy }) {
 
 export default function Appointments() {
   const services = useShopServices();
-  const using = !!services.data?.using;
+  // Every shop keeps its appointments here; a boutique's also have trials and measurements.
+  const using = true;
+  const boutique = !!services.data?.using;
   const { can } = usePermission();
   const [params, setParams] = useSearchParams();
   const view = VIEWS.some(v => v.key === params.get('view')) ? params.get('view') : 'today';
@@ -92,9 +94,6 @@ export default function Appointments() {
   };
 
   if (services.isLoading) return <main className="crm-page"><div className="crm-card crm-row crm-muted"><Loader2 size={16} className="animate-spin" /> Loading…</div></main>;
-  if (!using) {
-    return <main className="crm-page"><div className="crm-card"><div className="crm-empty"><CalendarDays size={24} /><h3>This shop does not use Boutique</h3><p>Appointments are kept here for shops that take stitching in Boutique.</p><Link className="btn-secondary" to="/today">Go to To do today</Link></div></div></main>;
-  }
   const names = list.data?.staff ?? counts.data?.staff ?? [];
   const on = list.data?.reminders ?? counts.data?.reminders ?? true;
 
@@ -103,7 +102,7 @@ export default function Appointments() {
       <div className="crm-head">
         <div style={{ minWidth: 0 }}>
           <h1><CalendarDays size={24} aria-hidden="true" /> Appointments</h1>
-          <p>{new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long' })}. Boutique's bookings are here too.</p>
+          <p>{new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long' })}.{boutique ? " Boutique's bookings are here too." : ' Bridal visits, big purchases and deliveries.'}</p>
         </div>
         <button type="button" className="btn-primary ap-book" onClick={() => setSheet({})} data-testid="appt-book"><Plus size={16} /> Book an appointment</button>
       </div>
@@ -145,7 +144,7 @@ export default function Appointments() {
           ) : items.filter(a => view === 'unmarked' || a.status !== 'cancelled').length === 0 ? (
             <div className="crm-card"><div className="crm-empty" data-testid="appt-empty"><CalendarDays size={22} />
               <h3>{view === 'unmarked' ? 'Everyone is marked' : view === 'tomorrow' ? 'Nothing booked tomorrow' : view === 'week' ? 'Nothing booked this week' : 'Nothing booked today'}</h3>
-              <p>{view === 'unmarked' ? 'Appointments that are over and not marked came or not come show here.' : 'Book a trial, measurement or consultation, or Boutique books one from its app.'}</p>
+              <p>{view === 'unmarked' ? 'Appointments that are over and not marked came or not come show here.' : boutique ? 'Book a trial, measurement or consultation, or Boutique books one from its app.' : 'Book a visit for a bride, a big purchase, or a delivery.'}</p>
             </div></div>
           ) : (
             <div className="ap-list">
@@ -172,7 +171,7 @@ export default function Appointments() {
         </div>
       )}
 
-      {sheet && <BookSheet appointment={sheet.appointment} staffNames={names} reminders={on} onClose={() => setSheet(null)} />}
+      {sheet && <BookSheet appointment={sheet.appointment} staffNames={names} reminders={on} boutique={boutique} onClose={() => setSheet(null)} />}
     </main>
   );
 }

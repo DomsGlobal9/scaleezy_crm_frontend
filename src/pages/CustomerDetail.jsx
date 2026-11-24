@@ -177,11 +177,12 @@ export default function CustomerDetail() {
       ) : (
         <>
           <Header profile={customer.data.profile} numbers={customer.data.numbers} />
-          {boutique && <AppointmentStrip customerId={customer.data.profile.id} onOpen={() => show('boutique')} />}
+          <AppointmentStrip customerId={customer.data.profile.id} onOpen={() => boutique ? show('boutique') : document.querySelector('[data-testid=customer-appointments]')?.scrollIntoView({ behavior: 'smooth', block: 'center' })} />
           {boutique && <BoutiqueStrip customerId={customer.data.profile.id} onOpen={() => show('boutique')} />}
           <WinbackOffer customerId={id} />
           {/* A phone or tablet: the side column is a tab, so the level, money owed, picks and bring a friend show here. */}
           <div className="nx-phone">
+            {!boutique && <section className="crm-card wk-card nx-card"><CustomerAppointments customerId={customer.data.profile.id} name={customer.data.profile.name} boutique={false} /></section>}
             <LevelCard customerId={customer.data.profile.id} />
             <MoneyOwedCard customerId={customer.data.profile.id} />
             <SendPicksCard customerId={customer.data.profile.id} name={customer.data.profile.name} phone={customer.data.profile.phone} consent={customer.data.profile.consent} />
@@ -209,6 +210,7 @@ export default function CustomerDetail() {
               </div>
             </div>
             <FollowUpsAndNotes customerId={customer.data.profile.id} after={<>
+              {!boutique && <section className="crm-card wk-card nx-card"><CustomerAppointments customerId={customer.data.profile.id} name={customer.data.profile.name} boutique={false} /></section>}
               <LevelCard customerId={customer.data.profile.id} />
               <MoneyOwedCard customerId={customer.data.profile.id} />
               <CustomerGroupsCard customerId={customer.data.profile.id} firstName={(customer.data.profile.name || '').trim().split(/\s+/)[0]} />

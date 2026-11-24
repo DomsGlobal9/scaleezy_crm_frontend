@@ -30,7 +30,7 @@ export function AppointmentStrip({ customerId, onOpen }) {
   );
 }
 
-export default function CustomerAppointments({ customerId, name }) {
+export default function CustomerAppointments({ customerId, name, boutique = true }) {
   const q = useCustomerAppointments(customerId);
   const { can } = usePermission();
   const diary = useAppointments({ from: dayKey(new Date()), to: dayKey(new Date()) });
@@ -58,7 +58,7 @@ export default function CustomerAppointments({ customerId, name }) {
           })}
         </ul>
       )}
-      {sheet && <BookSheet customer={sheet.appointment ? undefined : { id: customerId, name }} appointment={sheet.appointment} staffNames={diary.data?.staff ?? []} reminders={diary.data?.reminders ?? true} onClose={() => setSheet(null)} />}
+      {sheet && <BookSheet customer={sheet.appointment ? undefined : { id: customerId, name }} appointment={sheet.appointment} staffNames={diary.data?.staff ?? []} reminders={diary.data?.reminders ?? true} boutique={boutique} onClose={() => setSheet(null)} />}
     </section>
   );
 }

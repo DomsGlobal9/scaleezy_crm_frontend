@@ -85,7 +85,9 @@ function AddLead({ onClose }) {
 
 export default function Leads() {
   const services = useShopServices();
-  const using = !!services.data?.using;
+  // Every shop keeps its leads here (retail too, 24 Nov).
+  const using = true;
+  const boutique = !!services.data?.using;
   const { can } = usePermission();
   const [params, setParams] = useSearchParams();
   const show = SHOW.some(s => s.key === params.get('show')) ? params.get('show') : 'new';
@@ -97,9 +99,6 @@ export default function Leads() {
   const [adding, setAdding] = useState(false);
 
   if (services.isLoading) return <main className="crm-page"><div className="crm-card crm-row crm-muted"><Loader2 size={16} className="animate-spin" /> Loading…</div></main>;
-  if (!using) {
-    return <main className="crm-page"><div className="crm-card"><div className="crm-empty"><Sparkles size={24} /><h3>This shop does not use Boutique</h3><p>Leads are kept here for shops that take stitching in Boutique.</p><Link className="btn-secondary" to="/today">Go to To do today</Link></div></div></main>;
-  }
   const counts = leads.data?.counts ?? {};
   const items = leads.data?.items ?? [];
   const canReply = can('crm:messages:send');
@@ -126,7 +125,7 @@ export default function Leads() {
           : items.length === 0 ? (
             <div className="crm-card"><div className="crm-empty" data-testid="lead-empty"><Sparkles size={22} />
               <h3>{show === 'new' ? 'No new leads' : show === 'won' ? 'No leads have ordered yet' : show === 'lost' ? 'Nobody in Not now' : `No one ${show === 'talking' ? 'being talked to' : 'booked'}`}</h3>
-              <p>{show === 'new' ? 'Questions from Boutique\'s website form, Instagram, or "Add a lead" show here.' : 'They show here as leads move on.'}</p>
+              <p>{show === 'new' ? (boutique ? 'Questions from Boutique\'s website form, Instagram, or "Add a lead" show here.' : 'Questions from Instagram, phone calls, the counter, or "Add a lead" show here.') : 'They show here as leads move on.'}</p>
             </div></div>
           ) : (
             <div className="ld-list">
@@ -155,7 +154,7 @@ export default function Leads() {
           )}
 
       {reply && <ReplySheet leadId={reply} onClose={() => setReply(null)} onBook={(l) => { setReply(null); setBook(l); }} />}
-      {book && <BookSheet customer={{ id: book.customer.id, name: book.customer.name }} staffNames={diary.data?.staff ?? []} reminders={diary.data?.reminders ?? true} onClose={() => setBook(null)} />}
+      {book && <BookSheet customer={{ id: book.customer.id, name: book.customer.name }} staffNames={diary.data?.staff ?? []} reminders={diary.data?.reminders ?? true} boutique={boutique} onClose={() => setBook(null)} />}
       {notNow && <NotNow lead={notNow} onClose={() => setNotNow(null)} />}
       {adding && <AddLead onClose={() => setAdding(false)} />}
     </main>

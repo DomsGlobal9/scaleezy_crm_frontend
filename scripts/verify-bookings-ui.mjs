@@ -41,14 +41,18 @@ async function main() {
   await fetch('http://localhost:4099/_stub/account', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ clientId: 'verify-suites-tenant', status: 'CONNECTED', linkedDaysAgo: 30 }) }).catch(() => {});
   const browser = await chromium.launch({ channel: process.env.BROWSER_CHANNEL || 'msedge', headless: true });
   try {
-    console.log('\n1. A shop that does not use Boutique');
+    console.log('\n1. A retail shop (no Boutique): appointments and leads, nothing of stitching');
     let { ctx, page } = await signedIn(browser, { width: 1366, height: 900 });
     await page.goto(`${APP}/today`); await settle(page);
-    check('no Appointments or Leads in the menu', (await page.getByRole('link', { name: /^Appointments/ }).count()) === 0 && (await page.getByRole('link', { name: /^Leads/ }).count()) === 0);
+    check('Appointments and Leads are in the menu; Due and ready (stitching) is not', (await page.getByRole('link', { name: /^Appointments/ }).count()) > 0 && (await page.getByRole('link', { name: /^Leads/ }).count()) > 0 && (await page.getByRole('link', { name: /Due and ready/ }).count()) === 0);
     await page.goto(`${APP}/appointments`); await settle(page);
-    check('/appointments typed in: "This shop does not use Boutique"', await page.getByText('This shop does not use Boutique').isVisible());
+    check('/appointments: the diary, in retail words', await page.getByText(/Bridal visits, big purchases and deliveries/).isVisible());
+    await page.getByTestId('appt-book').click();
+    const kinds = await page.getByTestId('book-sheet').getByRole('radio').allInnerTexts();
+    check('booking in a retail shop: a visit, a delivery or other (no trials or measurements)', JSON.stringify(kinds) === JSON.stringify(['Consultation or visit', 'Delivery', 'Other']), kinds);
+    await page.keyboard.press('Escape');
     await page.goto(`${APP}/leads`); await settle(page);
-    check('/leads typed in: the same', await page.getByText('This shop does not use Boutique').isVisible());
+    check('/leads: the leads page', await page.getByTestId('lead-add').isVisible());
     await ctx.close();
 
     console.log('\n2. Leads');

@@ -45,11 +45,13 @@ function PickCustomer({ onPick }) {
   );
 }
 
-export default function BookSheet({ customer: given, appointment, staffNames = [], reminders = true, onClose }) {
+export default function BookSheet({ customer: given, appointment, staffNames = [], reminders = true, boutique = true, onClose }) {
+  // A retail shop books visits and deliveries; trials and measurements are a boutique's.
+  const kinds = boutique ? KINDS : KINDS.filter(k => ['consultation', 'delivery', 'other'].includes(k.key));
   const editing = !!appointment;
   const [customer, setCustomer] = useState(given ?? (appointment ? appointment.customer : null));
   const start = appointment ? new Date(appointment.startsAt) : null;
-  const [kind, setKind] = useState(appointment?.kind ?? 'trial');
+  const [kind, setKind] = useState(appointment?.kind ?? (boutique ? 'trial' : 'consultation'));
   const [kindNote, setKindNote] = useState(appointment?.kindNote ?? '');
   const [workRef, setWorkRef] = useState(appointment?.work?.ref ?? '');
   const [day, setDay] = useState(start ? dayKey(start) : dayKey(new Date(Date.now() + 86_400_000)));
@@ -144,7 +146,7 @@ export default function BookSheet({ customer: given, appointment, staffNames = [
         <fieldset className="bk-field">
           <legend>For</legend>
           <div className="bk-chips" role="radiogroup" aria-label="What it is for">
-            {KINDS.map(k => <button key={k.key} type="button" role="radio" aria-checked={kind === k.key} className={`bk-chip${kind === k.key ? ' on' : ''}`} onClick={() => pickKind(k.key)}>{k.label}</button>)}
+            {kinds.map(k => <button key={k.key} type="button" role="radio" aria-checked={kind === k.key} className={`bk-chip${kind === k.key ? ' on' : ''}`} onClick={() => pickKind(k.key)}>{k.label}</button>)}
           </div>
           {kind === 'other' && <input className="input-field" value={kindNote} maxLength={50} onChange={e => setKindNote(e.target.value)} placeholder="Saree draping class" aria-label="What it is for" />}
         </fieldset>
