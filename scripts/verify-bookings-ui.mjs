@@ -53,8 +53,10 @@ async function main() {
     await page.goto(`${APP}/appointments`); await settle(page);
     check('/appointments typed in: "for boutique shops", with the way to Leads', await page.getByTestId('appt-retail').isVisible() && /boutique shops/.test(await page.getByTestId('appt-retail').innerText()));
     await page.goto(`${APP}/leads`); await settle(page);
-    check('/leads: the inbox views (Waiting, Follow up today, Mine, Not taken, Hot) and no Visits in a retail shop',
-      await page.getByTestId('lead-add').isVisible() && await page.getByTestId('lead-view-waiting').isVisible() && await page.getByTestId('lead-view-unassigned').isVisible() && (await page.getByTestId('lead-view-visits').count()) === 0);
+    const welcome = (await page.locator('.ld-welcome').count()) > 0;
+    if (welcome) await page.screenshot({ path: path.join(shots, 'leads-none-yet.png') });
+    check(`/leads: ${welcome ? 'no leads yet: one welcome that says where leads come from, with Add a lead' : 'the inbox views (Waiting, Follow up today, Mine, Not taken, Hot)'}; no Visits in a retail shop`,
+      await page.getByTestId('lead-add').isVisible() && (welcome ? /Shop floor visit/.test(await page.locator('.ld-welcome').innerText()) && !/website enquiry/.test(await page.locator('.ld-welcome').innerText()) : await page.getByTestId('lead-view-waiting').isVisible() && await page.getByTestId('lead-view-unassigned').isVisible()) && (await page.getByTestId('lead-view-visits').count()) === 0);
 
     console.log('\n2. The Leads inbox in a retail shop');
     await page.getByTestId('lead-add').click();

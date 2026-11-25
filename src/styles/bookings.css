@@ -116,24 +116,45 @@ button.ca-row { cursor: pointer; }
 button.ca-row:hover { background: var(--bg-hover); }
 button.ca-row:focus-visible { outline: 2px solid var(--accent-primary); outline-offset: 2px; }
 
-/* Leads inbox (approved 25 Nov): list beside the open lead on a laptop, one at a time on a phone. */
+/* Leads inbox (approved 25 Nov): one bar of views and filters across the top, then the list beside the open lead on a
+   laptop (one at a time on a phone). A shop with no leads yet sees one welcome instead. */
 .ld-src { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 600; padding: 1px 8px; border-radius: 999px; color: var(--text-primary); background: color-mix(in srgb, var(--src, var(--text-muted)) 16%, transparent); border: 1px solid color-mix(in srgb, var(--src, var(--text-muted)) 40%, transparent); white-space: nowrap; }
-.ld-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--src, var(--text-muted)); flex: none; }
+.ld-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--src, var(--text-muted)); flex: none; display: inline-block; }
 .s-whatsapp { --src: #25a55f; } .s-instagram { --src: #d6417e; } .s-facebook { --src: #4a7bd8; } .s-website { --src: #2f9fb8; }
 .s-walk-in { --src: #c08a2a; } .s-door { --src: #9a7ad6; } .s-counter { --src: #b5803c; } .s-call { --src: #5a8f3c; }
 .s-referral { --src: #d27a3a; } .s-campaign { --src: #8a6fd0; } .s-boutique { --src: #c25d8f; } .s-other { --src: #8a8f98; }
-.ld-inbox { display: grid; grid-template-columns: minmax(320px, 400px) minmax(0, 1fr); padding: 0; overflow: hidden; height: calc(100vh - 210px); min-height: 520px; }
-.ld-list-pane { display: flex; flex-direction: column; min-width: 0; min-height: 0; border-right: 1px solid var(--border-light); }
-.ld-open-pane { min-width: 0; min-height: 0; display: flex; flex-direction: column; }
-.ld-tools { display: grid; gap: 10px; padding: 12px; border-bottom: 1px solid var(--border-light); min-width: 0; }
-.ld-tools .bk-chips { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: thin; padding-bottom: 2px; min-width: 0; }
-.ld-tools .bk-chip { min-height: 34px; padding: 0 11px; font-size: 12.5px; }
-.ld-filters { display: flex; gap: 8px; align-items: center; min-width: 0; }
-.ld-filters > :last-child:not(.ld-search) { flex: 0 0 150px; }
-.ld-search { flex: 1; min-width: 0; position: relative; display: flex; align-items: center; }
+.ld-inbox { padding: 0; overflow: hidden; display: flex; flex-direction: column; min-width: 0; }
+.ld-inbox.split { height: calc(100vh - 200px); min-height: 560px; }
+.ld-bar { border-bottom: 1px solid var(--border-light); min-width: 0; }
+.ld-tabs { display: flex; gap: 2px; overflow-x: auto; scrollbar-width: none; padding: 0 10px; border-bottom: 1px solid var(--border-light); }
+.ld-tabs::-webkit-scrollbar { display: none; }
+.ld-tab { flex: none; display: inline-flex; align-items: center; gap: 6px; min-height: 46px; padding: 0 12px; border: 0; border-bottom: 2px solid transparent; margin-bottom: -1px; background: none; color: var(--text-secondary); font: inherit; font-size: 13.5px; font-weight: 600; white-space: nowrap; cursor: pointer; }
+.ld-tab:hover { color: var(--text-primary); }
+.ld-tab:focus-visible { outline: 2px solid var(--accent-primary); outline-offset: -4px; }
+.ld-tab.on { color: var(--text-primary); border-bottom-color: var(--brand-solid); }
+.ld-tab i { font-style: normal; font-size: 11.5px; min-width: 20px; padding: 0 6px; border-radius: 999px; text-align: center; background: var(--bg-hover); }
+.ld-tab.warn i { background: color-mix(in srgb, var(--accent-warning) 22%, transparent); color: var(--accent-warning); }
+.ld-filters { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; padding: 10px 14px; min-width: 0; }
+.ld-search { flex: 0 1 340px; min-width: 200px; position: relative; display: flex; align-items: center; }
 .ld-search svg { position: absolute; left: 10px; color: var(--text-muted); pointer-events: none; }
 .ld-search input { padding-left: 32px; width: 100%; }
-.ld-rows { overflow-y: auto; flex: 1; min-height: 0; }
+.ld-stage { flex: 0 0 170px; }
+.ld-sources { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: thin; min-width: 0; flex: 1 1 auto; }
+.ld-sources .bk-chip { min-height: 36px; padding: 0 11px; font-size: 12.5px; }
+.ld-split { display: grid; grid-template-columns: minmax(320px, 400px) minmax(0, 1fr); flex: 1; min-height: 0; }
+.ld-list-pane { min-width: 0; min-height: 0; overflow-y: auto; border-right: 1px solid var(--border-light); }
+.ld-open-pane { min-width: 0; min-height: 0; display: flex; flex-direction: column; }
+.ld-rows { min-width: 0; }
+.ld-welcome { display: grid; justify-items: start; gap: 10px; padding: 28px; max-width: 640px; }
+.ld-welcome > svg { color: var(--brand-solid); }
+.ld-welcome h2 { margin: 0; font-size: 18px; }
+.ld-welcome p { margin: 0; color: var(--text-secondary); font-size: 14px; }
+.ld-welcome ul { list-style: none; margin: 4px 0 8px; padding: 0; display: grid; gap: 8px; }
+.ld-welcome li { display: flex; gap: 10px; align-items: center; font-size: 14px; }
+@media (max-width: 640px) {
+  .ld-search, .ld-stage { flex: 1 1 100%; }
+  .ld-welcome { padding: 20px 16px; }
+}
 .ld-row { display: grid; gap: 4px; width: 100%; text-align: left; padding: 11px 14px; border: 0; border-bottom: 1px solid var(--border-light); border-left: 3px solid transparent; background: transparent; color: var(--text-primary); font: inherit; cursor: pointer; min-width: 0; }
 .ld-row:hover { background: var(--bg-hover); }
 .ld-row:focus-visible { outline: 2px solid var(--accent-primary); outline-offset: -2px; }
@@ -198,10 +219,6 @@ button.ca-row:focus-visible { outline: 2px solid var(--accent-primary); outline-
   .lp-head, .lp-compose, .lp-scroll, .lp-side { padding-left: 12px; padding-right: 12px; }
   .lp-send { flex-direction: column; align-items: stretch; }
   .lp-acts > * { flex: 1 1 calc(50% - 8px); justify-content: center; }
-  .ld-filters { flex-wrap: wrap; }
-  .ld-filters > :last-child:not(.ld-search) { flex: 1 1 100%; }
 }
 
 .lp-evt svg { flex: none; margin-top: 2px; }
-.ld-tools .ld-views { flex-wrap: wrap; overflow: visible; }
-@media (max-width: 1023px) { .ld-tools .ld-views { flex-wrap: nowrap; overflow-x: auto; } }

@@ -128,46 +128,71 @@ export default function Leads() {
 
   const empty = view === 'waiting' ? 'Nobody is waiting for a reply' : view === 'follow-up' ? 'No follow-ups today' : view === 'mine' ? 'No leads of yours'
     : view === 'unassigned' ? 'Every lead is taken' : view === 'hot' ? 'No hot leads' : view === 'visits' ? 'No visits booked' : 'No leads here';
+  // A shop that has never had a lead: one welcome, not two empty panes.
+  const none = leads.isSuccess && Object.values(leads.data?.counts ?? {}).reduce((a, b) => a + b, 0) === 0 && !q && !source;
+  const filtered = !view && stage === 'open' && !source && !q ? null : true;
 
-  const list = (
-    <section className="ld-list-pane" aria-label="Leads">
-      <div className="ld-tools">
-        <div className="bk-chips ld-views" role="group" aria-label="Show">
-          {VIEWS.filter(v => !v.boutique || boutique).map(v => (
-            <button key={v.key || 'all'} type="button" aria-pressed={view === v.key} className={`bk-chip${view === v.key ? ' on' : ''}${v.key === 'waiting' && views.waiting ? ' warn' : ''}`} onClick={() => set({ view: v.key, show: '', lead: '' })} data-testid={`lead-view-${v.key || 'all'}`}>
-              {v.label}{v.key && views[v.key] !== undefined && <i>{views[v.key]}</i>}
-            </button>
-          ))}
-        </div>
-        <div className="ld-filters">
-          <label className="ld-search"><Search size={15} aria-hidden="true" /><input className="input-field" type="search" value={typed} onChange={e => setTyped(e.target.value)} placeholder="Name, number or what they asked" aria-label="Search leads" data-testid="lead-search" /></label>
-          {!view && (
+  const bar = (
+    <div className="ld-bar">
+      <div className="ld-tabs" role="group" aria-label="Show">
+        {VIEWS.filter(v => !v.boutique || boutique).map(v => (
+          <button key={v.key || 'all'} type="button" aria-pressed={view === v.key} className={`ld-tab${view === v.key ? ' on' : ''}${v.key === 'waiting' && views.waiting ? ' warn' : ''}`} onClick={() => set({ view: v.key, show: '', lead: '' })} data-testid={`lead-view-${v.key || 'all'}`}>
+            {v.label}{v.key && views[v.key] > 0 && <i>{views[v.key]}</i>}
+          </button>
+        ))}
+      </div>
+      <div className="ld-filters">
+        <label className="ld-search"><Search size={15} aria-hidden="true" /><input className="input-field" type="search" value={typed} onChange={e => setTyped(e.target.value)} placeholder="Name, number or what they asked" aria-label="Search leads" data-testid="lead-search" /></label>
+        {!view && (
+          <div className="ld-stage">
             <Select value={stage} onChange={(e) => set({ show: e.target.value === 'open' ? '' : e.target.value, lead: '' })} aria-label="Stage">
               {STAGES.filter(s => !s.boutique || boutique).map(s => <option key={s.key} value={s.key}>{s.label}</option>)}
             </Select>
-          )}
-        </div>
+          </div>
+        )}
         {(Object.keys(sources).length > 0 || source) && (
           <div className="bk-chips ld-sources" role="group" aria-label="Where they came from">
             <button type="button" className={`bk-chip${!source ? ' on' : ''}`} aria-pressed={!source} onClick={() => set({ source: '', lead: '' })} data-testid="lead-source-all">Every source</button>
             {SOURCES.filter(s => sources[s.key] || source === s.key).map(s => (
               <button key={s.key} type="button" className={`bk-chip${source === s.key ? ' on' : ''}`} aria-pressed={source === s.key} onClick={() => set({ source: source === s.key ? '' : s.key, lead: '' })} data-testid={`lead-source-${s.key}`}>
-                <span className={`ld-dot s-${s.key}`} aria-hidden="true" />{s.label} <i>{sources[s.key] ?? 0}</i>
+                <span className={`ld-dot s-${s.key}`} aria-hidden="true" />{s.label}{sources[s.key] > 0 && <i>{sources[s.key]}</i>}
               </button>
             ))}
           </div>
         )}
       </div>
-      {leads.isLoading ? <p className="crm-muted ld-pad" aria-busy="true"><Loader2 size={14} className="animate-spin" /> Loading the leads…</p>
-        : leads.isError ? <div className="ld-pad"><LoadFailed what="the leads" error={leads.error} onRetry={() => leads.refetch()} /></div>
-          : items.length === 0 ? (
-            <div className="crm-empty ld-pad" data-testid="lead-empty"><Inbox size={22} aria-hidden="true" />
-              <h3>{q ? `Nobody matches “${q}”` : empty}</h3>
-              <p>WhatsApp messages, Shop floor visits and door check-ins that end without a bill come here by themselves. Add someone who asked on Instagram or on a call with “Add a lead”.</p>
-            </div>
-          ) : <div className="ld-rows">{items.map(l => <Row key={l.id} l={l} on={open === l.id} onOpen={(id) => set({ lead: id })} />)}</div>}
-    </section>
+    </div>
   );
+
+  const nothing = (
+    <div className="crm-empty ld-pad" data-testid="lead-empty"><Inbox size={22} aria-hidden="true" />
+      <h3>{q ? `Nobody matches “${q}”` : empty}</h3>
+      {filtered && <button type="button" className="pe-chg" onClick={() => { setTyped(''); setQ(''); set({ view: '', show: '', source: '', q: '', lead: '' }); }}>Show all open leads</button>}
+    </div>
+  );
+
+  const rows = <div className="ld-rows">{items.map(l => <Row key={l.id} l={l} on={open === l.id} onOpen={(id) => set({ lead: id })} />)}</div>;
+
+  const welcome = (
+    <div className="crm-card ld-welcome" data-testid="lead-empty">
+      <Inbox size={28} aria-hidden="true" />
+      <h2>No leads yet</h2>
+      <p>Everyone who shows interest and leaves without buying lands here, with where they came from:</p>
+      <ul>
+        <li><span className="ld-dot s-whatsapp" aria-hidden="true" />A WhatsApp message to the shop's number</li>
+        <li><span className="ld-dot s-walk-in" aria-hidden="true" />A Shop floor visit that ended without a bill</li>
+        <li><span className="ld-dot s-door" aria-hidden="true" />A door check-in that ended without a bill</li>
+        {boutique && <li><span className="ld-dot s-website" aria-hidden="true" />The website enquiry form and the Boutique app</li>}
+        <li><span className="ld-dot s-instagram" aria-hidden="true" />Someone who asked on Instagram, a call or at the counter: add them yourself</li>
+      </ul>
+      {can('crm:customer:create') && <button type="button" className="btn-primary" onClick={() => setAdding(true)} data-testid="lead-add"><Plus size={16} /> Add a lead</button>}
+    </div>
+  );
+
+  const body = leads.isLoading ? <p className="crm-muted ld-pad" aria-busy="true"><Loader2 size={14} className="animate-spin" /> Loading the leads…</p>
+    : leads.isError ? <div className="ld-pad"><LoadFailed what="the leads" error={leads.error} onRetry={() => leads.refetch()} /></div>
+      : items.length === 0 ? nothing
+        : null;
 
   return (
     <main className="crm-page ld-page">
@@ -177,19 +202,22 @@ export default function Leads() {
             <h1><Inbox size={24} aria-hidden="true" /> Leads</h1>
             <p>Everyone who showed interest and has not bought yet, wherever they came from.</p>
           </div>
-          {can('crm:customer:create') && <button type="button" className="btn-primary ap-book" onClick={() => setAdding(true)} data-testid="lead-add"><Plus size={16} /> Add a lead</button>}
+          {!none && can('crm:customer:create') && <button type="button" className="btn-primary ap-book" onClick={() => setAdding(true)} data-testid="lead-add"><Plus size={16} /> Add a lead</button>}
         </div>
       )}
-      {wide ? (
-        <div className="crm-card ld-inbox">
-          {list}
-          <section className="ld-open-pane" aria-label="The open lead">
-            {open ? <LeadPanel key={open} id={open} boutique={boutique} /> : <div className="lp-empty crm-muted">Choose a lead to see what they asked and everything said since.</div>}
-          </section>
-        </div>
-      ) : open ? (
-        <div className="crm-card ld-phone-open"><LeadPanel key={open} id={open} boutique={boutique} onBack={() => set({ lead: '' })} /></div>
-      ) : <div className="crm-card ld-inbox-phone">{list}</div>}
+      {none ? welcome
+        : open && !wide ? <div className="crm-card ld-phone-open"><LeadPanel key={open} id={open} boutique={boutique} onBack={() => set({ lead: '' })} /></div>
+          : (
+            <div className={`crm-card ld-inbox${wide && !body ? ' split' : ''}`}>
+              {bar}
+              {body ?? (wide ? (
+                <div className="ld-split">
+                  <section className="ld-list-pane" aria-label="Leads">{rows}</section>
+                  <section className="ld-open-pane" aria-label="The open lead">{open ? <LeadPanel key={open} id={open} boutique={boutique} /> : null}</section>
+                </div>
+              ) : rows)}
+            </div>
+          )}
       {adding && <AddLead onClose={() => setAdding(false)} onAdded={(l) => l?.id && set({ lead: l.id })} />}
     </main>
   );
