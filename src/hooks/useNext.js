@@ -37,7 +37,7 @@ export const usePickChoices = (customerId, params, enabled) => useQuery({ queryK
 export const usePicksSent = (customerId) => useQuery({ queryKey: ['customer', customerId, 'picks-sent'], queryFn: async () => (await api.get(`/loyalty/customers/${customerId}/picks`)).data, enabled: !!customerId });
 export function useSendPicks(customerId) {
   const qc = useQueryClient();
-  return useMutation({ mutationFn: async (variantIds) => (await api.post(`/loyalty/customers/${customerId}/picks`, { variantIds })).data, onSuccess: () => qc.invalidateQueries({ queryKey: ['customer', customerId, 'picks-sent'] }) });
+  return useMutation({ mutationFn: async (variantIds) => (await api.post(`/loyalty/customers/${customerId}/picks`, { variantIds })).data, onSuccess: () => { qc.invalidateQueries({ queryKey: ['customer', customerId, 'picks-sent'] }); qc.invalidateQueries({ queryKey: ['lead'] }); qc.invalidateQueries({ queryKey: ['leads'] }); } });
 }
 
 const setting = (key) => ({

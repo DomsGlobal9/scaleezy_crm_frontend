@@ -1,7 +1,8 @@
 /**
- * Appointments and leads (the mockup approved 20 Nov) in a real browser, signed in for real. A shop that does not use
- * Boutique sees none of it; a boutique on CRM adds a lead, replies on WhatsApp from CRM (never a staff phone), books
- * from the lead, sees a clash and books anyway, moves one, and sees it on the customer's page. Every width.
+ * Leads and appointments in a real browser, signed in for real (the Leads inbox mockup approved 25 Nov).
+ * A retail shop: Leads only (no appointments). A lead is added from Instagram, shows its source, is taken, marked hot,
+ * called, replied to on WhatsApp from CRM (never a staff phone), given a follow-up day, shown pieces, and put in Not now.
+ * A boutique on CRM: Visits and booking from the lead, a clash and "Book anyway", moving, the customer's page. Every width.
  *
  *   node scripts/verify-bookings-ui.mjs      (CRM on 4008, the app on 5176, local Inventory on 4016, WhatsApp stub on 4099)
  */
@@ -16,6 +17,7 @@ const backend = path.resolve(here, '..', '..', 'backend');
 const shots = path.join(here, 'screenshots');
 const STAMP = String(Date.now() % 100000).padStart(5, '0');
 const PHONE = `97${STAMP}444`.slice(0, 10);
+const PHONE2 = `96${STAMP}555`.slice(0, 10);
 let failures = 0;
 const check = (name, ok, detail) => { console.log(`${ok ? 'PASS' : 'FAIL'}  ${name}${ok || detail === undefined ? '' : `  -- ${JSON.stringify(detail)?.slice(0, 300)}`}`); if (!ok) failures += 1; };
 const tokenFor = (who) => execFileSync('npm', ['run', '--silent', 'login:test', '--', who], { cwd: backend, encoding: 'utf8', shell: true }).trim();
@@ -23,8 +25,10 @@ const seed = (mode) => JSON.parse(execFileSync('npx', ['ts-node', '--transpile-o
 const fits = (page) => page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1);
 const settle = (page) => page.waitForLoadState('networkidle', { timeout: 12000 }).catch(() => {});
 const dayKey = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+const today = dayKey(new Date());
 const tomorrow = dayKey(new Date(Date.now() + 86_400_000));
 const stub = async () => (await (await fetch('http://localhost:4099/_stub/messages')).json());
+const until = (page, fn, arg) => page.waitForFunction(fn, arg, { timeout: 10000 }).then(() => true, () => false);
 
 let TOKEN = '';
 async function signedIn(browser, viewport) {
@@ -34,6 +38,7 @@ async function signedIn(browser, viewport) {
   page.on('pageerror', e => { console.log('      page error:', e.message); failures += 1; });
   return { ctx, page };
 }
+const panelSays = (page, re) => until(page, (src) => new RegExp(src).test(document.querySelector('[data-testid=lead-panel]')?.innerText ?? ''), re.source);
 
 async function main() {
   seed('clear');
@@ -48,37 +53,60 @@ async function main() {
     await page.goto(`${APP}/appointments`); await settle(page);
     check('/appointments typed in: "for boutique shops", with the way to Leads', await page.getByTestId('appt-retail').isVisible() && /boutique shops/.test(await page.getByTestId('appt-retail').innerText()));
     await page.goto(`${APP}/leads`); await settle(page);
-    check('/leads: the leads page, no booking and no Visits in a retail shop', await page.getByTestId('lead-add').isVisible() && (await page.getByTestId('lead-show-visits').count()) === 0);
-    await ctx.close();
+    check('/leads: the inbox views (Waiting, Follow up today, Mine, Not taken, Hot) and no Visits in a retail shop',
+      await page.getByTestId('lead-add').isVisible() && await page.getByTestId('lead-view-waiting').isVisible() && await page.getByTestId('lead-view-unassigned').isVisible() && (await page.getByTestId('lead-view-visits').count()) === 0);
 
-    console.log('\n2. Leads');
-    const s = seed('seed');
-    ({ ctx, page } = await signedIn(browser, { width: 1366, height: 900 }));
-    await page.goto(`${APP}/leads`); await settle(page);
-    check('the menu now has Appointments and Leads', (await page.getByRole('link', { name: /Appointments/ }).count()) > 0 && (await page.getByRole('link', { name: /Leads/ }).count()) > 0);
+    console.log('\n2. The Leads inbox in a retail shop');
     await page.getByTestId('lead-add').click();
-    await page.getByTestId('lead-phone').fill(PHONE);
-    await page.getByTestId('lead-name').fill(`UI Lead Kavya ${STAMP}`);
-    await page.getByTestId('lead-ask').fill('Bridal lehenga for a February wedding');
+    await page.getByTestId('lead-phone').fill(PHONE2);
+    await page.getByTestId('lead-name').fill(`UI Lead Divya ${STAMP}`);
+    await page.getByTestId('lead-detail').fill('Reel: Kanchi silk launch');
+    await page.getByTestId('lead-ask').fill('Is the green Kanchi silk still there?');
     await page.getByTestId('lead-save').click();
-    const card = page.getByTestId('lead').filter({ hasText: `UI Lead Kavya ${STAMP}` });
-    await card.waitFor({ timeout: 10000 }).catch(() => {});
-    check('added: a New lead with what they asked', await card.isVisible() && /Bridal lehenga/.test(await card.innerText()) && /New/.test(await card.innerText()), await card.innerText().catch(() => ''));
-    await card.getByTestId('lead-reply').click();
-    const sheet = page.getByTestId('reply-sheet');
-    await sheet.getByText('Bridal lehenga').first().waitFor({ timeout: 10000 }).catch(() => {});
-    check('Reply opens a chat: their question shown', await sheet.isVisible() && /Bridal lehenga/.test(await sheet.innerText()));
-    await page.getByTestId('reply-text').fill(`Hi Kavya, can you come in on Saturday? ${STAMP}`);
-    await page.getByTestId('reply-send').click();
-    await page.waitForFunction((st) => [...document.querySelectorAll('.rp-bubble.me')].some(b => b.textContent.includes(st)), STAMP, { timeout: 10000 }).catch(() => {});
-    const out = (await stub()).filter(m => String(m.to).endsWith(PHONE) && m.text.includes(STAMP));
-    check('Send: CRM sends it from the shop\'s number, as typed; it shows in the chat', out.length === 1 && /Saturday/.test(out[0].text) && await sheet.locator('.rp-bubble.me').filter({ hasText: STAMP }).isVisible(), out);
-    await page.keyboard.press('Escape');
-    await page.getByTestId('lead-show-talking').click(); await settle(page);
-    const talking = await page.getByTestId('lead').filter({ hasText: `UI Lead Kavya ${STAMP}` }).waitFor({ timeout: 10000 }).then(() => true, () => false);
-    check('...they move to Talking', talking && /show=talking/.test(page.url()), page.url());
+    const row = page.getByTestId('lead').filter({ hasText: `UI Lead Divya ${STAMP}` });
+    await row.waitFor({ timeout: 10000 }).catch(() => {});
+    const panel = page.getByTestId('lead-panel');
+    await panelSays(page, new RegExp(`UI Lead Divya ${STAMP}`));
+    check('added from Instagram: the row shows the source; it opens beside the list with where it came from',
+      await row.isVisible() && /Instagram/.test(await row.innerText()) && /Reel: Kanchi silk launch/.test(await panel.innerText()) && /green Kanchi/.test(await panel.innerText()), await row.innerText().catch(() => ''));
+    check('the source chip counts it', (await page.getByTestId('lead-source-instagram').count()) === 1 && /\d/.test(await page.getByTestId('lead-source-instagram').innerText()));
+    check('a retail lead has no Book', (await panel.getByTestId('lead-book').count()) === 0);
+    await page.getByTestId('lead-view-unassigned').click(); await settle(page);
+    check('Not taken: it is there', await row.isVisible());
+    await page.getByTestId('lead-view-all').click(); await settle(page);
+    await row.click();
+    await panelSays(page, new RegExp(`UI Lead Divya ${STAMP}`));
+    await panel.getByTestId('lead-take').click();
+    check('Take it: the lead is mine (the owner shows, the history says so)', await panelSays(page, /took it/) && (await panel.getByTestId('lead-take').count()) === 0);
+    await panel.getByTestId('lead-temp-hot').click();
+    await until(page, () => document.querySelector('[data-testid=lead-temp-hot]')?.getAttribute('aria-checked') === 'true');
+    await page.getByTestId('lead-view-hot').click(); await settle(page);
+    check('Hot: marked hot, it is in the Hot view', await row.isVisible());
+    await page.getByTestId('lead-view-mine').click(); await settle(page);
+    check('Mine: it is in Mine', await row.isVisible());
+    await row.click();
+    await panelSays(page, new RegExp(`UI Lead Divya ${STAMP}`));
+    await panel.getByTestId('lead-log-call').click();
+    await page.getByTestId('call-box').getByRole('radio', { name: 'No answer' }).click();
+    await page.getByTestId('call-save').click();
+    check('Log a call: "called, no answer" is in the history', await panelSays(page, /called · no answer/));
+    await panel.getByTestId('lead-text').fill(`Hi Divya, yes, the green one is here. ${STAMP}`);
+    await panel.getByTestId('lead-send').click();
+    await until(page, (st) => [...document.querySelectorAll('.rp-bubble.me')].some(b => b.textContent.includes(st)), STAMP);
+    const sent = (await stub()).filter(m => String(m.to).endsWith(PHONE2) && m.text.includes(STAMP));
+    check('Send: CRM sends it from the shop\'s number as typed; it shows on the right', sent.length === 1 && /green one is here/.test(sent[0].text) && await panel.locator('.rp-bubble.me').filter({ hasText: STAMP }).isVisible(), sent);
+    await panel.getByTestId('follow-day').fill(today);
+    await panel.getByTestId('follow-save').click();
+    await panelSays(page, /Follow up/);
+    await page.getByTestId('lead-view-follow-up').click(); await settle(page);
+    check('a follow-up day of today: it is in Follow up today', await row.isVisible());
+    await page.getByTestId('lead-search').fill(`Divya ${STAMP}`); await page.waitForTimeout(500); await settle(page);
+    check('search finds it by name', (await page.getByTestId('lead').count()) === 1 && await row.isVisible());
+    await page.getByTestId('lead-view-all').click(); await settle(page);
+    await row.click();
+    await panelSays(page, new RegExp(`UI Lead Divya ${STAMP}`));
     // Show them pieces from the shop's stock, as a reply; the link opens the online shop to buy (24 Nov).
-    await page.getByTestId('lead').filter({ hasText: `UI Lead Kavya ${STAMP}` }).getByTestId('lead-picks').click();
+    await panel.getByTestId('lead-picks').click();
     const picks = page.getByTestId('picks-sheet');
     await page.waitForFunction(() => document.querySelector('[data-testid=picks-none]') || document.querySelector('[data-testid=pick]'), null, { timeout: 12000 }).catch(() => {});
     const pieceCount = await picks.getByTestId('pick').count();
@@ -87,15 +115,43 @@ async function main() {
       if (pieceCount > 1) await picks.getByTestId('pick').nth(1).click();
       await page.getByTestId('picks-send').click();
       await picks.waitFor({ state: 'hidden', timeout: 15000 }).catch(() => {});
-      const sentPicks = (await stub()).filter(m => String(m.to).endsWith(PHONE) && /as you asked/.test(m.text));
-      check('Send pieces on the lead: the pieces go on WhatsApp as a reply, with a link to buy online', sentPicks.length === 1 && /buy online here: http/.test(sentPicks[0].text), sentPicks.map(m => m.text));
+      const sentPicks = (await stub()).filter(m => String(m.to).endsWith(PHONE2) && /as you asked/.test(m.text));
+      check('Send pieces: they go on WhatsApp as a reply with a link to buy online; the history says so', sentPicks.length === 1 && /buy online here: http/.test(sentPicks[0].text) && await panelSays(page, /sent \d* ?pieces/), sentPicks.map(m => m.text));
     } else {
-      check('Send pieces on the lead opens the pieces (none in this shop: said plainly)', await page.getByTestId('picks-none').isVisible());
+      check('Send pieces opens the pieces (none in this shop: said plainly)', await page.getByTestId('picks-none').isVisible());
       await page.keyboard.press('Escape');
     }
+    await panel.getByTestId('lead-notnow').click();
+    await page.getByTestId('not-now').getByRole('radio').first().click();
+    await page.getByTestId('not-now').getByRole('button', { name: 'Save' }).click();
+    check('Not now: it leaves the open leads', await panelSays(page, /Not now/) && await until(page, (n) => ![...document.querySelectorAll('[data-testid=lead]')].some(r => r.textContent.includes(n)), `UI Lead Divya ${STAMP}`));
+    await page.screenshot({ path: path.join(shots, 'leads-inbox-laptop.png') });
+    await ctx.close();
 
-    console.log('\n3. Booking from the lead');
-    await page.getByTestId('lead').filter({ hasText: `UI Lead Kavya ${STAMP}` }).getByTestId('lead-book').click();
+    console.log('\n3. A boutique on CRM: a lead, a reply, booking from it');
+    const s = seed('seed');
+    ({ ctx, page } = await signedIn(browser, { width: 1366, height: 900 }));
+    await page.goto(`${APP}/leads`); await settle(page);
+    check('the menu now has Appointments and Leads; Leads has Visits', (await page.getByRole('link', { name: /Appointments/ }).count()) > 0 && (await page.getByRole('link', { name: /Leads/ }).count()) > 0 && await page.getByTestId('lead-view-visits').isVisible());
+    await page.getByTestId('lead-add').click();
+    await page.getByTestId('lead-phone').fill(PHONE);
+    await page.getByTestId('lead-name').fill(`UI Lead Kavya ${STAMP}`);
+    await page.getByTestId('lead-ask').fill('Bridal lehenga for a February wedding');
+    await page.getByTestId('lead-save').click();
+    const card = page.getByTestId('lead').filter({ hasText: `UI Lead Kavya ${STAMP}` });
+    await card.waitFor({ timeout: 10000 }).catch(() => {});
+    const bp = page.getByTestId('lead-panel');
+    check('added: the lead, open beside the list with what they asked', await card.isVisible() && await panelSays(page, /Bridal lehenga/));
+    await bp.getByTestId('lead-text').fill(`Hi Kavya, can you come in on Saturday? ${STAMP}`);
+    await bp.getByTestId('lead-send').click();
+    await until(page, (st) => [...document.querySelectorAll('.rp-bubble.me')].some(b => b.textContent.includes(st)), STAMP);
+    const out = (await stub()).filter(m => String(m.to).endsWith(PHONE) && m.text.includes(STAMP));
+    check('Send: from the shop\'s number, as typed; it shows in the history', out.length === 1 && /Saturday/.test(out[0].text), out);
+    await page.goto(`${APP}/leads?show=talking`); await settle(page);
+    check('...they move to Talking', await card.waitFor({ timeout: 10000 }).then(() => true, () => false), page.url());
+    await card.click();
+    await panelSays(page, new RegExp(`UI Lead Kavya ${STAMP}`));
+    await bp.getByTestId('lead-book').click();
     const book = page.getByTestId('book-sheet');
     check('Book opens with the lead already chosen', await book.isVisible() && (await book.innerText()).includes(`UI Lead Kavya ${STAMP}`));
     await book.getByRole('radio', { name: 'Trial' }).click();
@@ -106,6 +162,8 @@ async function main() {
     await book.waitFor({ state: 'hidden', timeout: 10000 }).catch(() => {});
     const told = (await stub()).filter(m => String(m.to).endsWith(PHONE) && /is booked for/.test(m.text));
     check('booked; she is told the time on WhatsApp by CRM', !(await book.isVisible()) && told.length === 1 && /11:00 am/.test(told[0].text), told.map(m => m.text));
+    await page.getByTestId('lead-view-visits').click(); await settle(page);
+    check('Visits: she is coming in tomorrow', await card.waitFor({ timeout: 10000 }).then(() => true, () => false) && /11:00/.test(await card.innerText()), await card.innerText().catch(() => ''));
 
     console.log('\n4. Appointments, a clash, moving');
     await page.goto(`${APP}/appointments?view=tomorrow`); await settle(page);
@@ -144,9 +202,7 @@ async function main() {
 
     console.log('\n6. The lead after booking');
     await page.goto(`${APP}/leads?show=booked`); await settle(page);
-    const booked = page.getByTestId('lead').filter({ hasText: `UI Lead Kavya ${STAMP}` });
-    check('the lead is Booked now', await booked.isVisible());
-    await page.goto(`${APP}/leads?show=booked`); await settle(page);
+    check('the lead is Booked now', await page.getByTestId('lead').filter({ hasText: `UI Lead Kavya ${STAMP}` }).isVisible());
     await ctx.close();
 
     console.log('\n7. Every device');
@@ -161,9 +217,19 @@ async function main() {
       await page.keyboard.press('Escape');
       await page.goto(`${APP}/leads?show=booked`); await settle(page);
       const b = await fits(page);
-      const small = await page.evaluate(() => [...document.querySelectorAll('.ap-acts button, .ap-acts a, .bk-chip')].filter(el => el.getBoundingClientRect().height && el.getBoundingClientRect().height < 36).length);
-      if (width === 390) await page.screenshot({ path: path.join(shots, 'leads-phone.png') });
-      check(`${label} (${width}): nothing off the screen; the booking sheet fits; tap targets 36px or more`, a && b && sheetFits && n === 2 && small === 0, { a, b, sheetFits, n, small });
+      const small = await page.evaluate(() => [...document.querySelectorAll('.bk-chip, .ld-row')].filter(el => el.getBoundingClientRect().height && el.getBoundingClientRect().height < 34).length);
+      // A phone: the list, then the lead on its own with a way back; a laptop: both side by side.
+      const wide = width >= 1024;
+      if (!wide) await page.getByTestId('lead').first().click();
+      const opened = await page.getByTestId('lead-panel').waitFor({ timeout: 10000 }).then(() => true, () => false);
+      const c = await fits(page);
+      const listHidden = wide || (await page.getByTestId('lead').count()) === 0;
+      const panelSmall = await page.evaluate(() => [...document.querySelectorAll('.lp-acts button, .lp-acts a, .lp-t')].filter(el => el.getBoundingClientRect().height && el.getBoundingClientRect().height < 36).length);
+      if (width === 390) await page.screenshot({ path: path.join(shots, 'leads-phone.png'), fullPage: true });
+      let back = true;
+      if (!wide) { await page.getByRole('button', { name: 'Back to the leads' }).click(); back = await page.getByTestId('lead').first().waitFor({ timeout: 8000 }).then(() => true, () => false); }
+      check(`${label} (${width}): nothing off the screen; the booking sheet fits; the lead opens ${wide ? 'beside the list' : 'on its own with Back'}; tap targets big enough`,
+        a && b && c && sheetFits && n === 2 && small === 0 && opened && listHidden && panelSmall === 0 && back, { a, b, c, sheetFits, n, small, opened, listHidden, panelSmall, back });
       await ctx.close();
     }
   } finally {

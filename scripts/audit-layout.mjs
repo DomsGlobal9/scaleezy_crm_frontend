@@ -34,6 +34,7 @@ const store = sql(`select id from inventory_locations where client_id='${SHOP}' 
 const ALL = [
   ['shop-floor', '/sales'], ['today', '/today'], ['week', '/week'], ['door', '/counter'], ['customers', '/customers'],
   ['customer', `/customers/${customer}`], ['customer-festivals', `/customers/${customer}?tab=festivals`],
+  ['leads', '/leads'], ['leads-waiting', '/leads?view=waiting'], ['appointments', '/appointments'],
   ['duplicates', '/duplicates'], ['reviews', '/reviews'], ['rated-low', '/reviews/rated-low'],
   ['festivals', '/festivals'], ['groups', '/groups'], ...(group ? [['group', `/groups/${encodeURIComponent(group)}`]] : []),
   ['segments', '/segments'], ['segment-new', '/segments/new'], ...(segment ? [['segment', `/segments/${segment}`]] : []),

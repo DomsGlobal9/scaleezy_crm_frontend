@@ -50,6 +50,29 @@ export function useChangeLead() {
   const fresh = useFresh();
   return useMutation({ mutationFn: async ({ id, ...body }) => (await api.patch(`/leads/${id}`, body)).data, onSuccess: fresh });
 }
+/** The inbox: { view?, show?, source?, q? }. */
+export function useLeadInbox(params, enabled = true) {
+  return useQuery({ queryKey: ['leads', 'inbox', params], queryFn: async () => (await api.get('/leads', { params })).data, enabled, refetchInterval: 30_000, placeholderData: (prev) => prev });
+}
+export function useLeadTeam(enabled = true) {
+  return useQuery({ queryKey: ['leads', 'team'], queryFn: async () => (await api.get('/leads/team')).data, enabled, staleTime: 5 * 60_000 });
+}
+export function useTakeLead() {
+  const fresh = useFresh();
+  return useMutation({ mutationFn: async (id) => (await api.post(`/leads/${id}/take`)).data, onSuccess: fresh });
+}
+export function useLogCall() {
+  const fresh = useFresh();
+  return useMutation({ mutationFn: async ({ id, ...body }) => (await api.post(`/leads/${id}/call`, body)).data, onSuccess: fresh });
+}
+export function useReadLead() {
+  const qc = useQueryClient();
+  return useMutation({ mutationFn: async (id) => (await api.post(`/leads/${id}/read`)).data, onSuccess: () => qc.invalidateQueries({ queryKey: ['leads'] }) });
+}
+export const CALL_OUTCOMES = [
+  { key: 'answered', label: 'Answered' }, { key: 'no-answer', label: 'No answer' }, { key: 'busy', label: 'Busy' },
+  { key: 'call-back', label: 'Asked to call back' }, { key: 'wrong-number', label: 'Wrong number' }
+];
 export function useReplyLead() {
   const fresh = useFresh();
   return useMutation({ mutationFn: async ({ id, text, ref }) => (await api.post(`/leads/${id}/reply`, { text, ref })).data, onSuccess: fresh });
@@ -63,12 +86,19 @@ export const KINDS = [
   { key: 'delivery', label: 'Delivery', minutes: 15 },
   { key: 'other', label: 'Other', minutes: 30 }
 ];
+/** Where a lead came from: its badge (short) and the words for "where they asked" (long). */
 export const SOURCES = [
-  { key: 'website', label: 'Website' }, { key: 'instagram', label: 'Instagram' }, { key: 'facebook', label: 'Facebook' },
-  { key: 'counter', label: 'Asked at the counter' }, { key: 'call', label: 'Phone call' }, { key: 'whatsapp', label: 'WhatsApp' },
-  { key: 'referral', label: 'A friend sent them' }, { key: 'other', label: 'Somewhere else' }
+  { key: 'whatsapp', label: 'WhatsApp', long: 'WhatsApp message' }, { key: 'instagram', label: 'Instagram', long: 'Instagram' },
+  { key: 'facebook', label: 'Facebook', long: 'Facebook' }, { key: 'website', label: 'Website', long: 'Website' },
+  { key: 'walk-in', label: 'Shop floor', long: 'Came to the shop' }, { key: 'counter', label: 'Counter', long: 'Asked at the counter' },
+  { key: 'door', label: 'Door QR', long: 'Checked in at the door' }, { key: 'call', label: 'Call', long: 'Phone call' },
+  { key: 'referral', label: 'Friend', long: 'A friend sent them' }, { key: 'campaign', label: 'Campaign', long: 'A campaign' },
+  { key: 'boutique', label: 'Boutique', long: 'Boutique app' }, { key: 'other', label: 'Other', long: 'Somewhere else' }
 ];
+/** Sources a person adds by hand (the others arrive by themselves). */
+export const ADD_SOURCES = ['instagram', 'call', 'counter', 'website', 'facebook', 'referral', 'campaign', 'other'];
 export const sourceWords = (k) => SOURCES.find(s => s.key === k)?.label ?? k;
+export const sourceLong = (k) => SOURCES.find(s => s.key === k)?.long ?? k;
 export const LOST_REASONS = [
   { key: 'price', label: 'Price' }, { key: 'timing', label: 'Timing' }, { key: 'went-elsewhere', label: 'Went elsewhere' },
   { key: 'not-reachable', label: 'Could not reach them' }, { key: 'other', label: 'Something else' }
