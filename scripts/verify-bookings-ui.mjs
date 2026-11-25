@@ -41,18 +41,14 @@ async function main() {
   await fetch('http://localhost:4099/_stub/account', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ clientId: 'verify-suites-tenant', status: 'CONNECTED', linkedDaysAgo: 30 }) }).catch(() => {});
   const browser = await chromium.launch({ channel: process.env.BROWSER_CHANNEL || 'msedge', headless: true });
   try {
-    console.log('\n1. A retail shop (no Boutique): appointments and leads, nothing of stitching');
+    console.log('\n1. A retail shop (no Boutique): Leads, no appointments, nothing of stitching');
     let { ctx, page } = await signedIn(browser, { width: 1366, height: 900 });
     await page.goto(`${APP}/today`); await settle(page);
-    check('Appointments and Leads are in the menu; Due and ready (stitching) is not', (await page.getByRole('link', { name: /^Appointments/ }).count()) > 0 && (await page.getByRole('link', { name: /^Leads/ }).count()) > 0 && (await page.getByRole('link', { name: /Due and ready/ }).count()) === 0);
+    check('Leads is in the menu; Appointments and Due and ready (boutique) are not', (await page.getByRole('link', { name: /^Leads/ }).count()) > 0 && (await page.getByRole('link', { name: /^Appointments/ }).count()) === 0 && (await page.getByRole('link', { name: /Due and ready/ }).count()) === 0);
     await page.goto(`${APP}/appointments`); await settle(page);
-    check('/appointments: the diary, in retail words', await page.getByText(/Bridal visits, big purchases and deliveries/).isVisible());
-    await page.getByTestId('appt-book').click();
-    const kinds = await page.getByTestId('book-sheet').getByRole('radio').allInnerTexts();
-    check('booking in a retail shop: a visit, a delivery or other (no trials or measurements)', JSON.stringify(kinds) === JSON.stringify(['Consultation or visit', 'Delivery', 'Other']), kinds);
-    await page.keyboard.press('Escape');
+    check('/appointments typed in: "for boutique shops", with the way to Leads', await page.getByTestId('appt-retail').isVisible() && /boutique shops/.test(await page.getByTestId('appt-retail').innerText()));
     await page.goto(`${APP}/leads`); await settle(page);
-    check('/leads: the leads page', await page.getByTestId('lead-add').isVisible());
+    check('/leads: the leads page, no booking and no Visits in a retail shop', await page.getByTestId('lead-add').isVisible() && (await page.getByTestId('lead-show-visits').count()) === 0);
     await ctx.close();
 
     console.log('\n2. Leads');

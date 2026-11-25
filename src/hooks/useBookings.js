@@ -13,7 +13,9 @@ export function useCustomerAppointments(customerId, enabled = true) {
   return useQuery({ queryKey: ['customer', customerId, 'appointments'], queryFn: async () => (await api.get(`/customers/${customerId}/appointments`)).data, enabled: !!customerId && enabled });
 }
 export function useLeads(show, enabled = true) {
-  return useQuery({ queryKey: ['leads', show], queryFn: async () => (await api.get('/leads', { params: { show } })).data, enabled, refetchInterval: 60_000 });
+  // "visits" is a view across stages: everyone with a visit booked from today on.
+  const params = show === 'visits' ? { show: 'all', view: 'visits' } : { show };
+  return useQuery({ queryKey: ['leads', show], queryFn: async () => (await api.get('/leads', { params })).data, enabled, refetchInterval: 60_000 });
 }
 export function useLead(id) {
   return useQuery({ queryKey: ['lead', id], queryFn: async () => (await api.get(`/leads/${id}`)).data, enabled: !!id });
@@ -54,7 +56,8 @@ export function useReplyLead() {
 }
 
 export const KINDS = [
-  { key: 'consultation', label: 'Consultation or visit', minutes: 60 },
+  { key: 'visit', label: 'Store visit', minutes: 30 },
+  { key: 'consultation', label: 'Consultation', minutes: 60 },
   { key: 'measurement', label: 'Measurement', minutes: 30 },
   { key: 'trial', label: 'Trial', minutes: 30 },
   { key: 'delivery', label: 'Delivery', minutes: 15 },

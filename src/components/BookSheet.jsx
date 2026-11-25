@@ -46,12 +46,12 @@ function PickCustomer({ onPick }) {
 }
 
 export default function BookSheet({ customer: given, appointment, staffNames = [], reminders = true, boutique = true, onClose }) {
-  // A retail shop books visits and deliveries; trials and measurements are a boutique's.
-  const kinds = boutique ? KINDS : KINDS.filter(k => ['consultation', 'delivery', 'other'].includes(k.key));
+  // A retail shop books a store visit (from a lead); a boutique its consultations, trials, measurements and deliveries.
+  const kinds = boutique ? KINDS.filter(k => k.key !== 'visit') : KINDS.filter(k => k.key === 'visit');
   const editing = !!appointment;
   const [customer, setCustomer] = useState(given ?? (appointment ? appointment.customer : null));
   const start = appointment ? new Date(appointment.startsAt) : null;
-  const [kind, setKind] = useState(appointment?.kind ?? (boutique ? 'trial' : 'consultation'));
+  const [kind, setKind] = useState(appointment?.kind ?? (boutique ? 'trial' : 'visit'));
   const [kindNote, setKindNote] = useState(appointment?.kindNote ?? '');
   const [workRef, setWorkRef] = useState(appointment?.work?.ref ?? '');
   const [day, setDay] = useState(start ? dayKey(start) : dayKey(new Date(Date.now() + 86_400_000)));
@@ -133,7 +133,7 @@ export default function BookSheet({ customer: given, appointment, staffNames = [
       <form className="cr-dialog bk-sheet" role="dialog" aria-modal="true" aria-labelledby="bk-title" onSubmit={submit} data-testid="book-sheet">
         <header className="cr-head">
           <div style={{ minWidth: 0 }}>
-            <h2 id="bk-title">{editing ? 'Move or change' : 'Book an appointment'}</h2>
+            <h2 id="bk-title">{editing ? 'Move or change' : boutique ? 'Book an appointment' : 'Book a store visit'}</h2>
             {customer && <p>{customer.name}</p>}
           </div>
           <button type="button" className="crm-iconbtn" onClick={onClose} aria-label="Close"><X size={18} /></button>

@@ -4,7 +4,7 @@ import { Link, useSearchParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { Loader2, MessageCircle, Phone, Plus, ShoppingBag, Sparkles, X } from 'lucide-react';
 import { useShopServices } from '../hooks/useBoutique';
-import { useLeads, useAddLead, useChangeLead, useAppointments, SOURCES, LOST_REASONS, sourceWords, ago, dayKey } from '../hooks/useBookings';
+import { useLeads, useAddLead, useChangeLead, useAppointments, SOURCES, LOST_REASONS, sourceWords, ago, dayKey, clock, dayName } from '../hooks/useBookings';
 import { usePermission } from '../hooks/usePermission';
 import BookSheet from '../components/BookSheet';
 import ReplySheet from '../components/ReplySheet';
@@ -17,7 +17,7 @@ import LoadFailed from '../components/LoadFailed';
  * with why. Their first bill or work makes them a customer by itself. A shop that does not use Boutique never has it.
  */
 const SHOW = [
-  { key: 'new', label: 'New' }, { key: 'talking', label: 'Talking' }, { key: 'booked', label: 'Booked' },
+  { key: 'new', label: 'New' }, { key: 'talking', label: 'Talking' }, { key: 'booked', label: 'Booked' }, { key: 'visits', label: 'Visits' },
   { key: 'won', label: 'Became customers' }, { key: 'lost', label: 'Not now' }
 ];
 const PILL = { new: 'New', talking: 'Talking', booked: 'Booked', won: 'Customer', lost: 'Not now' };
@@ -116,9 +116,9 @@ export default function Leads() {
         {can('crm:customer:create') && <button type="button" className="btn-primary ap-book" onClick={() => setAdding(true)} data-testid="lead-add"><Plus size={16} /> Add a lead</button>}
       </div>
       <div className="bk-chips ap-views" role="group" aria-label="Show">
-        {SHOW.map(s => (
+        {SHOW.filter(s => boutique || s.key !== 'visits').map(s => (
           <button key={s.key} type="button" aria-pressed={show === s.key} className={`bk-chip${show === s.key ? ' on' : ''}`} onClick={() => setParams(s.key === 'new' ? {} : { show: s.key }, { replace: true })} data-testid={`lead-show-${s.key}`}>
-            {s.label} {counts[s.key] !== undefined && <i>{counts[s.key]}</i>}
+            {s.label} {(s.key === 'visits' ? leads.data?.views?.visits : counts[s.key]) !== undefined && <i>{s.key === 'visits' ? leads.data?.views?.visits : counts[s.key]}</i>}
           </button>
         ))}
       </div>
@@ -142,13 +142,14 @@ export default function Leads() {
                     <span className={`ap-pill ${l.stage === 'new' ? 'new' : l.stage === 'won' ? 'came' : l.stage === 'lost' ? 'cancelled' : 'booked'}`}>{PILL[l.stage]}</span>
                   </div>
                   {l.ask && <p className="ld-ask">“{l.ask}”</p>}
+                  {l.nextVisit && <p className="ld-visit" data-testid="lead-visit">📅 Coming in {dayName(l.nextVisit.at)}, {clock(l.nextVisit.at)}</p>}
                   {(l.lastNote || l.lostReason) && <p className="ld-last">{l.stage === 'lost' && l.lostReason ? `Why: ${LOST_REASONS.find(r => r.key === l.lostReason)?.label ?? l.lostReason}. ` : ''}{l.lastNote ? `Last: ${l.changedBy ? `${l.changedBy}, ` : ''}${ago(l.lastContactAt ?? l.changedAt)}: “${l.lastNote}”` : ''}</p>}
                   {l.stage !== 'won' && (
                     <div className="ap-acts">
                       {l.customer?.phone && <a className="btn-primary bw-btn" href={`tel:${l.customer.phone}`}><Phone size={15} /> Call</a>}
                       {canReply && l.customer?.phone && <button type="button" className="btn-secondary bw-btn" onClick={() => setReply(l.id)} data-testid="lead-reply"><MessageCircle size={15} /> Reply</button>}
                       {can('crm:customer:update') && l.customer?.phone && l.stage !== 'lost' && <button type="button" className="btn-secondary bw-btn" onClick={() => setPicks(l)} data-testid="lead-picks"><ShoppingBag size={15} /> Send pieces</button>}
-                      {can('crm:customer:update') && l.stage !== 'booked' && <button type="button" className="btn-secondary" onClick={() => setBook(l)} data-testid="lead-book">Book</button>}
+                      {boutique && can('crm:customer:update') && !l.nextVisit && <button type="button" className="btn-secondary" onClick={() => setBook(l)} data-testid="lead-book">Book</button>}
                       {can('crm:customer:update') && l.stage !== 'lost' && <button type="button" className="btn-secondary" onClick={() => setNotNow(l)} data-testid="lead-notnow">Not now</button>}
                     </div>
                   )}

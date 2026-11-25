@@ -55,9 +55,9 @@ function Card({ a, onMove, onCame, busy }) {
 
 export default function Appointments() {
   const services = useShopServices();
-  // Every shop keeps its appointments here; a boutique's also have trials and measurements.
-  const using = true;
+  // A boutique's diary (one with the Boutique app). A retail shop books store visits inside Leads instead.
   const boutique = !!services.data?.using;
+  const using = boutique;
   const { can } = usePermission();
   const [params, setParams] = useSearchParams();
   const view = VIEWS.some(v => v.key === params.get('view')) ? params.get('view') : 'today';
@@ -94,6 +94,9 @@ export default function Appointments() {
   };
 
   if (services.isLoading) return <main className="crm-page"><div className="crm-card crm-row crm-muted"><Loader2 size={16} className="animate-spin" /> Loading…</div></main>;
+  if (!boutique) {
+    return <main className="crm-page"><div className="crm-card"><div className="crm-empty" data-testid="appt-retail"><CalendarDays size={24} /><h3>Appointments are for boutique shops</h3><p>Trials, measurements and deliveries are booked by shops that take stitching in Boutique. Interested customers are in Leads.</p><Link className="btn-primary" to="/leads">Open Leads</Link></div></div></main>;
+  }
   const names = list.data?.staff ?? counts.data?.staff ?? [];
   const on = list.data?.reminders ?? counts.data?.reminders ?? true;
 

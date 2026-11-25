@@ -50,9 +50,9 @@ export default function AppShell() {
   const boutique = useUsesServices(seesCustomers);
   const openWork = useOpenWork(seesCustomers && boutique);
   const lateCount = (openWork.data ?? []).filter(w => w.overdue).length;
-  // Every shop keeps its appointments and leads in CRM (retail too, 24 Nov); the menu says how many today and how many new.
+  // The menu says how many leads are new, and in a boutique how many appointments today.
   const todayKey = dayKey(new Date());
-  const diary = useAppointments({ from: todayKey, to: todayKey }, seesCustomers);
+  const diary = useAppointments({ from: todayKey, to: todayKey }, seesCustomers && boutique);
   const todayCount = (diary.data?.items ?? []).filter(a => a.status !== 'cancelled').length;
   const leadsNew = useLeads('new', seesCustomers);
   const newLeads = leadsNew.data?.counts?.new ?? 0;
@@ -80,9 +80,10 @@ export default function AppShell() {
     ...(can('crm:sales') ? [{ to: '/sales', label: 'Shop floor', icon: LayoutDashboard }] : []),
     { to: '/today', label: 'To do today', icon: CalendarCheck2, count: dueCount, countLabel: `${dueCount} due` },
     ...(can('crm:team:view') ? [{ to: '/week', label: 'This week', icon: TrendingUp }] : []),
-    { to: '/appointments', label: 'Appointments', icon: CalendarDays, count: todayCount, countLabel: `${todayCount} today` },
+    // Leads in every shop (a retail shop's store visits are booked inside them, 25 Nov); appointments and stitching
+    // due are a boutique's only: one diary with the Boutique app, never a second copy.
+    ...(boutique ? [{ to: '/appointments', label: 'Appointments', icon: CalendarDays, count: todayCount, countLabel: `${todayCount} today` }] : []),
     { to: '/leads', label: 'Leads', icon: Sparkles, count: newLeads, countLabel: `${newLeads} new` },
-    // Stitching due and ready is a boutique's only.
     ...(boutique ? [{ to: '/due', label: 'Due and ready', icon: Scissors, count: lateCount, countLabel: `${lateCount} overdue` }] : []),
     { to: '/counter', label: 'At the door', icon: DoorOpen },
     { to: '/customers', label: 'All customers', icon: Users },
