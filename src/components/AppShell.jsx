@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom';
-import { LayoutDashboard, CalendarCheck2, TrendingUp, DoorOpen, Users, Tags, ListFilter, Megaphone, Moon, Sun, LogOut, Menu, X, Search, Star, Scissors, CalendarDays, Sparkles, Settings as SettingsIcon } from 'lucide-react';
+import { LayoutDashboard, CalendarCheck2, TrendingUp, DoorOpen, Users, Tags, ListFilter, Megaphone, Moon, Sun, LogOut, Menu, X, Search, Star, Scissors, CalendarDays, Inbox, Settings as SettingsIcon } from 'lucide-react';
 import CustomerSearch from './CustomerSearch';
 import NotificationsBell from './NotificationsBell';
 import { useAuth } from '../context/AuthContext';
@@ -83,7 +83,7 @@ export default function AppShell() {
     // Leads in every shop (a retail shop's store visits are booked inside them, 25 Nov); appointments and stitching
     // due are a boutique's only: one diary with the Boutique app, never a second copy.
     ...(boutique ? [{ to: '/appointments', label: 'Appointments', icon: CalendarDays, count: todayCount, countLabel: `${todayCount} today` }] : []),
-    { to: '/leads', label: 'Leads', icon: Sparkles, count: newLeads, countLabel: `${newLeads} new` },
+    { to: '/leads', label: 'Leads', icon: Inbox, count: newLeads, countLabel: `${newLeads} new` },
     ...(boutique ? [{ to: '/due', label: 'Due and ready', icon: Scissors, count: lateCount, countLabel: `${lateCount} overdue` }] : []),
     { to: '/counter', label: 'At the door', icon: DoorOpen },
     { to: '/customers', label: 'All customers', icon: Users },

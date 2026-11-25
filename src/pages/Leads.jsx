@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useSearchParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { Loader2, Plus, Search, Sparkles, X } from 'lucide-react';
+import { Inbox, Loader2, Plus, Search, X } from 'lucide-react';
 import { useShopServices } from '../hooks/useBoutique';
 import { useLeadInbox, useAddLead, SOURCES, ADD_SOURCES, sourceWords, ago, clock, dayName } from '../hooks/useBookings';
 import { usePermission } from '../hooks/usePermission';
@@ -161,7 +161,7 @@ export default function Leads() {
       {leads.isLoading ? <p className="crm-muted ld-pad" aria-busy="true"><Loader2 size={14} className="animate-spin" /> Loading the leads…</p>
         : leads.isError ? <div className="ld-pad"><LoadFailed what="the leads" error={leads.error} onRetry={() => leads.refetch()} /></div>
           : items.length === 0 ? (
-            <div className="crm-empty ld-pad" data-testid="lead-empty"><Sparkles size={22} />
+            <div className="crm-empty ld-pad" data-testid="lead-empty"><Inbox size={22} aria-hidden="true" />
               <h3>{q ? `Nobody matches “${q}”` : empty}</h3>
               <p>WhatsApp messages, Shop floor visits and door check-ins that end without a bill come here by themselves. Add someone who asked on Instagram or on a call with “Add a lead”.</p>
             </div>
@@ -174,7 +174,7 @@ export default function Leads() {
       {!(open && !wide) && (
         <div className="crm-head">
           <div style={{ minWidth: 0 }}>
-            <h1><Sparkles size={24} aria-hidden="true" /> Leads</h1>
+            <h1><Inbox size={24} aria-hidden="true" /> Leads</h1>
             <p>Everyone who showed interest and has not bought yet, wherever they came from.</p>
           </div>
           {can('crm:customer:create') && <button type="button" className="btn-primary ap-book" onClick={() => setAdding(true)} data-testid="lead-add"><Plus size={16} /> Add a lead</button>}
