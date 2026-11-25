@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { ExternalLink, MapPin, ShieldCheck } from 'lucide-react';
 import { api } from '../lib/api';
 import { INVENTORY_URL } from '../lib/config';
+import { HowSteps } from './SettingsHelp';
 import { formatDay } from '../utils/dates';
 import LoadFailed from './LoadFailed';
 
@@ -27,6 +28,11 @@ export default function TeamAccess() {
         Who can do what in CRM, and in which stores, as of each person's last sign-in. To change it, use Team members in Inventory: one place for every ScaleEzy module.{' '}
         <a href={`${INVENTORY_URL}/settings?section=USERS`} target="_blank" rel="noreferrer" className="si-link" data-testid="team-change">Change in Team members <ExternalLink size={12} aria-hidden="true" /></a>
       </p>
+      <HowSteps testid="team-steps" steps={[
+        ['Give access in Inventory', 'In Team members: one place for every ScaleEzy module.'],
+        ['They sign in to CRM', 'With the same sign-in they use for Inventory.'],
+        ['They see only what you allow', 'Their role decides what they can do in CRM, and in which stores.']
+      ]} />
       {team.isLoading ? <p className="crm-muted">Loading the team…</p>
         : team.isError ? <LoadFailed what="the team" error={team.error} onRetry={() => team.refetch()} />
           : (

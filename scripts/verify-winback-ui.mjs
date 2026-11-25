@@ -63,9 +63,13 @@ async function main() {
     await page.goto(`${APP}/settings?section=automatic`);
     const box = page.getByTestId('automatic-messages');
     await box.waitFor({ timeout: 20000 });
+    await page.getByTestId('auto-open-winback').waitFor({ timeout: 20000 });
+    check('Win back is one row in the list, saying what it does in one sentence', /A good customer who stopped coming gets one offer to come back/.test(await page.getByTestId('auto-open-winback').innerText()));
+    await page.getByTestId('auto-open-winback').click();
+    const panel = page.getByTestId('auto-panel');
     await page.getByTestId('winback-switch').waitFor({ timeout: 20000 });
-    const text = await box.innerText();
-    check('"Win back regulars" is in Automatic messages, with the shop\'s rule', /Win back regulars/.test(text) && /\d+\+ bills, not seen for \d+ days\. Once each/.test(text), text.slice(0, 300));
+    const text = await panel.innerText();
+    check('"Win back regulars" is in Automatic messages, with the shop\'s rule', /Win back regulars/.test(text) && /A customer with \d+ or more bills has not been in for \d+ days/.test(text) && /Once each, until they come back/.test(text), text.slice(0, 300));
     const sw = page.getByTestId('winback-switch');
     check('off to start', (await sw.getAttribute('aria-checked')) === 'false');
     const preview = page.getByTestId('winback-preview');
@@ -76,7 +80,7 @@ async function main() {
     await page.getByRole('option', { name: '45 days' }).click();
     await page.getByText('How long the offer lasts is saved.').waitFor({ timeout: 15000 });
     check('changed to 45 days, and saved', sql(`select winback_days from crm.message_settings where client_id = '${SHOP}'`) === '45');
-    check('...and the team line is there', /Your staff see the offer and code on the customer's page/.test(await box.innerText()));
+    check('...and the team line is there', /Your staff see the offer and code on the customer's page/.test(await panel.innerText()));
 
     // A bad offer: refused in plain words, nothing saved.
     const offer = page.getByTestId('winback-offer');
@@ -97,16 +101,18 @@ async function main() {
     await page.waitForFunction(() => document.querySelector('[data-testid="winback-switch"]')?.getAttribute('aria-checked') === 'true', null, { timeout: 15000 });
     check('switched on, and saved in CRM', settings().startsWith('true|'));
 
-    // "No more than": the shared Select, never a native one.
+    // "Offers per customer": for every offer, so under the list. The shared Select, never a native one.
+    await page.getByTestId('auto-panel-close').click();
     const limit = page.getByRole('combobox', { name: 'Offers per customer per week' });
-    check('"No more than" shows 2 a week', /2 a week/.test(await limit.innerText()), await limit.innerText());
+    check('"Offers per customer" shows at most 2 a week', /2 a week/.test(await limit.innerText()), await limit.innerText());
     check('it is the shop\'s own Select, not a native one', (await box.locator('select:not([aria-hidden="true"])').count()) === 0);
     await limit.click();
-    await page.getByRole('option', { name: '3 a week' }).click();
+    await page.getByRole('option', { name: 'At most 3 a week' }).click();
     await page.getByText('The weekly limit is saved.').waitFor({ timeout: 15000 });
     check('changed to 3 a week, and saved', settings().endsWith('|3'), settings());
     await box.screenshot({ path: path.join(shots, 'winback-settings.png') });
 
+    await page.getByTestId('auto-open-winback').click();
     await sw.click();
     await page.waitForFunction(() => document.querySelector('[data-testid="winback-switch"]')?.getAttribute('aria-checked') === 'false', null, { timeout: 15000 });
     check('...and off again', settings().startsWith('false|'));
@@ -136,8 +142,8 @@ async function main() {
     const ob = await offerBox.innerText();
     check('their page: "Give them the win-back offer", the offer, the code, until when', /Give them the win-back offer/.test(ob) && /₹500 off anything/.test(ob) && ob.includes(CODE) && /valid till \d+ \w+/.test(ob), ob);
     await page.getByTestId('winback-give').click();
-    const panel = page.getByTestId('winback-give-panel');
-    await panel.waitFor({ timeout: 10000 });
+    const givePanel = page.getByTestId('winback-give-panel');
+    await givePanel.waitFor({ timeout: 10000 });
     const billPick = page.getByRole('combobox', { name: 'The bill it was given on' });
     check('the bill since the message is picked for you', /WB-UI · ₹6,200/.test(await billPick.innerText()), await billPick.innerText());
     await offerBox.screenshot({ path: path.join(shots, 'winback-offer-customer.png') });

@@ -4,12 +4,13 @@ import { Loader2, Plus, X } from 'lucide-react';
 import { usePriceBands, useSavePriceBands } from '../hooks/useMessages';
 import { rangeWord, rangesOf } from '../utils/customerFilters';
 import LoadFailed from './LoadFailed';
+import { HowSteps, Lede } from './SettingsHelp';
 
 /**
  * The shop's own price ranges, for "Budget for one piece" in the filters. What suits a saree shop suits
  * nothing else, so each shop sets its own, starting from sensible amounts.
  */
-export default function PriceBands() {
+export default function PriceBands({ explain = false }) {
   const s = usePriceBands();
   const save = useSavePriceBands();
   const [typed, setTyped] = useState(null);
@@ -30,6 +31,16 @@ export default function PriceBands() {
   return (
     <form className="pe-auto" onSubmit={submit} data-testid="price-bands">
       <h2>Price ranges</h2>
+      {explain && (
+        <>
+          <Lede>The price bands your shop thinks in, so a customer's budget reads in your own words.</Lede>
+          <HowSteps testid="prices-steps" steps={[
+            ['Set where your ranges change', 'For example ₹3,000, ₹8,000 and ₹20,000.'],
+            ['CRM sorts every customer', 'By what they usually spend on one piece.'],
+            ['Staff filter by budget', 'In All customers and Saved lists, with "Budget for one piece".']
+          ]} />
+        </>
+      )}
       <p className="pe-hint">For "Budget for one piece" in the customer filters. Set the prices where your ranges change.</p>
       <div className="cf-range">
         {bands.map((b, i) => (

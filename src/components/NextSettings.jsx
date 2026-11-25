@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { Loader2, Star } from 'lucide-react';
 import Select from './common/Select';
 import LoadFailed from './LoadFailed';
+import { HowItWorks, HowSteps, Lede, filled } from './SettingsHelp';
 import { parcelSetting, duesSetting, referralSetting, useLevels, useSaveLevels, rupees } from '../hooks/useNext';
 
 /**
@@ -18,7 +20,7 @@ function Switch({ id, title, on, busy, onFlip, children, testid }) {
   );
 }
 
-function Parcel() {
+export function Parcel({ shop }) {
   const s = parcelSetting.use();
   const save = parcelSetting.save();
   const [error, setError] = useState(null);
@@ -32,14 +34,20 @@ function Parcel() {
   return (
     <>
       <Switch id="pe-parcel" title="Parcel updates" on={s.data.on} busy={save.isPending} onFlip={flip} testid="parcel-switch">
-        <p>"Shipped" with the courier and tracking link, then "delivered", for online orders. About their own order, so it goes even without offers consent and does not count towards the weekly limit. STOP still ends it. From the moment you turn it on.</p>
+        <p className="sh-plain">Online buyers hear when their parcel ships and when it arrives.</p>
+        <HowItWorks testid="how-parcel" rows={[
+          ['When', 'An online order is shipped, and again when it is delivered.'],
+          ['Who gets it', 'The customer who ordered. It is about their own order, so it goes even if they did not agree to offers, and it does not count as an offer.'],
+          ['Who never does', 'Anyone who replied STOP.'],
+          ['From when', 'Orders shipped after you turn it on.']
+        ]} message={{ text: filled('Hello {name}, your order SO-1042 from {shop} is on its way with Delhivery. Track it: {link}', shop), foot: 'Then, when it arrives: "…has been delivered. Thank you for shopping with us!"' }} />
       </Switch>
       {error && <p className="pe-err" role="alert">{error}</p>}
     </>
   );
 }
 
-function Dues() {
+export function Dues({ shop }) {
   const s = duesSetting.use();
   const save = duesSetting.save();
   const [error, setError] = useState(null);
@@ -55,7 +63,14 @@ function Dues() {
   return (
     <>
       <Switch id="pe-dues" title="Money owed reminders" on={d.on} busy={save.isPending} onFlip={() => put({ on: !d.on }, !d.on ? 'Gentle reminders of money owed are on.' : 'Reminders of money owed are off.')} testid="dues-switch">
-        <p>For kept orders and "pay later" bills, a gentle reminder on WhatsApp with what is still due. Never after STOP, never more than this schedule. Staff can also press "Remind now" on a customer's page.</p>
+        <p className="sh-plain">A customer who still owes money gets a gentle reminder, with a link to pay when there is one.</p>
+        <HowItWorks testid="how-dues" rows={[
+          ['When', 'On the schedule below, counted from the bill.'],
+          ['Who gets it', 'Customers with kept orders or "pay later" bills that are not fully paid.'],
+          ['Who never does', 'Anyone who replied STOP. Never more than the schedule.'],
+          ['Paying', 'Bills bought online get a pay link from your own Razorpay. Till bills are paid at the counter.'],
+          ['Your staff', 'Can also press "Remind now" on a customer\'s page.']
+        ]} message={{ text: filled('Hello {name}, a gentle reminder from {shop}: ₹2,400 is still due. Pay online here: {link} Or pay at the shop when you next come in. Thank you!', shop), foot: 'Reply STOP to stop these messages.' }} />
       </Switch>
       <div className="nx-sched">
         <label className="pe-field"><span>First reminder</span>
@@ -82,7 +97,7 @@ function Dues() {
   );
 }
 
-function Referral() {
+export function Referral({ shop }) {
   const s = referralSetting.use();
   const save = referralSetting.save();
   const [points, setPoints] = useState('');
@@ -99,7 +114,13 @@ function Referral() {
   return (
     <>
       <Switch id="pe-referral" title="Bring a friend" on={s.data.on} busy={save.isPending} onFlip={() => put({ on: !s.data.on }, !s.data.on ? 'Bring a friend is on.' : 'Bring a friend is off.')} testid="referral-switch">
-        <p>Each customer gets a short code to share. When a new customer's first bill comes in with a friend's code, both get points. One friend counts once; nobody can bring themselves.</p>
+        <p className="sh-plain">Customers bring friends with a code, and both get points when the friend buys.</p>
+        <HowItWorks testid="how-referral" rows={[
+          ['How', 'Each customer has a short code, like ANJALI-7K2, on their page. They share it with a friend.'],
+          ['When', 'A new customer says whose code brought them (at the counter, or on their page), and their first bill or boutique order comes in.'],
+          ['What they get', 'Both get the points you set below, in Inventory\'s points.'],
+          ['Rules', 'One friend counts once. Nobody can bring themselves, or someone on their own number.']
+        ]} />
       </Switch>
       <label className="pe-field nx-points"><span>Points each</span>
         <div className="pe-link-row">
@@ -112,8 +133,8 @@ function Referral() {
   );
 }
 
-export default function NextSettings() {
-  return (<><Parcel /><Dues /><Referral /></>);
+export default function NextSettings({ shop }) {
+  return (<><Parcel shop={shop} /><Dues shop={shop} /><Referral shop={shop} /></>);
 }
 
 /** C9: the shop's levels are its groups with a spending rule, each with a points rate and a perk. */
@@ -136,8 +157,14 @@ export function LevelsSettings() {
   return (
     <div className="nx-levels" data-testid="levels-settings">
       <h2><Star size={18} aria-hidden="true" /> Customer levels</h2>
+      <Lede>Reward customers who spend more: a level like Silver or Gold gives them more points on every bill.</Lede>
+      <HowSteps testid="levels-steps" steps={[
+        ['Make a group with a spending rule', 'In Customer groups, for example "spent ₹25,000 in a year".'],
+        ['Customers join by themselves', 'Their bills in the shop and online, and boutique work, count. They leave if they stop spending.'],
+        ['They earn more points', 'At the till and online. Staff see the level and its perk on their page.']
+      ]} />
       <p className="pe-hint">A level is one of your groups with a spending rule ("spent ₹25,000 in a year"). Customers in it earn its points at the till and online, never less than your usual {q.data.normalPointsPer100 ?? 1} per ₹100, and see its perk on their page.{q.data.loyaltyOn === false ? ' Points are off in Inventory, so levels earn nothing until you switch points on there.' : ''}</p>
-      {rows.length === 0 ? <p className="crm-muted" data-testid="levels-none">None of your groups has a spending rule yet. Give a group one (Customer groups, Rules) and it can be a level.</p> : (
+      {rows.length === 0 ? <p className="sh-none" data-testid="levels-none"><b>You have no levels yet.</b> None of your groups has a spending rule. Give a group one (Customer groups, Rules) and it can be a level. <Link to="/groups">Open Customer groups</Link></p> : (
         <ul className="nx-lv-list">
           {rows.map(r => (
             <li key={r.key} className={r.isLevel ? 'on' : ''}>

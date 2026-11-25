@@ -30,7 +30,8 @@ const sql = (q) => execFileSync('docker', ['exec', 'inventory-local-db', 'psql',
 
 async function main() {
   const before = sql(`select coalesce(feedback_on::text, '') || '|' || coalesce(review_url, '') from crm.message_settings where client_id = '${SHOP}'`);
-  sql(`update crm.message_settings set feedback_on = false, review_url = null where client_id = '${SHOP}'`);
+  // A run stopped half way leaves switches on: every switch this checks starts off.
+  sql(`update crm.message_settings set feedback_on = false, review_url = null, arrivals_on = false, review_ask_on = false where client_id = '${SHOP}'`);
   // Two answers this week, for This week's card: a customer of the test shop, any.
   const someone = sql(`select id from crm.customers where client_id = '${SHOP}' and merged_into_id is null and removed_at is null limit 1`);
   const fb = [randomUUID(), randomUUID()];
@@ -46,7 +47,12 @@ async function main() {
     await page.goto(`${APP}/settings?section=automatic`);
     const box = page.getByTestId('automatic-messages');
     await box.waitFor({ timeout: 20000 });
-    check('Shop settings has Automatic messages: "Ask how the visit was"', /Ask how the visit was/.test(await box.innerText()));
+    await page.waitForFunction(() => /Off|On/.test(document.querySelector('[data-testid="auto-open-feedback"]')?.textContent ?? ''), null, { timeout: 15000 }).catch(() => {});
+    check('Shop settings has Automatic messages: a short list, "Ask how the visit was" in one sentence, Off', /Ask how the visit was/.test(await box.innerText()) && /Off/.test(await page.getByTestId('auto-open-feedback').innerText()));
+    await page.getByTestId('auto-open-feedback').click();
+    const panel = page.getByTestId('auto-panel');
+    await panel.waitFor({ timeout: 10000 });
+    check('the row opens a panel with how it works: for till bills, with the message they get', /A day after a till bill/.test(await panel.innerText()) && /How was your visit\? Tap to tell us/.test(await page.getByTestId('how-feedback-open').innerText()) && /msg=feedback/.test(page.url()));
     const sw = page.getByTestId('feedback-switch');
     await sw.click();
     const err = page.getByTestId('feedback-error');
@@ -58,23 +64,29 @@ async function main() {
     await sw.click();
     await page.waitForFunction(() => document.querySelector('[data-testid="feedback-switch"]')?.getAttribute('aria-checked') === 'true', null, { timeout: 15000 });
     check('with the link: on, and saved in CRM', sql(`select feedback_on::text || '|' || review_url from crm.message_settings where client_id = '${SHOP}'`) === `true|${REVIEW}`);
+    await page.keyboard.press('Escape');
+    await panel.waitFor({ state: 'hidden', timeout: 10000 });
+    check('Escape closes the panel; the list says On now', !/msg=/.test(page.url()) && /On/.test(await page.getByTestId('auto-open-feedback').innerText()));
     // A2: "New in their size and colour", on from the moment it is switched on, and off again.
+    await page.getByTestId('auto-open-arrivals').click();
     const arr = page.getByTestId('arrivals-switch');
     await arr.click();
     await page.waitForFunction(() => document.querySelector('[data-testid="arrivals-switch"]')?.getAttribute('aria-checked') === 'true', null, { timeout: 15000 });
     check('"New in their size and colour" switches on, from now', sql(`select arrivals_on::text || '|' || (arrivals_seen_to is not null)::text from crm.message_settings where client_id = '${SHOP}'`) === 'true|true');
-    await page.screenshot({ path: path.join(shots, 'feedback-settings.png'), fullPage: true });
+    await page.screenshot({ path: path.join(shots, 'feedback-settings.png') });
     await arr.click();
     await page.waitForFunction(() => document.querySelector('[data-testid="arrivals-switch"]')?.getAttribute('aria-checked') === 'false', null, { timeout: 15000 });
     check('...and off again', sql(`select arrivals_on::text from crm.message_settings where client_id = '${SHOP}'`) === 'false');
     // Online customers: the link to rate what they bought. Off to start, the owner's to turn on.
+    await page.getByTestId('auto-panel-close').click();
+    check('"Ask online customers to rate what they bought" is in the list', /Ask online customers to rate what they bought/.test(await box.innerText()));
+    await page.getByTestId('auto-open-review-ask').click();
     const ask = page.getByTestId('review-ask-switch');
-    check('"Ask online customers to rate what they bought" is there, off', /Ask online customers to rate what they bought/.test(await box.innerText()) && (await ask.getAttribute('aria-checked')) === 'false');
-    check('and "Ask how the visit was" says it is for till bills', /A day after a till bill/.test(await box.innerText()));
+    check('...its panel: off to start', (await ask.getAttribute('aria-checked')) === 'false');
     await ask.click();
     await page.waitForFunction(() => document.querySelector('[data-testid="review-ask-switch"]')?.getAttribute('aria-checked') === 'true', null, { timeout: 15000 });
     check('it switches on, from now', sql(`select review_ask_on::text || '|' || (review_ask_since is not null)::text from crm.message_settings where client_id = '${SHOP}'`) === 'true|true');
-    await page.getByTestId('automatic-messages').screenshot({ path: path.join(shots, 'review-ask-settings.png') });
+    await page.screenshot({ path: path.join(shots, 'review-ask-settings.png') });
     await ask.click();
     await page.waitForFunction(() => document.querySelector('[data-testid="review-ask-switch"]')?.getAttribute('aria-checked') === 'false', null, { timeout: 15000 });
     check('...and off again', sql(`select review_ask_on::text from crm.message_settings where client_id = '${SHOP}'`) === 'false');
@@ -90,7 +102,11 @@ async function main() {
     const pp = await pctx.newPage();
     await pp.goto(`${APP}/settings?section=automatic`);
     await pp.getByTestId('automatic-messages').waitFor({ timeout: 20000 });
-    check('on a phone, Shop settings fit', await noOverflow(pp));
+    const listFits = await noOverflow(pp);
+    await pp.getByTestId('auto-open-winback').click();
+    await pp.getByTestId('auto-panel').waitFor({ timeout: 10000 });
+    const full = await pp.getByTestId('auto-panel').evaluate(el => Math.abs(el.getBoundingClientRect().width - window.innerWidth) < 2);
+    check('on a phone, the list fits and a message opens on the whole screen', listFits && full && await noOverflow(pp), { listFits, full });
     await pctx.close();
   } finally {
     await browser.close();

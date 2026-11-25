@@ -56,7 +56,8 @@ async function main() {
     console.log('\n1. Settings: the owner\'s switches');
     let { ctx, page } = await signedIn(browser, { width: 1280, height: 900 });
     await page.goto(`${APP}/settings?section=automatic`); await settle(page);
-    for (const id of ['parcel-switch', 'dues-switch', 'referral-switch']) check(`"${id.replace('-switch', '')}" is there, off to start (as the shop had it)`, await vis(page, id).isVisible());
+    for (const id of ['parcel', 'dues', 'referral']) check(`"${id}" is a row in Automatic messages`, await vis(page, `auto-open-${id}`).isVisible());
+    await page.goto(`${APP}/settings?section=automatic&msg=referral`); await settle(page);
     if (!before.referral.on) {
       await vis(page, 'referral-switch').click();
       await page.waitForFunction(() => document.querySelector('[data-testid=referral-switch]')?.getAttribute('aria-checked') === 'true', null, { timeout: 8000 }).catch(() => {});

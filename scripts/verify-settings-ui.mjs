@@ -88,7 +88,9 @@ async function main() {
     // Today's controls still work where they now live.
     await page.goto(`${APP}/settings?section=automatic`);
     await page.getByTestId('automatic-messages').waitFor({ timeout: 15000 });
-    check('Automatic messages: today\'s switches (thank-you, win-back) are there', (await page.getByTestId('feedback-switch').count()) === 1 && (await page.getByTestId('winback-switch').count()) === 1);
+    check('Automatic messages: today\'s (thank-you, win-back) are rows that open their switch', (await page.getByTestId('auto-open-feedback').count()) === 1 && (await page.getByTestId('auto-open-winback').count()) === 1);
+    await page.getByTestId('auto-open-winback').click();
+    check('...a row opens its panel with the switch', await page.getByTestId('winback-switch').waitFor({ timeout: 10000 }).then(() => true, () => false));
     await page.goto(`${APP}/settings?section=changes`);
     await page.getByTestId('profile-switch').waitFor({ timeout: 15000 });
     check('Where changes are made: the switch is there', true);

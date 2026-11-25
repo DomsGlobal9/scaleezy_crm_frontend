@@ -20,6 +20,7 @@ import FeedbackSettings from '../components/FeedbackSettings';
 import { LevelsSettings } from '../components/NextSettings';
 import PriceBands from '../components/PriceBands';
 import TeamAccess from '../components/TeamAccess';
+import { HowSteps } from '../components/SettingsHelp';
 
 /**
  * Settings (the owner's, 12 Nov redesign): how CRM works for this shop, one section at a time.
@@ -134,11 +135,11 @@ function Overview({ st, go }) {
   const done = known.filter(e => e.done).length;
   const m = st.moved.data ?? {};
   const choices = [
-    { title: 'Thank-you after a visit', on: st.feedback.data?.on, section: 'automatic' },
-    { title: 'Ask online buyers to rate', on: st.reviewAsk.data?.on, section: 'automatic' },
-    { title: 'New stock in their size', on: st.arrivals.data?.on, section: 'automatic' },
-    { title: 'Win back regulars', on: st.winback.data?.on, section: 'automatic' },
-    { title: 'Customer changes made in CRM', on: m.profile === true, section: 'changes' }
+    { title: 'Ask how the visit was', on: st.feedback.data?.on, section: 'automatic', msg: 'feedback', what: 'The day after a bill, asks how the visit was. Happy customers get your Google review link; unhappy ones become a follow-up for you.' },
+    { title: 'Ask online buyers to rate what they bought', on: st.reviewAsk.data?.on, section: 'automatic', msg: 'review-ask', what: 'After an online order arrives, one message asks them to rate what they bought.' },
+    { title: 'New in their size and colour', on: st.arrivals.data?.on, section: 'automatic', msg: 'arrivals', what: 'When new pieces arrive, customers who wear that size and colour hear about it first, with a photo.' },
+    { title: 'Win back regulars', on: st.winback.data?.on, section: 'automatic', msg: 'winback', what: 'A good customer who stopped coming gets one offer to come back, with a code your staff check at the counter.' },
+    { title: 'Customer changes made in CRM', on: m.profile === true, section: 'changes', what: 'Your staff change offers answers, birthdays and deletes here in CRM instead of in Inventory.' }
   ];
   return (
     <div className="st-panel" data-testid="st-overview">
@@ -171,11 +172,12 @@ function Overview({ st, go }) {
 
       <section aria-labelledby="st-ch-h">
         <h3 id="st-ch-h" className="st-label">Your choices</h3>
+        <p className="crm-muted st-choices-sub">Things CRM can do for you by itself. Each stays off until you turn it on. Open one to see how it works.</p>
         <div className="st-choices">
           {choices.map(c => (
-            <button key={c.title} type="button" className="st-choice" onClick={() => go(c.section)}>
-              <span>{c.title}</span>
-              <span className={`st-chip${c.on ? ' on' : ''}`}>{c.on === undefined ? '…' : c.on ? 'On' : 'Off'}</span>
+            <button key={c.title} type="button" className="st-choice sh-choice" onClick={() => go(c.section, c.msg)} data-testid="st-choice">
+              <span className="sh-choice-top"><span>{c.title}</span><span className={`st-chip${c.on ? ' on' : ''}`}>{c.on === undefined ? '…' : c.on ? 'On' : 'Off'}</span></span>
+              <span>{c.what}</span>
             </button>
           ))}
         </div>
@@ -194,6 +196,11 @@ function ShopSection({ st }) {
     <div className="st-panel">
       <section className="crm-card">
         <Head icon={Store} title="Shop and door QR" sub="What customers see of your shop: the logo in the middle of the door QR, and a standee for each store." />
+        <HowSteps testid="shop-steps" steps={[
+          ['Your logo and WhatsApp', 'Both are kept in Inventory, so every ScaleEzy module shows the same.'],
+          ['Print a standee for each store', 'Each store gets its own QR code to put by the door.'],
+          ['Customers scan it as they walk in', 'They appear on Shop floor under "In the shop now" in seconds, with their sizes and picks.']
+        ]} />
         <div className="st-shop">
           <div className={`st-logo${first?.logo ? '' : ' none'}`} data-testid="st-logo">
             {first?.logo ? <img src={first.logo} alt={`${first.shop} logo`} /> : <span aria-hidden="true">{initialOf(first?.shop)}</span>}
@@ -271,7 +278,7 @@ export default function ShopSettings() {
   const [params, setParams] = useSearchParams();
   const asked = params.get('section');
   const section = KEYS.has(asked) ? asked : 'overview';
-  const go = (key) => { setParams(key === 'overview' ? {} : { section: key }); window.scrollTo({ top: 0 }); };
+  const go = (key, msg) => { setParams(key === 'overview' ? {} : { section: key, ...(msg ? { msg } : {}) }); window.scrollTo({ top: 0 }); };
 
   if (!isOwner) {
     return (
@@ -318,6 +325,11 @@ function Owner({ section, go }) {
     body = (
       <section className="crm-card pe-settings st-card" data-testid="shop-settings">
         <Head icon={current.icon} title={current.label} sub="Where your staff change a customer: here in CRM, or in Inventory." />
+        <HowSteps testid="changes-steps" steps={[
+          ['Off: Inventory looks after them', 'Staff change the offers answer, birthdays and deletes in Inventory, as today.'],
+          ['On: they are changed here', 'Staff change them on the customer\'s page in CRM.'],
+          ['Inventory shows them read only', 'With a link to CRM, so nobody changes them in two places.']
+        ]} />
         {st.moved.isLoading ? <div className="crm-row crm-muted" aria-busy="true"><Loader2 size={16} className="animate-spin" /> Loading…</div>
           : st.moved.isError ? <LoadFailed what="the shop settings" error={st.moved.error} onRetry={() => st.moved.refetch()} />
             : (
@@ -339,13 +351,18 @@ function Owner({ section, go }) {
     body = (
       <section className="crm-card st-card">
         <PriceRuler bands={st.bands.data?.bands} />
-        <PriceBands />
+        <PriceBands explain />
       </section>
     );
   } else if (section === 'festivals') {
     body = (
       <section className="crm-card st-card">
         <Head icon={CalendarHeart} title="Festivals" sub="The festivals your shop sells for, with this year's dates." />
+        <HowSteps testid="festivals-steps" steps={[
+          ['Tick your festivals', 'The ones your shop sells for, like Diwali or Sankranti.'],
+          ['CRM notes who buys for them', 'A bill in the weeks before a ticked festival counts as buying for it, on the customer\'s page.'],
+          ['Nothing is sent', 'Festivals never send a message on their own. You decide what to do with them.']
+        ]} />
         <p>Tick the festivals that matter to your shop. A bill in the weeks up to a ticked festival counts as buying for it, on each customer's page. Dates that move with the moon come built in; you can correct one if your almanac differs. Festivals never send a message on their own.</p>
         <Link className="btn-primary st-btn" to="/festivals" data-testid="st-festivals">Open festivals <ChevronRight size={14} aria-hidden="true" /></Link>
       </section>
@@ -353,7 +370,7 @@ function Owner({ section, go }) {
   } else if (section === 'levels') {
     body = <section className="crm-card st-card"><LevelsSettings /></section>;
   } else if (section === 'automatic') {
-    body = <section className="crm-card st-card"><FeedbackSettings /></section>;
+    body = <section className="crm-card st-card"><FeedbackSettings shop={st.shop} /></section>;
   } else {
     body = <TeamAccess />;
   }

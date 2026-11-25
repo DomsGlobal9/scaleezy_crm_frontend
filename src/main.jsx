@@ -66,7 +66,8 @@ createRoot(document.getElementById('root')).render(
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <App />
-        <Toaster position="top-right" toastOptions={{ style: { background: 'var(--bg-card)', color: 'var(--text-primary)', border: '1px solid var(--border-light)' } }} />
+        {/* Bottom centre: a confirmation never covers a header, a switch or a panel's close (25 Nov). */}
+        <Toaster position="bottom-center" toastOptions={{ style: { background: 'var(--bg-card)', color: 'var(--text-primary)', border: '1px solid var(--border-light)' } }} />
       </AuthProvider>
     </QueryClientProvider>
   </StrictMode>
