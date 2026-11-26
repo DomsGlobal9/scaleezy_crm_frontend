@@ -5,6 +5,7 @@ import toast from 'react-hot-toast';
 import { X, Loader2 } from 'lucide-react';
 import { useDeleteCustomer, useDeletePreview } from '../hooks/useProfileEdit';
 import LoadFailed from './LoadFailed';
+import { useAuth } from '../context/AuthContext';
 
 /**
  * Deleting a customer (the owner only, as in Inventory, which does it). Inventory says first what
@@ -13,6 +14,8 @@ import LoadFailed from './LoadFailed';
  * nothing to press. The owner types the last 4 digits of their phone, or their name, to confirm.
  */
 export default function DeleteCustomer({ customerId, onClose }) {
+  const { hasInventory } = useAuth();
+  const where = hasInventory ? 'in Inventory and in CRM' : 'in CRM and at the till';
   const preview = useDeletePreview(customerId, true);
   const remove = useDeleteCustomer(customerId);
   const navigate = useNavigate();
@@ -66,7 +69,7 @@ export default function DeleteCustomer({ customerId, onClose }) {
         </header>
 
         {preview.isLoading ? (
-          <div className="crm-row crm-muted" aria-busy="true"><Loader2 size={16} className="animate-spin" /> Asking Inventory what deleting them would do…</div>
+          <div className="crm-row crm-muted" aria-busy="true"><Loader2 size={16} className="animate-spin" /> {hasInventory ? 'Asking Inventory what deleting them would do…' : 'Checking what deleting them would do…'}</div>
         ) : preview.isError ? (
           <LoadFailed what="what deleting them would do" error={preview.error} onRetry={() => preview.refetch()} />
         ) : p.blocked ? (
@@ -78,10 +81,10 @@ export default function DeleteCustomer({ customerId, onClose }) {
           <form onSubmit={submit} className="pe-delete">
             <p className="pe-what" data-testid="delete-what">
               {erase
-                ? <>Their name, phone, email, birthday, anniversary and notes are erased in Inventory and in CRM. {p.bills > 0
+                ? <>Their name, phone, email, birthday, anniversary and notes are erased {where}. {p.bills > 0
                     ? `The ${p.bills === 1 ? 'bill stays' : `${p.bills.toLocaleString('en-IN')} bills stay`}, without their name, because the shop keeps bills for GST.`
                     : 'Their points and credit history stays, without their name, for the shop\'s accounts.'} This cannot be undone.</>
-                : <>{p.name} is deleted from Inventory and CRM, with their try-ons, door check-ins and look-ups. This cannot be undone.</>}
+                : <>{p.name} is deleted {hasInventory ? 'from Inventory and CRM' : 'from CRM and the till'}, with their try-ons, door check-ins and look-ups. This cannot be undone.</>}
             </p>
             {erase && (p.bills > 0 || p.loyaltyPoints > 0) && (
               <div className="pe-facts">

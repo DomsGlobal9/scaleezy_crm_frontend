@@ -1,3 +1,4 @@
+import { useAuth } from '../context/AuthContext';
 import React, { useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useQueries, useQuery } from '@tanstack/react-query';
@@ -33,7 +34,7 @@ import { HowSteps } from '../components/SettingsHelp';
  * standee to print.
  */
 
-const SECTIONS = [
+const ALL_SECTIONS = [
   { key: 'overview', group: null, label: 'Overview', icon: LayoutGrid, sub: 'What is set, what needs you' },
   { key: 'shop', group: 'Your shop', label: 'Shop and door QR', icon: Store, sub: 'Logo, stores, standees' },
   { key: 'changes', group: 'Customers', label: 'Where changes are made', icon: UserCog, sub: 'Offers, birthdays, deletes' },
@@ -43,7 +44,7 @@ const SECTIONS = [
   { key: 'automatic', group: 'Campaigns', label: 'Automatic messages', icon: Sparkles, sub: 'Thank-you, ratings, parcels, money owed' },
   { key: 'team', group: 'People', label: 'Team and access', icon: Users, sub: 'Who can do what' }
 ];
-const KEYS = new Set(SECTIONS.map(s => s.key));
+const KEYS = new Set(ALL_SECTIONS.map(s => s.key));
 
 /**
  * Each store's door QR. The first store is asked first: when the shop's WhatsApp is not linked, no store
@@ -130,6 +131,7 @@ function Head({ icon: Icon, title, sub }) {
 }
 
 function Overview({ st, go }) {
+  const { hasInventory } = useAuth();
   const list = essentials(st);
   const known = list.filter(e => e.done !== null);
   const done = known.filter(e => e.done).length;
@@ -140,7 +142,7 @@ function Overview({ st, go }) {
     { title: 'New in their size and colour', on: st.arrivals.data?.on, section: 'automatic', msg: 'arrivals', what: 'When new pieces arrive, customers who wear that size and colour hear about it first, with a photo.' },
     { title: 'Win back regulars', on: st.winback.data?.on, section: 'automatic', msg: 'winback', what: 'A good customer who stopped coming gets one offer to come back, with a code your staff check at the counter.' },
     { title: 'Customer changes made in CRM', on: m.profile === true, section: 'changes', what: 'Your staff change offers answers, birthdays and deletes here in CRM instead of in Inventory.' }
-  ];
+  ].filter(c => hasInventory || !['review-ask', 'arrivals'].includes(c.msg) && c.section !== 'changes'); // those need Inventory
   return (
     <div className="st-panel" data-testid="st-overview">
       <section className="crm-card st-hero">
@@ -295,6 +297,9 @@ export default function ShopSettings() {
 }
 
 function Owner({ section, go }) {
+  const { hasInventory } = useAuth();
+  // Without Inventory there is nothing to hand over from it, and fewer automatic messages.
+  const SECTIONS = hasInventory ? ALL_SECTIONS : ALL_SECTIONS.filter(x => x.key !== 'changes').map(x => x.key === 'automatic' ? { ...x, sub: 'Thank-you and win-back' } : x);
   const st = useState_();
   const setProfile = useSetProfileMoved();
   const [refused, setRefused] = useState({});

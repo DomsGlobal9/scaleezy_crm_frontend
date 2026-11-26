@@ -1,3 +1,4 @@
+import { useAuth } from '../context/AuthContext';
 import React, { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Loader2, X, Upload, Search, Trash2 } from 'lucide-react';
@@ -37,6 +38,7 @@ const TABS = [['upload', 'Upload'], ['products', 'From your products'], ['used',
 
 export function PicturePicker({ onPick, onClose }) {
   const [tab, setTab] = useState('upload');
+  const { hasInventory } = useAuth(); // product photos are Inventory's
   const add = useAddPicture();
   const [error, setError] = useState(null);
   const use = async (input) => {
@@ -47,7 +49,7 @@ export function PicturePicker({ onPick, onClose }) {
   return (
     <Dialog title="Add a picture" sub="It goes above the words, the way customers see it on WhatsApp." onClose={onClose} testid="picture-picker" wide>
       <div className="ms-tabs" role="tablist" aria-label="Where the picture comes from">
-        {TABS.map(([k, l]) => <button key={k} type="button" role="tab" aria-selected={tab === k} className={`ms-tab${tab === k ? ' on' : ''}`} onClick={() => { setTab(k); setError(null); }} data-testid={`pp-tab-${k}`}>{l}</button>)}
+        {TABS.filter(([k]) => hasInventory || k !== 'products').map(([k, l]) => <button key={k} type="button" role="tab" aria-selected={tab === k} className={`ms-tab${tab === k ? ' on' : ''}`} onClick={() => { setTab(k); setError(null); }} data-testid={`pp-tab-${k}`}>{l}</button>)}
       </div>
       {add.isPending ? (
         <div className="mp-busy" role="status" data-testid="pp-busy"><Loader2 size={16} className="animate-spin" /> Making the picture ready for WhatsApp…</div>

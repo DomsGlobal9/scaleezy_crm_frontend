@@ -34,6 +34,7 @@ import BoutiqueWork, { BoutiqueStrip } from '../components/BoutiqueWork';
 import CustomerAppointments, { AppointmentStrip } from '../components/CustomerAppointments';
 import { LevelCard, MoneyOwedCard, BringAFriendCard, SendPicksCard } from '../components/NextCards';
 import { useUsesServices } from '../hooks/useBoutique';
+import { useAuth } from '../context/AuthContext';
 
 /**
  * One customer: who they are and their numbers in one header; below, what they wear, their
@@ -119,6 +120,8 @@ export default function CustomerDetail() {
   // (?followup=1) opens Follow-ups on a phone; on a laptop they are always beside the tabs.
   // Boutique work is a tab only in a shop that uses Boutique (the owner, 19 Nov: never confuse a retail shop).
   const boutique = useUsesServices(can('crm:customer:view'));
+  // Money owed, picks from stock and bring-a-friend points all live in Inventory: a shop without it has none.
+  const { hasInventory } = useAuth();
   const tabs = boutique ? [...TABS.slice(0, 4), { key: 'boutique', label: 'Boutique work' }, ...TABS.slice(4)] : TABS;
   const asked = params.get('tab');
   const tab = tabs.some(t => t.key === asked) ? asked : params.get('followup') ? 'work' : 'wear';
@@ -183,9 +186,11 @@ export default function CustomerDetail() {
           {/* A phone or tablet: the side column is a tab, so the level, money owed, picks and bring a friend show here. */}
           <div className="nx-phone">
             <LevelCard customerId={customer.data.profile.id} />
-            <MoneyOwedCard customerId={customer.data.profile.id} />
-            <SendPicksCard customerId={customer.data.profile.id} name={customer.data.profile.name} phone={customer.data.profile.phone} consent={customer.data.profile.consent} />
-            <BringAFriendCard customerId={customer.data.profile.id} name={customer.data.profile.name} />
+            {hasInventory && <>
+              <MoneyOwedCard customerId={customer.data.profile.id} />
+              <SendPicksCard customerId={customer.data.profile.id} name={customer.data.profile.name} phone={customer.data.profile.phone} consent={customer.data.profile.consent} />
+              <BringAFriendCard customerId={customer.data.profile.id} name={customer.data.profile.name} />
+            </>}
           </div>
           {reviews.data?.unhappy && <Unhappy unhappy={reviews.data.unhappy} profile={customer.data.profile} onFollowUp={askFollowUp} />}
           <section className={`cp-body${tab === 'work' ? ' on-work' : ''}`}>
@@ -210,10 +215,10 @@ export default function CustomerDetail() {
             </div>
             <FollowUpsAndNotes customerId={customer.data.profile.id} after={<>
                 <LevelCard customerId={customer.data.profile.id} />
-              <MoneyOwedCard customerId={customer.data.profile.id} />
+              {hasInventory && <MoneyOwedCard customerId={customer.data.profile.id} />}
               <CustomerGroupsCard customerId={customer.data.profile.id} firstName={(customer.data.profile.name || '').trim().split(/\s+/)[0]} />
-              <SendPicksCard customerId={customer.data.profile.id} name={customer.data.profile.name} phone={customer.data.profile.phone} consent={customer.data.profile.consent} />
-              <BringAFriendCard customerId={customer.data.profile.id} name={customer.data.profile.name} />
+              {hasInventory && <SendPicksCard customerId={customer.data.profile.id} name={customer.data.profile.name} phone={customer.data.profile.phone} consent={customer.data.profile.consent} />}
+              {hasInventory && <BringAFriendCard customerId={customer.data.profile.id} name={customer.data.profile.name} />}
             </>} />
           </section>
         </>
@@ -317,6 +322,8 @@ function MoreMenu({ onDelete }) {
  */
 function Header({ profile: p, numbers: n }) {
   const { can, isOwner } = usePermission();
+  // A shop without Inventory keeps its customers in CRM: their answer, dates and deleting are done here.
+  const { hasInventory } = useAuth();
   const [editingDates, setEditingDates] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [messaging, setMessaging] = useState(false);
@@ -330,7 +337,7 @@ function Header({ profile: p, numbers: n }) {
   const moreAddresses = Math.max(0, p.addresses.length - 1);
   const inventoryLink = (p.links ?? []).find(l => l.source === 'inventory');
   const inventoryHref = inventoryLink ? `${INVENTORY_URL}/customers/${encodeURIComponent(inventoryLink.externalId)}` : null;
-  const editable = !!inventoryLink && can('crm:customer:update');
+  const editable = (!!inventoryLink || !hasInventory) && can('crm:customer:update');
 
   return (
     <section className="crm-card cp-head" data-testid="profile">
@@ -349,7 +356,7 @@ function Header({ profile: p, numbers: n }) {
             <a className="btn-secondary cp-btn" href={inventoryHref} target="_blank" rel="noreferrer"><ExternalLink size={14} /> Open in Inventory</a>
           )}
           {mayMessage && <button type="button" className="btn-primary cp-btn" onClick={() => setMessaging(true)} data-testid="message-one"><MessageCircle size={14} /> Message</button>}
-          {isOwner && inventoryLink && <MoreMenu onDelete={() => setDeleting(true)} />}
+          {isOwner && (inventoryLink || !hasInventory) && <MoreMenu onDelete={() => setDeleting(true)} />}
         </div>
       </div>
       <div className="cp-reach">

@@ -20,7 +20,7 @@ export function AuthProvider({ children }) {
     try {
       const res = await api.get('/auth/session');
       if (res?.authenticated && res.user) {
-        setUser({ ...res.user, clientId: res.user.clientId ?? res.client?.id ?? null });
+        setUser({ ...res.user, clientId: res.user.clientId ?? res.client?.id ?? null, inventory: res.client?.inventory !== false });
         setStatus('in');
       } else {
         setUser(null);
@@ -57,6 +57,8 @@ export function AuthProvider({ children }) {
     clientId: user?.clientId || null,
     permissions: user?.permissions || [],
     roles: user?.roles || [],
+    // Does the shop have ScaleEzy Inventory? Without it, what only Inventory has (points, stock, bills, the door QR) is hidden.
+    hasInventory: user ? user.inventory !== false : true,
     refresh: checkSession
   };
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

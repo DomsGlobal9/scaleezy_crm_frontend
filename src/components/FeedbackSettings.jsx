@@ -1,3 +1,4 @@
+import { useAuth } from '../context/AuthContext';
 import React, { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
@@ -15,7 +16,7 @@ import LoadFailed from './LoadFailed';
  * message: how it works, what the customer gets, its options and its switch. The panel is in the address (?msg=), so
  * Back closes it and a link opens one.
  */
-const MESSAGES = [
+const ALL_MESSAGES = [
   { key: 'feedback', title: 'Ask how the visit was', plain: 'The day after a bill, asks how the visit was. Happy customers get your Google review link.', icon: ThumbsUp },
   { key: 'review-ask', title: 'Ask online customers to rate what they bought', plain: 'After an online order arrives, one message asks them to rate it.', icon: Star },
   { key: 'arrivals', title: 'New in their size and colour', plain: 'When new pieces arrive, customers who would want them hear first, with a photo.', icon: Shirt },
@@ -25,8 +26,13 @@ const MESSAGES = [
   { key: 'referral', title: 'Bring a friend', plain: 'Customers bring friends with a code; both get points when the friend buys.', icon: Gift }
 ];
 
+// Messages that need Inventory's bills, stock, parcels or points: not offered to a shop without Inventory.
+const NEEDS_INVENTORY = new Set(['review-ask', 'arrivals', 'parcel', 'dues', 'referral']);
+
 export default function FeedbackSettings({ shop }) {
   const [params, setParams] = useSearchParams();
+  const { hasInventory } = useAuth();
+  const MESSAGES = hasInventory ? ALL_MESSAGES : ALL_MESSAGES.filter(m => !NEEDS_INVENTORY.has(m.key));
   const feedback = useFeedbackSettings();
   const reviewAsk = useReviewAskSettings();
   const arrivals = useArrivalsSettings();

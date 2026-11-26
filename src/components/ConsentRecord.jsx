@@ -6,6 +6,7 @@ import { useConsent } from '../hooks/useCustomer';
 import { useProfileState, useSetOffers } from '../hooks/useProfileEdit';
 import { formatDay } from '../utils/dates';
 import LoadFailed from './LoadFailed';
+import { useAuth } from '../context/AuthContext';
 
 /**
  * A customer's WhatsApp consent record (plan M6, the DPDP Act): where it stands now, in one sentence,
@@ -18,6 +19,7 @@ import LoadFailed from './LoadFailed';
  * Otherwise read only, and changed where messages are sent (Inventory, the till).
  */
 export default function ConsentRecord({ customerId, name, inventoryHref, editable = false, hasPhone = true, onClose }) {
+  const { hasInventory } = useAuth();
   const consent = useConsent(customerId);
   const closeRef = useRef(null);
   const opener = useRef(document.activeElement);
@@ -68,7 +70,7 @@ export default function ConsentRecord({ customerId, name, inventoryHref, editabl
               </ol>
             )}
             {editable ? (
-              <p className="cr-foot">Records are kept as they were made and never changed. A change made here is saved in Inventory too, which sends the messages.</p>
+              <p className="cr-foot">Records are kept as they were made and never changed. {hasInventory ? 'A change made here is saved in Inventory too, which sends the messages.' : 'A change made here is a new record, with your name.'}</p>
             ) : (
               <p className="cr-foot">
                 Records are kept as they were made and never changed. To change this customer's consent, do it where messages are sent: Inventory's customer card, or the till. It comes here by itself.
@@ -102,6 +104,7 @@ function Standing({ now, first }) {
  * with no phone, it cannot be turned on, and the box says why instead.
  */
 function Answer({ customerId, hasPhone }) {
+  const { hasInventory } = useAuth();
   const state = useProfileState(customerId);
   const save = useSetOffers(customerId);
   const [choice, setChoice] = useState(null);
@@ -114,7 +117,7 @@ function Answer({ customerId, hasPhone }) {
     return <p className="pe-locked" data-testid="offers-locked">They replied STOP on {formatDay(s.stoppedAt)}, so they get no offers. Only they can start them again, by messaging the shop.</p>;
   }
   if (!hasPhone && !s.agreed) {
-    return <p className="pe-locked" data-testid="offers-locked">There is no phone number for them, so offers cannot be turned on. Add one in Inventory first.</p>;
+    return <p className="pe-locked" data-testid="offers-locked">There is no phone number for them, so offers cannot be turned on. {hasInventory ? 'Add one in Inventory first.' : 'Add one at the till first.'}</p>;
   }
   const picked = choice ?? s.agreed;
   const submit = async () => {

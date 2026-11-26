@@ -3,6 +3,7 @@ import toast from 'react-hot-toast';
 import { Loader2 } from 'lucide-react';
 import Select from './common/Select';
 import { useSetDates } from '../hooks/useProfileEdit';
+import { useAuth } from '../context/AuthContext';
 
 /**
  * Birthday and anniversary, day and month only (Inventory keeps no year). Opens under the header.
@@ -42,6 +43,7 @@ function DayMonth({ label, value, onChange, bad }) {
 }
 
 export default function DatesEditor({ customerId, birthday, anniversary, onClose }) {
+  const { hasInventory } = useAuth();
   const [b, setB] = useState(split(birthday));
   const [a, setA] = useState(split(anniversary));
   const [error, setError] = useState(null);
@@ -75,7 +77,7 @@ export default function DatesEditor({ customerId, birthday, anniversary, onClose
       <DayMonth label="Anniversary" value={a} onChange={setA} bad={bad.includes('anniversary')} />
       {error
         ? <p className="pe-err" role="alert" data-testid="dates-error">{error}</p>
-        : <p className="pe-hint">No year is kept. It is saved in Inventory too.</p>}
+        : <p className="pe-hint">No year is kept.{hasInventory ? ' It is saved in Inventory too.' : ''}</p>}
       <div className="pe-btns">
         <button type="submit" className="btn-primary" disabled={save.isPending}>
           {save.isPending && <Loader2 size={14} className="animate-spin" />} Save dates
